@@ -16,6 +16,10 @@
 | D-12 | Correo transaccional externo no obligatorio v1 | Propuesta técnica | Garantizar boleto descargable y recuperable con enlace seguro; email opcional |
 | D-13 | No publicar 134 páginas vacías | Cerrada | SEO: evitar contenido vacío, cumplir rutas mediante templates |
 | D-14 | Tokens C3 como variables CSS mapeadas con `@theme inline`; cabecera y pie en `data-theme="oscuro"`; texto de la etiqueta DEMO derivado por tema (`--sobre-advertencia`); fuentes con `next/font/google` | Cerrada | Aplica el design system C3 v2 sin hojas externas; la navegación navy usa el tema oscuro y la etiqueta DEMO cumple contraste en ambos temas |
+| D-15 | Taxonomía en una sola tabla `categories` con `kind` (`event_type`, `topic`, `location`, `organizer`); sin tablas `topics` ni `seo_routes` en T03 | Cerrada | Evita duplicar los 21 registros de primer nivel. Las FKs compuestas `(id, kind)` impiden asignar una ciudad como tipo de evento. Las subcategorías y modalidades se resolverán en T05 |
+| D-16 | Verificación de base de datos con PGlite en Vitest (`tests/db`), sin Docker | Cerrada | PGlite es Postgres real en WASM y corre en cualquier máquina. Supabase local (`supabase db reset`, `supabase test db`) queda como verificación adicional cuando Docker esté activo y se vincule un proyecto |
+| D-17 | El seed no crea cuentas de Auth ni contraseñas; los organizadores DEMO no tienen propietario | Cerrada | Ninguna credencial en el repositorio. Las cuentas de prueba llegan con T14 |
+| D-18 | No sembrar las páginas de organizador `/claude/` y `/copa/` del Excel | Propuesta técnica | Sus nombres pueden coincidir con marcas reales; SEO_ROUTES.md pide verificarlos antes de mostrarlos como entidades. Se activarán tras esa verificación |
 
 ## Pendientes que no bloquean inicio
 
