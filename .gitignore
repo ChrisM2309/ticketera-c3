@@ -49,3 +49,6 @@ next-env.d.ts
 
 # Superpowers execution artifacts
 .superpowers/
+
+# Supabase CLI temporary files (project link metadata)
+supabase/.temp/

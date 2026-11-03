@@ -22,8 +22,13 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: siteConfig.name,
+  metadataBase: new URL(siteConfig.siteUrl),
+  title: {
+    default: `${siteConfig.name} · DEMO`,
+    template: `%s · ${siteConfig.name} · DEMO`,
+  },
   description: siteConfig.description,
+  robots: siteConfig.isDemo ? { index: false, follow: false } : undefined,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
