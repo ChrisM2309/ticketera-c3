@@ -12,8 +12,9 @@ import {
   parseCatalogFilters,
   type SearchParams,
 } from '@/features/catalog/filters';
-import { getCatalogListing } from '@/features/catalog/queries';
+import { CATALOG_EVENT_LIMIT, getCatalogListing } from '@/features/catalog/queries';
 import {
+  isCatalogRouteIndexable,
   resolveCatalogRoute,
   scopeBreadcrumbs,
   scopeIntro,
@@ -45,6 +46,10 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
     title: scopeTitle(scope),
     description: scopeIntro(scope),
     alternates: { canonical: scopePath(scope) },
+    // Modalidad y precio no se indexan hasta tener contenido (D-24).
+    robots: isCatalogRouteIndexable(segments, listing.taxonomy)
+      ? undefined
+      : { index: false, follow: true },
   };
 }
 
@@ -118,6 +123,12 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
           </h2>
           <p className="font-texto text-sm text-texto-suave">{countLabel}</p>
         </div>
+
+        {listing.truncated ? (
+          <p className="font-texto text-sm text-texto-suave">
+            Solo se muestran los primeros {CATALOG_EVENT_LIMIT} eventos próximos.
+          </p>
+        ) : null}
 
         {events.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

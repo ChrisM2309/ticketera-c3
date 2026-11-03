@@ -25,6 +25,19 @@ const taxonomy: CatalogTaxonomy = {
     { slug: 'san-salvador', name: 'San Salvador' },
     { slug: 'san-miguel', name: 'San Miguel' },
   ],
+  routes: [
+    { path: '/congresos/', kind: 'event_type', isIndexable: true },
+    { path: '/hackathons/', kind: 'event_type', isIndexable: true },
+    { path: '/cloud/', kind: 'topic', isIndexable: true },
+    { path: '/python/', kind: 'topic', isIndexable: true },
+    { path: '/san-salvador/', kind: 'location', isIndexable: true },
+    { path: '/san-miguel/', kind: 'location', isIndexable: true },
+    { path: '/congresos/cloud/', kind: 'subtopic', isIndexable: true },
+    { path: '/congresos/cloud/presencial/', kind: 'modality', isIndexable: false },
+    { path: '/congresos/cloud/gratis/', kind: 'modality', isIndexable: false },
+    { path: '/congresos/cloud/virtual/', kind: 'modality', isIndexable: false },
+    { path: '/hackathons/python/', kind: 'subtopic', isIndexable: true },
+  ],
 };
 
 const congreso = { slug: 'congresos', name: 'Congresos' };
@@ -141,5 +154,16 @@ describe('filtrado del catálogo', () => {
     expect(
       ids('/congresos/', { ...noCatalogFilters, precio: 'gratis', ciudad: 'san-salvador', fecha: 'semana' }),
     ).toEqual(['a']);
+  });
+});
+
+describe('rutas de modalidad y precio del árbol', () => {
+  it('filtra por modalidad dentro de tipo y tema', () => {
+    expect(ids('/congresos/cloud/presencial/')).toEqual(['a', 'd']);
+    expect(ids('/congresos/cloud/virtual/')).toEqual([]);
+  });
+
+  it('filtra por precio gratuito con la ruta /gratis/', () => {
+    expect(ids('/congresos/cloud/gratis/')).toEqual(['a']);
   });
 });

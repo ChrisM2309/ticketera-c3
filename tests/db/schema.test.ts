@@ -11,6 +11,7 @@ const expectedTables = [
   'organizers',
   'payments',
   'profiles',
+  'seo_routes',
   'ticket_types',
   'tickets',
 ];
@@ -61,7 +62,7 @@ describe('migraciones y seed', () => {
     expect(result.rows.map((row) => row.slug)).toEqual(eventTypeSlugs);
   });
 
-  it('crea 4 temas y 3 ciudades', async () => {
+  it('crea 14 temas y 3 ciudades', async () => {
     const result = await db.query<{ kind: string; total: number }>(
       `select kind, count(*)::int as total from public.categories
        where kind in ('topic', 'location') group by kind order by kind`,
@@ -69,11 +70,45 @@ describe('migraciones y seed', () => {
 
     expect(result.rows).toEqual([
       { kind: 'location', total: 3 },
-      { kind: 'topic', total: 4 },
+      { kind: 'topic', total: 14 },
     ]);
   });
 
-  it('publica 10 eventos DEMO: 5 gratuitos y 5 de pago, 6 presenciales y 4 virtuales', async () => {
+  it('registra las 128 rutas del árbol del Excel, sin organizadores y con modalidad sin indexar', async () => {
+    const result = await db.query<{ kind: string; total: number; sin_indexar: number }>(
+      `select kind, count(*)::int as total, count(*) filter (where not is_indexable)::int as sin_indexar
+       from public.seo_routes group by kind order by kind`,
+    );
+    const organizadores = await db.query<{ total: number }>(
+      `select count(*)::int as total from public.seo_routes where path in ('/claude/', '/copa/')`,
+    );
+
+    expect(result.rows).toEqual([
+      { kind: 'event_type', total: 12, sin_indexar: 0 },
+      { kind: 'location', total: 3, sin_indexar: 0 },
+      { kind: 'modality', total: 76, sin_indexar: 76 },
+      { kind: 'subtopic', total: 33, sin_indexar: 0 },
+      { kind: 'topic', total: 4, sin_indexar: 0 },
+    ]);
+    expect(organizadores.rows[0].total).toBe(0);
+  });
+
+  it('cada evento con tema tiene su subtema en el árbol del Excel', async () => {
+    const result = await db.query<{ sin_ruta: number }>(
+      `select count(*)::int as sin_ruta
+       from public.events e
+       join public.categories tipo on tipo.id = e.event_type_id
+       join public.categories tema on tema.id = e.topic_id
+       where not exists (
+         select 1 from public.seo_routes r
+         where r.path = '/' || tipo.slug || '/' || tema.slug || '/' and r.kind = 'subtopic'
+       )`,
+    );
+
+    expect(result.rows[0].sin_ruta).toBe(0);
+  });
+
+  it('publica 50 eventos DEMO: 24 gratuitos y 26 de pago, 29 presenciales y 21 virtuales', async () => {
     const events = await db.query<{
       total: number;
       demo: number;
@@ -101,8 +136,8 @@ describe('migraciones y seed', () => {
        ) priced`,
     );
 
-    expect(events.rows[0]).toEqual({ total: 10, demo: 10, presencial: 6, virtual: 4, cities: 3 });
-    expect(prices.rows[0]).toEqual({ gratuitos: 5, pago: 5 });
+    expect(events.rows[0]).toEqual({ total: 50, demo: 50, presencial: 29, virtual: 21, cities: 3 });
+    expect(prices.rows[0]).toEqual({ gratuitos: 24, pago: 26 });
   });
 
   it('da al menos un tipo de entrada a cada evento del seed', async () => {
@@ -128,14 +163,21 @@ describe('migraciones y seed', () => {
   it('volver a ejecutar el seed no duplica filas', async () => {
     await db.exec(seedSql);
 
-    const result = await db.query<{ categorias: number; eventos: number; entradas: number; organizadores: number }>(
+    const result = await db.query<{
+      categorias: number;
+      eventos: number;
+      entradas: number;
+      organizadores: number;
+      rutas: number;
+    }>(
       `select
          (select count(*)::int from public.categories) as categorias,
          (select count(*)::int from public.events) as eventos,
          (select count(*)::int from public.ticket_types) as entradas,
-         (select count(*)::int from public.organizers) as organizadores`,
+         (select count(*)::int from public.organizers) as organizadores,
+         (select count(*)::int from public.seo_routes) as rutas`,
     );
 
-    expect(result.rows[0]).toEqual({ categorias: 19, eventos: 10, entradas: 13, organizadores: 2 });
+    expect(result.rows[0]).toEqual({ categorias: 29, eventos: 50, entradas: 56, organizadores: 3, rutas: 128 });
   });
 });

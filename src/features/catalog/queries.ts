@@ -3,7 +3,16 @@ import { cache } from 'react';
 import { createPublicClient } from '@/lib/supabase/public';
 
 import { isFree } from './format';
-import type { CatalogCategory, CatalogEvent, CatalogTaxonomy, EventMode } from './types';
+import type {
+  CatalogCategory,
+  CatalogEvent,
+  CatalogRoute,
+  CatalogRouteKind,
+  CatalogTaxonomy,
+  EventMode,
+} from './types';
+
+type RouteRow = { path: string; kind: CatalogRouteKind; is_indexable: boolean };
 
 /** Forma que devuelve PostgREST con las relaciones de events (hints por nombre de FK). */
 type EventRow = {
@@ -30,7 +39,7 @@ const eventSelect = `
 `;
 
 /** Límite de eventos que lee el catálogo. El filtrado se hace en memoria (D-22). */
-const CATALOG_EVENT_LIMIT = 200;
+export const CATALOG_EVENT_LIMIT = 200;
 
 export type HomeCatalog =
   | {
@@ -43,7 +52,7 @@ export type HomeCatalog =
   | { status: 'unavailable' };
 
 export type CatalogListing =
-  | { status: 'ok'; events: CatalogEvent[]; taxonomy: CatalogTaxonomy }
+  | { status: 'ok'; events: CatalogEvent[]; taxonomy: CatalogTaxonomy; truncated: boolean }
   | { status: 'unavailable' };
 
 function mapEvent(row: EventRow): CatalogEvent | null {
@@ -120,7 +129,7 @@ export const getCatalogListing = cache(async (): Promise<CatalogListing> => {
     return { status: 'unavailable' };
   }
 
-  const [eventsResult, categoriesResult] = await Promise.all([
+  const [eventsResult, categoriesResult, routesResult] = await Promise.all([
     client
       .from('events')
       .select(eventSelect)
@@ -133,9 +142,13 @@ export const getCatalogListing = cache(async (): Promise<CatalogListing> => {
       .select('slug, name, kind')
       .in('kind', ['event_type', 'topic', 'location'])
       .order('sort_order', { ascending: true }),
+    client
+      .from('seo_routes')
+      .select('path, kind, is_indexable')
+      .order('sort_order', { ascending: true }),
   ]);
 
-  if (eventsResult.error || categoriesResult.error) {
+  if (eventsResult.error || categoriesResult.error || routesResult.error) {
     return { status: 'unavailable' };
   }
 
@@ -144,18 +157,26 @@ export const getCatalogListing = cache(async (): Promise<CatalogListing> => {
     categories
       .filter((category) => category.kind === kind)
       .map(({ slug, name }) => ({ slug, name }));
+  const routes: CatalogRoute[] = ((routesResult.data ?? []) as RouteRow[]).map((row) => ({
+    path: row.path,
+    kind: row.kind,
+    isIndexable: row.is_indexable,
+  }));
 
-  const events = ((eventsResult.data ?? []) as unknown as EventRow[])
+  const rows = (eventsResult.data ?? []) as unknown as EventRow[];
+  const events = rows
     .map(mapEvent)
     .filter((event): event is CatalogEvent => event !== null);
 
   return {
     status: 'ok',
     events,
+    truncated: rows.length >= CATALOG_EVENT_LIMIT,
     taxonomy: {
       eventTypes: byKind('event_type'),
       topics: byKind('topic'),
       locations: byKind('location'),
+      routes,
     },
   };
 });

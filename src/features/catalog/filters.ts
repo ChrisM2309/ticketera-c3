@@ -1,5 +1,5 @@
 import { isFree, isPaid } from './format';
-import type { CatalogScope } from './routes';
+import type { CatalogModality, CatalogScope } from './routes';
 import type { CatalogEvent, EventMode } from './types';
 
 export type PriceFilter = 'gratis' | 'pago';
@@ -86,7 +86,18 @@ function matchesScope(event: CatalogEvent, scope: CatalogScope): boolean {
       return (
         event.eventType.slug === scope.eventType.slug && event.topic?.slug === scope.topic.slug
       );
+    case 'modality':
+      return (
+        event.eventType.slug === scope.eventType.slug &&
+        event.topic?.slug === scope.topic.slug &&
+        matchesModality(event, scope.modality)
+      );
   }
+}
+
+/** /virtual/ y /presencial/ comparan la modalidad; /gratis/ compara el precio (árbol de SEO_ROUTES.md, sección 3). */
+function matchesModality(event: CatalogEvent, modality: CatalogModality): boolean {
+  return modality === 'gratis' ? isFree(event.ticketTypes) : event.mode === modality;
 }
 
 function matchesFilters(event: CatalogEvent, filters: CatalogFilters, now: Date): boolean {
