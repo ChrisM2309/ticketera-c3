@@ -3,10 +3,10 @@ import { expect, test } from '@playwright/test';
 test('home muestra la identidad demo del proyecto', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page).toHaveTitle('Ticketera C3 · DEMO');
+  await expect(page).toHaveTitle('Boletos para eventos tecnológicos en El Salvador · Ticketera C3 · DEMO');
   await expect(
     page.getByRole('heading', {
-      name: 'Explorá eventos tecnológicos en El Salvador',
+      name: 'Boletos para eventos tecnológicos en El Salvador',
     }),
   ).toBeVisible();
 });

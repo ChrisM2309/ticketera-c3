@@ -42,14 +42,15 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
     return {};
   }
 
+  const hasEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, new Date()).length > 0;
+  // Sin eventos próximos, o en una ruta de modalidad sin contenido, la página no se indexa (D-24, D-25).
+  const indexable = isCatalogRouteIndexable(segments, listing.taxonomy) && hasEvents;
+
   return {
     title: scopeTitle(scope),
     description: scopeIntro(scope),
     alternates: { canonical: scopePath(scope) },
-    // Modalidad y precio no se indexan hasta tener contenido (D-24).
-    robots: isCatalogRouteIndexable(segments, listing.taxonomy)
-      ? undefined
-      : { index: false, follow: true },
+    robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 

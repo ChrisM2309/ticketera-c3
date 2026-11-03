@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CategoryTile } from '@/components/catalog/category-tile';
@@ -8,6 +9,12 @@ import type { CatalogEvent } from '@/features/catalog/types';
 import { eventPath } from '@/features/catalog/paths';
 
 export const revalidate = 60;
+
+/** Palabra clave del Excel «boletos para el salvador» (SEO_ROUTES.md, sección 5). */
+export const metadata: Metadata = {
+  title: 'Boletos para eventos tecnológicos en El Salvador',
+  alternates: { canonical: '/' },
+};
 
 function EventGrid({ events, empty }: Readonly<{ events: CatalogEvent[]; empty: string }>) {
   if (events.length === 0) {
@@ -44,7 +51,7 @@ export default async function Home() {
       <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pt-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-center md:px-6 md:pt-16">
         <div className="flex flex-col gap-6">
           <h1 className="font-titulo text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
-            Explorá eventos tecnológicos en El Salvador
+            Boletos para eventos tecnológicos en El Salvador
           </h1>
           <p className="max-w-xl text-lg leading-relaxed text-texto-suave">
             Congresos, hackathons y workshops, presenciales o en línea. Compra tu entrada en pocos pasos.
