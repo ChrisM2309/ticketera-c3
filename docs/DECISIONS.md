@@ -20,6 +20,7 @@
 | D-16 | Verificación de base de datos con PGlite en Vitest (`tests/db`), sin Docker | Cerrada | PGlite es Postgres real en WASM y corre en cualquier máquina. Supabase local (`supabase db reset`, `supabase test db`) queda como verificación adicional cuando Docker esté activo y se vincule un proyecto |
 | D-17 | El seed no crea cuentas de Auth ni contraseñas; los organizadores DEMO no tienen propietario | Cerrada | Ninguna credencial en el repositorio. Las cuentas de prueba llegan con T14 |
 | D-18 | No sembrar las páginas de organizador `/claude/` y `/copa/` del Excel | Propuesta técnica | Sus nombres pueden coincidir con marcas reales; SEO_ROUTES.md pide verificarlos antes de mostrarlos como entidades. Se activarán tras esa verificación |
+| D-19 | El Home lee el catálogo con la clave pública `anon` por PostgREST, sin `service_role` en el cliente, y se regenera cada 60 s | Propuesta técnica | Cumple RLS: el público solo recibe eventos publicados. Sin variables de entorno la página muestra un estado de error en lugar de datos falsos |
 
 ## Pendientes que no bloquean inicio
 

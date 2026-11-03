@@ -96,6 +96,12 @@ body {
   font-family: var(--font-texto), system-ui, sans-serif;
 }
 
+/* La selección de texto también sigue la paleta de C3. */
+::selection {
+  background-color: var(--crea);
+  color: var(--navy);
+}
+
 /* El foco de teclado siempre es visible; nunca se elimina. */
 :focus-visible {
   outline: 3px solid var(--foco);
