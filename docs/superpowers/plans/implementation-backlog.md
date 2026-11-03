@@ -18,7 +18,7 @@
 | ID | Área | Funcionalidad | Prioridad | Depende de | Estado |
 |---|---|---|---|---|---|
 | T01 | Fundamentos | Proyecto Next.js y herramientas | P0 | — | Terminado |
-| T02 | Fundamentos | Diseño base, navegación, responsive | P0 | T01 | Pendiente |
+| T02 | Fundamentos | Diseño base, navegación, responsive | P0 | T01 | Terminado |
 | T03 | Datos | Supabase, migraciones, RLS y seed | P0 | T01 | Pendiente |
 | T04 | Catálogo | Home con datos reales de demo | P0 | T02, T03 | Pendiente |
 | T05 | Catálogo | Categorías, rutas y filtros | P0 | T03, T04 | Pendiente |
@@ -185,3 +185,4 @@ Completar de forma incremental, sin estimaciones inventadas:
 | Tarea | Evidencia (PR/commit, comando, captura o prueba) | Observaciones/bloqueos |
 |---|---|---|
 | T01 | Scaffold Next.js 16.4.4 en `src/`, TypeScript estricto, Tailwind/PostCSS, shadcn/ui, scripts npm, `.env.example`, estructura de features y pruebas; `npm run lint` (0), `npm run typecheck` (0), `npm test -- --run` (2/2), `npm run build` (0; `/` y `/_not-found`), `npm run test:e2e -- --list` (1 smoke), servidor dev HTTP 200 | Playwright queda configurado; la ejecución con navegador real se valida en T13. No se versionan secretos. |
+| T02 | Tokens C3 v2 en `globals.css` (`@theme inline`, tema oscuro en cabecera y pie); Montserrat y Poppins con `next/font/google`; cabecera con logo a Home, búsqueda visible, distintivo DEMO, 12 categorías en orden del Excel y menú móvil con `aria-expanded`; pie DEMO; `npm run lint` (0), `npm run typecheck` (0), `npm test -- --run` (6/6), `npm run build` (0; `/` y `/_not-found`). Revisión en navegador (producción local): 375 px sin desbordamiento horizontal, botón de menú de 44 px, panel con 12 categorías y 3 enlaces de cuenta, foco visible con teclado y textos con contraste ≥5.2:1 | Enlaces a categorías, `/buscar`, `/publicar`, `/mis-boletos` y `/carrito` aún no tienen ruta: responden 404 hasta T05, T15, T14 y T08. El pie no lleva enlaces legales porque esas páginas no existen. Sin prueba con lector de pantalla. Decisión: D-14. |

@@ -15,6 +15,7 @@
 | D-11 | Comisión demostrativa configurable | Propuesta técnica | Fuentes no establecen porcentaje definitivo |
 | D-12 | Correo transaccional externo no obligatorio v1 | Propuesta técnica | Garantizar boleto descargable y recuperable con enlace seguro; email opcional |
 | D-13 | No publicar 134 páginas vacías | Cerrada | SEO: evitar contenido vacío, cumplir rutas mediante templates |
+| D-14 | Tokens C3 como variables CSS mapeadas con `@theme inline`; cabecera y pie en `data-theme="oscuro"`; texto de la etiqueta DEMO derivado por tema (`--sobre-advertencia`); fuentes con `next/font/google` | Cerrada | Aplica el design system C3 v2 sin hojas externas; la navegación navy usa el tema oscuro y la etiqueta DEMO cumple contraste en ambos temas |
 
 ## Pendientes que no bloquean inicio
 

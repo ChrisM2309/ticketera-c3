@@ -5,20 +5,6 @@ export const siteConfig = {
   locale: 'es-SV',
   description:
     'Descubrí eventos tecnológicos en El Salvador y encontrá tu próxima experiencia de aprendizaje.',
-  categorySlugs: [
-    'congresos',
-    'competencias',
-    'networking',
-    'workshops',
-    'bootcamps',
-    'concursos',
-    'webinars',
-    'conferencias',
-    'hackathons',
-    'meetups',
-    'charlas',
-    'ferias-tecnologicas',
-  ],
 } as const;
 
 export type SiteConfig = typeof siteConfig;
