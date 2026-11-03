@@ -110,6 +110,20 @@ Estado confirmado, número de orden no secuencial, una tarjeta por boleto con QR
 ### Publicar evento / admin
 Formulario de 2 pasos (información y entradas), vista previa y envío a revisión. Admin: tabla de pendientes con aprobar/rechazar. Organizador: lista de sus eventos y total de registros; sin estadísticas avanzadas.
 
+## Reglas de calidad de interfaz (Impeccable)
+
+Estas reglas salen de la skill `impeccable` del plugin de Impeccable (`pbakaus/impeccable`) y aplican a toda interfaz nueva o cambio visual. No definen la dirección visual: esa la marcan los tokens de marca y este documento.
+
+- **Sin kicker ni etiqueta sobre títulos.** La categoría de un evento va debajo del título, como dato.
+- **Sin bordes de color laterales.** `border-left` o `border-right` de más de 1 px no se usan en tarjetas, listas ni avisos. La perforación del boleto es de 1 px punteado.
+- **Movimiento con intención.** No hay animación por tarjeta al pasar el cursor. El movimiento responde a una acción del usuario o marca un solo momento principal.
+- **Sin efectos decorativos.** Nada de texto con degradado, sombras duras sin desenfoque ni cristal decorativo.
+- **Precios limpios.** Montos enteros sin decimales (`Desde $10`). Decimales solo cuando existen (`$10.50`).
+- **Copy sin tecnicismos.** Los botones dicen la acción; los errores dicen qué pasó y qué hacer. La UI no menciona bases de datos ni sistemas internos.
+- **Selección y foco en la paleta.** La selección de texto usa `crea` y `navy` (en `globals.css`). El anillo de foco es siempre visible.
+- **Revisión antes de dar por terminado un cambio de UI.** Revisar en escritorio y en móvil (375 px) y correr el detector sobre los archivos cambiados: `impeccable detect --json <archivos>`.
+- **Contexto de producto pendiente.** Falta `PRODUCT.md`. Para rediseños o nuevas superficies, primero hay que capturarlo con `/impeccable init`.
+
 ## Cómo se mantiene este documento
 
 - Cambios de tokens: primero en el design system C3 (Artifacts), luego aquí y en `project/ds/c3/tokens.json` del canvas.
