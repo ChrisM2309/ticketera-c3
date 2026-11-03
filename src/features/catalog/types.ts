@@ -1,8 +1,18 @@
 export type EventMode = 'presencial' | 'virtual';
 
+export type EventStatus = 'draft' | 'pending' | 'published' | 'archived' | 'rejected';
+
 export type CatalogTicketType = {
   priceCents: number;
   isActive: boolean;
+};
+
+export type CatalogEventTicket = CatalogTicketType & {
+  id: string;
+  name: string;
+  quantityTotal: number;
+  quantitySold: number;
+  maxPerOrder: number;
 };
 
 export type CatalogEvent = {
@@ -17,6 +27,16 @@ export type CatalogEvent = {
   location: { slug: string; name: string } | null;
   organizer: { name: string } | null;
   ticketTypes: CatalogTicketType[];
+};
+
+export type CatalogEventDetail = Omit<CatalogEvent, 'ticketTypes' | 'topic'> & {
+  description: string;
+  agenda: string | null;
+  endsAt: string | null;
+  imagePath: string | null;
+  status: EventStatus;
+  topic: { slug: string; name: string } | null;
+  ticketTypes: CatalogEventTicket[];
 };
 
 export type CatalogCategory = {

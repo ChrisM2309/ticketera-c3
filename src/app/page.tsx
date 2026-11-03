@@ -7,12 +7,15 @@ import { buttonVariants } from '@/components/ui/button';
 import { getHomeCatalog } from '@/features/catalog/queries';
 import type { CatalogEvent } from '@/features/catalog/types';
 import { eventPath } from '@/features/catalog/paths';
+import { siteConfig } from '@/lib/site-config';
 
 export const revalidate = 60;
 
 /** Palabra clave del Excel «boletos para el salvador» (SEO_ROUTES.md, sección 5). */
 export const metadata: Metadata = {
-  title: 'Boletos para eventos tecnológicos en El Salvador',
+  title: siteConfig.isDemo
+    ? 'Boletos para eventos tecnológicos en El Salvador · Ticketera C3 · DEMO'
+    : 'Boletos para eventos tecnológicos en El Salvador',
   alternates: { canonical: '/' },
 };
 
