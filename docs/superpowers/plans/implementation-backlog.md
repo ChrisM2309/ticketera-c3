@@ -1,0 +1,187 @@
+# Backlog de implementación — Ticketera C3
+
+**Organización:** por áreas y funcionalidades, **sin fechas ni duración asignada**.  
+**Objetivo:** terminar funcionalidades verificables y avanzar según disponibilidad, sin perder el flujo completo de compra.  
+**Agentes:** documento compartido para Codex, Claude Code o cualquier herramienta que lea `AGENTS.md`.
+
+## Cómo usar este backlog
+
+- **P0 — Núcleo:** necesario para que el visitante complete el recorrido de compra con datos persistidos y QR.
+- **P1 — Marketplace mínimo:** publicación por organizadores, revisión y gestión mínima.
+- **P-A — Entrega académica:** tareas necesarias para la rúbrica de Comercio Electrónico y Mercadeo Digital; pueden avanzar en paralelo al código.
+- **P2 — Opcional:** mejoras después de cumplir los criterios anteriores.
+- **Estados:** `Pendiente` → `En curso` → `Bloqueado` / `En revisión` → `Terminado`. Al terminar, registrar evidencia o comando de prueba; no marcar por estimación.
+- Una tarea está **disponible** cuando sus dependencias están completas. Se puede cambiar el orden de tareas independientes; el orden de las áreas es una sugerencia, no un calendario.
+
+## Tablero maestro
+
+| ID | Área | Funcionalidad | Prioridad | Depende de | Estado |
+|---|---|---|---|---|---|
+| T01 | Fundamentos | Proyecto Next.js y herramientas | P0 | — | Terminado |
+| T02 | Fundamentos | Diseño base, navegación, responsive | P0 | T01 | Pendiente |
+| T03 | Datos | Supabase, migraciones, RLS y seed | P0 | T01 | Pendiente |
+| T04 | Catálogo | Home con datos reales de demo | P0 | T02, T03 | Pendiente |
+| T05 | Catálogo | Categorías, rutas y filtros | P0 | T03, T04 | Pendiente |
+| T06 | SEO | Metadatos, sitemap y reglas de indexación | P0 | T05 | Pendiente |
+| T07 | Catálogo | Ficha del evento y selección de entradas | P0 | T03, T05 | Pendiente |
+| T08 | Compra | Carrito de un evento | P0 | T07 | Pendiente |
+| T09 | Compra | Datos de comprador y creación de orden | P0 | T03, T08 | Pendiente |
+| T10 | Compra | Confirmación transaccional e inventario | P0 | T09 | Pendiente |
+| T11 | Compra | Pagos demo gratis/aprobado/rechazado | P0 | T10 | Pendiente |
+| T12 | Boletos | Confirmación, QR y descarga | P0 | T11 | Pendiente |
+| T13 | Pruebas | Flujo de compra end-to-end | P0 | T12 | Pendiente |
+| T14 | Organizadores | Inicio de sesión y roles | P1 | T03 | Pendiente |
+| T15 | Organizadores | Formulario de publicación de evento | P1 | T07, T14 | Pendiente |
+| T16 | Administración | Revisión, aprobación y gestión mínima | P1 | T15 | Pendiente |
+| T17 | Calidad | Revisión funcional, seguridad y responsive | P0 | T13; T16 para B2B | Pendiente |
+| T18 | Publicación | Vercel, variables y dominio existente | P0 | T01; validar al final con T17 | Pendiente |
+| T19 | Evidencias | Pruebas de usabilidad y competidores | P-A | T04, T05, T07, T12 | Pendiente |
+| T20 | Evidencias | Wireframes y justificación visual | P-A | T02; revisar tras T19 | Pendiente |
+| T21 | Evidencias | SEO y marketing documental | P-A | T05, T06 | Pendiente |
+| T22 | Presentación | Capturas, video de compra y respaldo | P-A | T13, T18, T19, T20, T21 | Pendiente |
+
+## Área A — Fundamentos y sistema visual
+
+### T01 · Inicializar proyecto [P0]
+**Qué hacer:** Next.js App Router, TypeScript `strict`, Tailwind, shadcn/ui; configurar estructura `src/`, scripts `dev`, `build`, `lint`, `typecheck`, `test`, `test:e2e`; `.env.example` y `.gitignore`. Mantener documentación en la raíz.
+
+**Terminado cuando:** el proyecto arranca y `build`, `lint` y `typecheck` funcionan; no hay secretos versionados.
+
+### T02 · Aplicar marca y layout [P0]
+**Qué hacer:** tokens de marca del manual C3, tipografías, header/footer, navegación por categorías, búsqueda visible, distintivo `Proyecto académico / DEMO`, componentes reutilizables y responsive.
+
+**Terminado cuando:** el logo lleva al Home, no hay enlace «Inicio», el menú es usable en móvil y se revisa contraste/teclado.
+
+## Área B — Base de datos y catálogo
+
+### T03 · Supabase, esquema y datos semilla [P0]
+**Qué hacer:** migraciones para perfiles, organizadores, categorías/temas, eventos, tipos de entrada, órdenes, partidas, pagos y boletos; RLS y funciones transaccionales necesarias; seed de **12 categorías y 8–10 eventos DEMO** (gratis/pago, presencial/virtual, varias ciudades).
+
+**Terminado cuando:** las migraciones se aplican desde cero, el seed se reproduce y un usuario público solo lee eventos `published`.
+
+### T04 · Home orientado a venta [P0]
+**Qué hacer:** evento destacado, próximos eventos, buscador/filtros rápidos, categorías ordenadas por volumen según Excel, eventos gratuitos y CTA «Publicar evento».
+
+**Terminado cuando:** se muestran eventos de Supabase y todos los enlaces conducen a rutas funcionales.
+
+### T05 · Categorías, filtros y URLs [P0]
+**Qué hacer:** resolvedor dinámico de tipos/temas/subcategorías según `docs/architecture/SEO_ROUTES.md`; filtros por ciudad, modalidad, fecha, tema y precio; breadcrumbs, resultados y estados vacíos.
+
+**Terminado cuando:** `/congresos/` y `/congresos/inteligencia-artificial/` funcionan; rutas inexistentes devuelven 404; las 12 categorías son navegables.
+
+### T06 · SEO técnico y on-page [P0]
+**Qué hacer:** title, description, H1, canonical, sitemap, robots, datos estructurados Event cuando corresponde y `noindex` en privadas/sin contenido y demos que no deben presentarse como eventos reales.
+
+**Terminado cuando:** metadatos renderizados son correctos y las rutas no indexables quedan excluidas del sitemap.
+
+### T07 · Ficha del evento [P0]
+**Qué hacer:** foto, fecha y horario, modalidad/lugar, organizador, agenda, ponentes cuando existan, precio, cupos, tipos de entrada, relacionados y CTA visible.
+
+**Terminado cuando:** se puede escoger tipo y cantidad válidos; el servidor rechaza eventos no publicados o sin cupos.
+
+## Área C — Carrito, checkout y emisión de boletos
+
+### T08 · Carrito [P0]
+**Qué hacer:** carrito de **un evento por orden**, con varios tipos de boleto; editar cantidades, eliminar, ver subtotal/comisión/total provisional; persistencia local temporal.
+
+**Terminado cuando:** cantidades y límites se validan y el cálculo se comprueba con pruebas unitarias.
+
+### T09 · Crear orden como invitado [P0]
+**Qué hacer:** formulario accesible, nombre y email requeridos, validación de servidor, recálculo de precios en centavos, `order_items` con snapshot del importe.
+
+**Terminado cuando:** se guarda una orden pendiente correcta sin exigir cuenta y sin confiar en totales enviados por cliente.
+
+### T10 · Confirmación transaccional [P0]
+**Qué hacer:** función SQL/RPC atómica que valida inventario, confirma orden y emite boletos sin duplicados. Garantizar idempotencia y manejar concurrencia.
+
+**Terminado cuando:** doble clic/reintento no genera boletos adicionales; no hay sobreventa en pruebas de concurrencia.
+
+### T11 · Pago de demostración [P0]
+**Qué hacer:** registro gratuito sin pasarela; resultado de pago demo aprobado/rechazado mediante servidor; mensajes claros, sin campos bancarios ni cobro real.
+
+**Terminado cuando:** gratuito y aprobado producen boletos; rechazado deja orden fallida y **cero boletos**. Se persisten los tres estados.
+
+### T12 · Confirmación y QR [P0]
+**Qué hacer:** página de confirmación por token seguro, número de orden, QR no adivinable por boleto, descarga/impresión y recuperación mediante enlace; compartir evento de forma opcional.
+
+**Terminado cuando:** la compra muestra QR válido y una persona no puede enumerar ni ver órdenes ajenas.
+
+### T13 · Pruebas del flujo [P0]
+**Qué hacer:** Playwright u otra herramienta E2E para Home → categoría → evento → compra → confirmación; gratis, demo aprobado y demo rechazado, más uso móvil.
+
+**Terminado cuando:** los tres escenarios pasan y se registran pruebas reales en `docs/testing/ACCEPTANCE.md`.
+
+**Punto de control funcional:** al cerrar T01–T13 ya se puede demostrar la venta completa. No esperar a tener el dashboard para validar compras.
+
+## Área D — Marketplace del organizador y administrador
+
+### T14 · Autenticación y roles [P1]
+**Qué hacer:** login para organizadores, permisos en servidor, rol admin y políticas RLS.
+
+**Terminado cuando:** se bloquean rutas privadas sin sesión y cada usuario solo accede a lo autorizado.
+
+### T15 · Publicar evento [P1]
+**Qué hacer:** formulario simple para nombre, descripción, portada, fecha/hora, modalidad, lugar, categoría, tema y tipo(s) de entradas; guardar como `pending`; vista de eventos propios y estado.
+
+**Terminado cuando:** el organizador crea un evento y este no es visible públicamente antes de aprobación.
+
+### T16 · Moderación mínima [P1]
+**Qué hacer:** tabla de eventos pendientes, aprobar/rechazar y consulta básica de órdenes; el organizador ve conteos de registros de sus propios eventos.
+
+**Terminado cuando:** admin publica y aparece en catálogo; un organizador no puede aprobar ni editar eventos ajenos.
+
+## Área E — Calidad, publicación y pruebas académicas
+
+### T17 · Revisión integral [P0]
+**Qué hacer:** compilar, lint, typecheck, pruebas, accesibilidad básica, 404/errores, imágenes, permisos, seguridad, SEO y recorrido móvil. Revisar la parte B2B cuando T16 esté terminada.
+
+**Terminado cuando:** se registra evidencia verificable, fallos pendientes y su resolución; ningún flujo P0 roto.
+
+### T18 · Publicación en Vercel [P0]
+**Qué hacer:** vincular repositorio, variables de entorno, preview y producción; conectar dominio ya existente y HTTPS cuando esté disponible.
+
+**Terminado cuando:** catálogo y compra demo funcionan en el deployment público; no se filtran credenciales.
+
+### T19 · Investigación UX y benchmarking [P-A]
+**Qué hacer:** documentar competencia con capturas/URLs y estudiar el flujo. Realizar test con **5 usuarios, 3 tareas** y métricas de éxito, tiempo y errores, según presentación del equipo.
+
+**Terminado cuando:** hay resultados reales anonimizados, hallazgos y cambios concretos; no se inventan entrevistas ni métricas.
+
+### T20 · Wireframes y justificación de diseño [P-A]
+**Qué hacer:** elaborar las cinco pantallas pedidas (Home, Categoría, Producto, Carrito/Pasarela, Confirmación) en desktop o móvil, explicando decisiones con buyer personas, SEO, competencia y hallazgos del test.
+
+**Terminado cuando:** los cinco wireframes coinciden con el comportamiento de la web y tienen una justificación documentada.
+
+### T21 · Respaldo SEO y marketing [P-A]
+**Qué hacer:** registrar keyword research y árbol; documentar on-page SEO, canales por buyer persona, objetivos SMART, distribución de presupuesto, captación orgánica y proyección de visitas, conversiones, ventas, ticket promedio y ROAS. No inventar datos medidos: señalar supuestos.
+
+**Terminado cuando:** cada apartado exigido en rúbrica tiene fundamento y evidencia documentada.
+
+### T22 · Presentación y demo [P-A]
+**Qué hacer:** capturas comparativas, evidencias de compra, PPT y documentos de apoyo; grabar video corto con compra completa como respaldo. Priorizar explicación comercial/UX/SEO sobre detalles técnicos.
+
+**Terminado cuando:** hay presentación, anexos y demo operativa respaldada, sin afirmaciones de mediciones inexistentes.
+
+## Área F — Opcionales [P2, no bloquean entrega]
+
+- Correo transaccional con boleto, newsletter opt-in.
+- Calendario `.ics`, compartir en WhatsApp, métricas ampliadas.
+- Escaneo de QR para check-in y reportes adicionales.
+- Pasarela externa sandbox, **solo** si se vuelve un requisito explícito.
+- Carrito con múltiples eventos, payout de organizadores, analítica avanzada.
+
+## Reglas para avanzar entre tareas
+
+1. **Elegir por dependencias y prioridad, no por fecha.** Si una tarea se bloquea, registrar causa y tomar otra que esté disponible.
+2. **Trabajar por cortes verticales:** interfaz + persistencia + validación + prueba, evitando terminar solo pantallas vacías.
+3. **No llamar «terminado» a un mock visual.** El catálogo y el checkout requieren datos persistidos y reglas de servidor.
+4. **Actualizar el estado y evidencia** en este tablero al completar cada tarea. Registrar decisiones nuevas en `docs/DECISIONS.md`.
+5. **Mantener P-A paralelo:** la entrega académica exige investigación y marketing aunque el código ya funcione.
+
+## Registro de ejecución
+
+Completar de forma incremental, sin estimaciones inventadas:
+
+| Tarea | Evidencia (PR/commit, comando, captura o prueba) | Observaciones/bloqueos |
+|---|---|---|
+| T01 | Scaffold Next.js 16.4.4 en `src/`, TypeScript estricto, Tailwind/PostCSS, shadcn/ui, scripts npm, `.env.example`, estructura de features y pruebas; `npm run lint` (0), `npm run typecheck` (0), `npm test -- --run` (2/2), `npm run build` (0; `/` y `/_not-found`), `npm run test:e2e -- --list` (1 smoke), servidor dev HTTP 200 | Playwright queda configurado; la ejecución con navegador real se valida en T13. No se versionan secretos. |

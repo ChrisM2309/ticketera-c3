@@ -1,0 +1,54 @@
+# Modelo de datos mínimo (propuesta v1)
+
+## Tablas
+
+| Tabla | Campos principales | Notas |
+|---|---|---|
+| `profiles` | `id` (Auth UUID PK), `role` (`organizer`/`admin`), `display_name`, `created_at` | Rol administrado en servidor; nunca editable libremente |
+| `organizers` | `id`, `owner_user_id`, `name`, `slug`, `description`, `status` | Un usuario propietario por organizador v1 |
+| `categories` | `id`, `slug`, `name`, `keyword`, `search_volume`, `sort_order`, `kind` | `kind=event_type/topic/location/organizer`; conservar 21 rutas del Excel |
+| `topics` | `id`, `slug`, `name` | Temas reutilizables para taxonomía de eventos |
+| `seo_routes` | `id`, `path`, `kind`, `parent_path`, `keyword`, `search_volume`, `is_indexable` | Importación/snapshot de Excel; categorías, temas, modalidades |
+| `events` | `id`, `organizer_id`, `category_id`, `topic_id`, `slug`, `title`, `description`, `agenda`, `starts_at`, `ends_at`, `mode`, `city`, `venue`, `image_path`, `status`, `created_at` | Ruta pública compuesta categoría/tema/slug; solo `published` comprable |
+| `ticket_types` | `id`, `event_id`, `name`, `price_cents`, `quantity_total`, `quantity_sold`, `max_per_order`, `is_active` | Precio USD centavos; cupos no negativos |
+| `orders` | `id`, `public_token_hash`, `event_id`, `buyer_name`, `buyer_email`, `status`, `subtotal_cents`, `fee_cents`, `total_cents`, `created_at`, `confirmed_at` | Acceso guest por token secreto; guardar hash del token |
+| `order_items` | `id`, `order_id`, `ticket_type_id`, `unit_price_cents`, `quantity`, `line_total_cents` | Snapshot de precio para auditoría |
+| `payments` | `id`, `order_id`, `provider` (`demo`), `status`, `amount_cents`, `idempotency_key`, `created_at` | NO contiene datos de tarjetas |
+| `tickets` | `id`, `order_id`, `order_item_id`, `ticket_type_id`, `qr_token_hash`, `issued_at`, `checked_in_at` | Un registro por entrada; QR aleatorio seguro |
+
+**Opcional:** `event_speakers` si no es suficiente almacenar agenda estructurada JSON validada. Evitar tablas extra si no contribuyen a la entrega.
+
+## Relaciones
+
+`profiles 1:N organizers 1:N events 1:N ticket_types`; `events 1:N orders 1:N order_items`; `orders 1:N payments`; `order_items 1:N tickets`.
+
+## Restricciones esenciales
+
+- `price_cents >= 0`, `quantity_total >= 0`, `quantity_sold >= 0` y `quantity_sold <= quantity_total`.
+- `UNIQUE(events.organizer_id, events.slug)` y/o unique por URL pública compuesta.
+- `UNIQUE(seo_routes.path)` y `UNIQUE(categories.slug)` por ámbito; no duplicar rutas.
+- `UNIQUE(payments.idempotency_key)` y referencia transaccional que impida re-emitir tickets al reconfirmar una orden.
+- Asegurar que tickets asociados a una orden confirmada corresponden exactamente a las cantidades compradas.
+- `buyer_email` y nombre limitados; validación de formato y longitud.
+- Los datos del QR y token de confirmación no aparecen en listados públicos.
+
+## Seguridad de acceso (orientación RLS)
+
+- `events`, `ticket_types`: `SELECT` público **solo** cuando evento `published`; el propietario ve los suyos, incluido borrador/pending.
+- `organizers`: `SELECT` público limitado a datos publicados, escritura solo usuario propietario.
+- `orders`, `payments`, `tickets`: sin `SELECT` público directo. Lectura guest mediante route handler con token seguro y permisos controlados.
+- `profiles`: cada usuario lee su perfil; solo servidor/admin gestiona roles.
+- `seo_routes`, categorías/temas: lectura pública; escritura admin/migraciones únicamente.
+
+**No exponer service role al navegador.** Preferir funciones `SECURITY DEFINER` mínimas con verificaciones internas cuando haga falta operación atómica. Probar RLS con usuarios reales de prueba antes de exponer el deploy.
+
+## Datos demo iniciales
+
+- 12 categorías de tipos de evento (ordenadas según keyword research), 4 temas principales, 3 ciudades, 2 páginas de organizador del Excel.
+- 10 eventos **ficticios** identificados como demo; mezcla de `gratis`, precio bajo y precio mayor; virtual/presencial; tres ciudades; mínimo dos organizadores.
+- Al menos 3 tipos de boleto de demostración, uno gratuito y dos de pago; precios y fechas son **supuestos**, no datos de eventos reales.
+- Un administrador y dos organizadores de prueba (credenciales solo en entorno seguro, nunca en el repo).
+
+## Importación del Excel
+
+El archivo fuente tiene una sola pestaña `ARQUITECTURA ` y propone **1 + 21 + 36 + 76 = 134 URLs**. Se debe guardar un snapshot versionado con los slugs, y no deducir categorías por strings de título. `seo_routes` permite mantener taxonomía incluso si una ruta no se publica por falta de eventos.

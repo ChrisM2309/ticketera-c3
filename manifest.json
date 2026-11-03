@@ -1,0 +1,22 @@
+{
+  "project": "Ticketera C3",
+  "status": "planning-only",
+  "source_date": "2026-11-02",
+  "files": [
+    "AGENTS.md",
+    "README.md",
+    "docs/DECISIONS.md",
+    "docs/README.md",
+    "docs/architecture/DATA.md",
+    "docs/architecture/SEO_ROUTES.md",
+    "docs/architecture/SYSTEM.md",
+    "docs/checkout/DEMO_PAYMENT.md",
+    "docs/design/DESIGN.md",
+    "docs/product/PRD.md",
+    "docs/superpowers/plans/implementation-backlog.md",
+    "docs/superpowers/specs/2026-11-02-ticketera-design.md",
+    "docs/testing/ACCEPTANCE.md"
+  ],
+  "version": "2.0",
+  "planning": "backlog_by_functionality_without_dates"
+}
