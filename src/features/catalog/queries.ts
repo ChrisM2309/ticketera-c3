@@ -6,10 +6,12 @@ import { isFree } from './format';
 import type {
   CatalogCategory,
   CatalogEvent,
+  CatalogEventDetail,
   CatalogRoute,
   CatalogRouteKind,
   CatalogTaxonomy,
   EventMode,
+  EventStatus,
 } from './types';
 
 type RouteRow = { path: string; kind: CatalogRouteKind; is_indexable: boolean };
@@ -29,6 +31,34 @@ type EventRow = {
   ticket_types: { price_cents: number; is_active: boolean }[];
 };
 
+type EventDetailRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  agenda: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  event_type_id: string;
+  mode: EventMode;
+  venue: string | null;
+  image_path: string | null;
+  status: EventStatus;
+  event_type: { slug: string; name: string } | null;
+  topic: { slug: string; name: string } | null;
+  location: { slug: string; name: string } | null;
+  organizer: { name: string } | null;
+  ticket_types: {
+    id: string;
+    name: string;
+    price_cents: number;
+    quantity_total: number;
+    quantity_sold: number;
+    max_per_order: number;
+    is_active: boolean;
+  }[];
+};
+
 const eventSelect = `
   id, slug, title, starts_at, mode, venue,
   event_type:categories!events_event_type_fk(slug, name),
@@ -36,6 +66,15 @@ const eventSelect = `
   location:categories!events_location_fk(slug, name),
   organizer:organizers(name),
   ticket_types(price_cents, is_active)
+`;
+
+const eventDetailSelect = `
+  id, slug, title, description, agenda, starts_at, ends_at, event_type_id, mode, venue, image_path, status,
+  event_type:categories!events_event_type_fk(slug, name),
+  topic:categories!events_topic_fk(slug, name),
+  location:categories!events_location_fk(slug, name),
+  organizer:organizers(name),
+  ticket_types(id, name, price_cents, quantity_total, quantity_sold, max_per_order, is_active)
 `;
 
 /** Límite de eventos que lee el catálogo. El filtrado se hace en memoria (D-22). */
@@ -73,6 +112,39 @@ function mapEvent(row: EventRow): CatalogEvent | null {
     organizer: row.organizer,
     ticketTypes: row.ticket_types.map((ticket) => ({
       priceCents: ticket.price_cents,
+      isActive: ticket.is_active,
+    })),
+  };
+}
+
+function mapEventDetail(row: EventDetailRow): CatalogEventDetail | null {
+  if (!row.event_type) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    agenda: row.agenda,
+    startsAt: row.starts_at,
+    endsAt: row.ends_at,
+    mode: row.mode,
+    venue: row.venue,
+    imagePath: row.image_path,
+    status: row.status,
+    eventType: row.event_type,
+    topic: row.topic,
+    location: row.location,
+    organizer: row.organizer,
+    ticketTypes: row.ticket_types.map((ticket) => ({
+      id: ticket.id,
+      name: ticket.name,
+      priceCents: ticket.price_cents,
+      quantityTotal: ticket.quantity_total,
+      quantitySold: ticket.quantity_sold,
+      maxPerOrder: ticket.max_per_order,
       isActive: ticket.is_active,
     })),
   };
@@ -179,4 +251,58 @@ export const getCatalogListing = cache(async (): Promise<CatalogListing> => {
       routes,
     },
   };
+});
+
+export type EventDetailResult =
+  | { status: 'ok'; event: CatalogEventDetail; related: CatalogEvent[] }
+  | { status: 'not_found' }
+  | { status: 'unavailable' };
+
+/** Lee una ficha publicada, incluyendo eventos pasados para mostrar su estado final. */
+export const getEventDetail = cache(async (slug: string): Promise<EventDetailResult> => {
+  const client = createPublicClient();
+
+  if (!client) {
+    return { status: 'unavailable' };
+  }
+
+  const eventResult = await client
+    .from('events')
+    .select(eventDetailSelect)
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .maybeSingle();
+
+  if (eventResult.error) {
+    return { status: 'unavailable' };
+  }
+
+  if (!eventResult.data) {
+    return { status: 'not_found' };
+  }
+
+  const eventRow = eventResult.data as unknown as EventDetailRow;
+  const event = mapEventDetail(eventRow);
+
+  if (!event) {
+    return { status: 'not_found' };
+  }
+
+  const relatedResult = await client
+    .from('events')
+    .select(eventSelect)
+    .eq('status', 'published')
+    .eq('event_type_id', eventRow.event_type_id)
+    .neq('id', event.id)
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at', { ascending: true })
+    .limit(3);
+
+  const related = relatedResult.error
+    ? []
+    : ((relatedResult.data ?? []) as unknown as EventRow[])
+        .map(mapEvent)
+        .filter((item): item is CatalogEvent => item !== null);
+
+  return { status: 'ok', event, related };
 });

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
+import { EventDetailPage } from '@/features/catalog/event-detail';
 import {
   filterCatalogEvents,
   filtersForScope,
@@ -12,7 +13,7 @@ import {
   parseCatalogFilters,
   type SearchParams,
 } from '@/features/catalog/filters';
-import { CATALOG_EVENT_LIMIT, getCatalogListing } from '@/features/catalog/queries';
+import { CATALOG_EVENT_LIMIT, getCatalogListing, getEventDetail } from '@/features/catalog/queries';
 import {
   isCatalogRouteIndexable,
   resolveCatalogRoute,
@@ -22,43 +23,101 @@ import {
   scopeSubcategories,
   scopeTitle,
 } from '@/features/catalog/routes';
+import { eventPathMatches } from '@/features/catalog/paths';
+import { hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
+import { siteConfig } from '@/lib/site-config';
 
 type CatalogPageProps = Readonly<{
   params: Promise<{ segments: string[] }>;
   searchParams: Promise<SearchParams>;
 }>;
 
-export async function generateMetadata({ params }: CatalogPageProps): Promise<Metadata> {
-  const { segments } = await params;
+type PublicRoute =
+  | { kind: 'unavailable' }
+  | { kind: 'catalog'; listing: Extract<Awaited<ReturnType<typeof getCatalogListing>>, { status: 'ok' }>; scope: NonNullable<ReturnType<typeof resolveCatalogRoute>> }
+  | { kind: 'event'; event: Extract<Awaited<ReturnType<typeof getEventDetail>>, { status: 'ok' }>['event']; related: Extract<Awaited<ReturnType<typeof getEventDetail>>, { status: 'ok' }>['related'] }
+  | { kind: 'not_found' };
+
+async function resolvePublicRoute(segments: string[]): Promise<PublicRoute> {
   const listing = await getCatalogListing();
 
   if (listing.status === 'unavailable') {
-    return {};
+    return { kind: 'unavailable' };
   }
 
   const scope = resolveCatalogRoute(segments, listing.taxonomy);
 
-  if (!scope) {
+  if (scope) {
+    return { kind: 'catalog', listing, scope };
+  }
+
+  if (segments.length !== 2 && segments.length !== 3) {
+    return { kind: 'not_found' };
+  }
+
+  const eventResult = await getEventDetail(segments[segments.length - 1]);
+
+  if (eventResult.status === 'unavailable') {
+    return { kind: 'unavailable' };
+  }
+
+  if (eventResult.status === 'not_found' || !eventPathMatches(segments, eventResult.event)) {
+    return { kind: 'not_found' };
+  }
+
+  return { kind: 'event', event: eventResult.event, related: eventResult.related };
+}
+
+export async function generateMetadata({ params }: CatalogPageProps): Promise<Metadata> {
+  const { segments } = await params;
+  const route = await resolvePublicRoute(segments);
+
+  if (route.kind === 'unavailable' || route.kind === 'not_found') {
     return {};
   }
+
+  if (route.kind === 'event') {
+    const { event } = route;
+    const canonical = eventPathMatches(segments, event)
+      ? `/${segments.join('/')}/`
+      : undefined;
+    const noIndex = siteConfig.isDemo || isEventPast(event) || !hasAvailableTickets(event);
+    const image = event.imagePath && (event.imagePath.startsWith('/') || event.imagePath.startsWith('https://'))
+      ? event.imagePath
+      : undefined;
+
+    return {
+      title: event.title,
+      description: event.description,
+      alternates: canonical ? { canonical } : undefined,
+      robots: noIndex ? { index: false, follow: true } : undefined,
+      openGraph: {
+        title: event.title,
+        description: event.description,
+        images: image ? [image] : undefined,
+      },
+    };
+  }
+
+  const { listing, scope } = route;
+  const hasEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, new Date()).length > 0;
+  // Sin eventos próximos, o en una ruta de modalidad sin contenido, la página no se indexa (D-24, D-25).
+  const indexable = isCatalogRouteIndexable(segments, listing.taxonomy) && hasEvents;
 
   return {
     title: scopeTitle(scope),
     description: scopeIntro(scope),
     alternates: { canonical: scopePath(scope) },
-    // Modalidad y precio no se indexan hasta tener contenido (D-24).
-    robots: isCatalogRouteIndexable(segments, listing.taxonomy)
-      ? undefined
-      : { index: false, follow: true },
+    robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 
 /** Páginas de tipo, tema, ciudad y tipo + tema (SEO_ROUTES.md). Todo lo demás responde 404. */
 export default async function CatalogPage({ params, searchParams }: CatalogPageProps) {
   const { segments } = await params;
-  const listing = await getCatalogListing();
+  const route = await resolvePublicRoute(segments);
 
-  if (listing.status === 'unavailable') {
+  if (route.kind === 'unavailable') {
     return (
       <section className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-20 md:px-6">
         <h1 className="font-titulo text-3xl font-bold">No pudimos cargar el catálogo</h1>
@@ -67,11 +126,15 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
     );
   }
 
-  const scope = resolveCatalogRoute(segments, listing.taxonomy);
-
-  if (!scope) {
+  if (route.kind === 'not_found') {
     notFound();
   }
+
+  if (route.kind === 'event') {
+    return <EventDetailPage event={route.event} related={route.related} />;
+  }
+
+  const { listing, scope } = route;
 
   const now = new Date();
   const locationSlugs = listing.taxonomy.locations.map((location) => location.slug);
