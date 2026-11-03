@@ -1,6 +1,6 @@
 # Logotipos C3
 
-Archivos oficiales del logotipo de C3, tomados del design system «C3». Úsalos tal cual: no los rotes, deformes, recoloreés ni les apliques degradados o texturas.
+Archivos oficiales del logotipo de C3, tomados del design system «C3». Úsalos tal cual: no los rotes, deformes, recolorees ni les apliques degradados o texturas.
 
 | Archivo | Cuándo usarlo |
 |---|---|
