@@ -30,6 +30,13 @@ export function isFree(ticketTypes: readonly CatalogTicketType[]): boolean {
   return prices.length > 0 && Math.max(...prices) === 0;
 }
 
+/** Hay al menos una entrada activa y alguna cuesta más de cero. */
+export function isPaid(ticketTypes: readonly CatalogTicketType[]): boolean {
+  const prices = activePrices(ticketTypes);
+
+  return prices.length > 0 && Math.max(...prices) > 0;
+}
+
 export function priceLabel(ticketTypes: readonly CatalogTicketType[]): string {
   const prices = activePrices(ticketTypes);
 

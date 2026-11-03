@@ -27,7 +27,7 @@ async function eventIdBySlug(slug: string): Promise<string> {
 }
 
 describe('acceso público (anon)', () => {
-  it('ve exactamente los 10 eventos publicados del seed', async () => {
+  it('ve exactamente los 50 eventos publicados del seed', async () => {
     await asRole(db, 'anon');
     const result = await db.query<{ total: number; publicados: number }>(
       `select count(*)::int as total,
@@ -36,7 +36,18 @@ describe('acceso público (anon)', () => {
     );
     await asSuperuser(db);
 
-    expect(result.rows[0]).toEqual({ total: 10, publicados: 10 });
+    expect(result.rows[0]).toEqual({ total: 50, publicados: 50 });
+  });
+
+  it('lee el árbol SEO pero no puede modificarlo', async () => {
+    await asRole(db, 'anon');
+    const lectura = await db.query<{ n: number }>(`select count(*)::int as n from public.seo_routes`);
+    await expect(
+      db.query(`insert into public.seo_routes (path, kind, sort_order) values ('/falsa/', 'topic', 999)`),
+    ).rejects.toThrow();
+    await asSuperuser(db);
+
+    expect(lectura.rows[0].n).toBe(128);
   });
 
   it('no ve eventos en borrador ni sus tipos de entrada', async () => {
