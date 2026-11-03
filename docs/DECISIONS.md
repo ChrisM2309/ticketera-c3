@@ -21,6 +21,7 @@
 | D-17 | El seed no crea cuentas de Auth ni contraseñas; los organizadores DEMO no tienen propietario | Cerrada | Ninguna credencial en el repositorio. Las cuentas de prueba llegan con T14 |
 | D-18 | No sembrar las páginas de organizador `/claude/` y `/copa/` del Excel | Propuesta técnica | Sus nombres pueden coincidir con marcas reales; SEO_ROUTES.md pide verificarlos antes de mostrarlos como entidades. Se activarán tras esa verificación |
 | D-19 | El Home lee el catálogo con la clave pública `anon` por PostgREST, sin `service_role` en el cliente, y se regenera cada 60 s | Propuesta técnica | Cumple RLS: el público solo recibe eventos publicados. Sin variables de entorno la página muestra un estado de error en lugar de datos falsos |
+| D-20 | Criterio de T04 ajustado: el Home con datos reales cuenta como terminado; los enlaces a rutas aún no construidas (categorías, fichas, buscador, `/publicar`, `/mis-boletos`, `/carrito`) quedan documentados y se resuelven en T05, T07, T14, T15 y T08 | Decisión del responsable del proyecto | Evita marcar como funcional una navegación que aún no existe. Cada tarea pendiente conserva su criterio original |
 
 ## Pendientes que no bloquean inicio
 
