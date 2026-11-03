@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { EventCard } from '@/components/catalog/event-card';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
-import { modeLabel } from '@/features/catalog/format';
+import { buttonVariants } from '@/components/ui/button';
+import { eventDateParts, modeLabel, priceLabel } from '@/features/catalog/format';
 import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity, hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import type { CatalogEvent, CatalogEventDetail } from '@/features/catalog/types';
@@ -100,6 +101,7 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
   const soldOut = !hasAvailableTickets(event);
   const canPurchase = !past && !soldOut;
   const imagePath = publicImagePath(event.imagePath);
+  const date = eventDateParts(event.startsAt);
   const breadcrumbs = [
     { label: 'Ticketera C3', href: '/' },
     { label: event.eventType.name, href: `/${event.eventType.slug}/` },
@@ -127,8 +129,9 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
                 priority
               />
             ) : (
-              <div className="flex h-full items-center justify-center px-6 text-center font-titulo text-lg font-semibold text-texto-inverso">
-                Imagen del evento no disponible
+              <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-6 text-texto-inverso md:p-8">
+                <p className="font-titulo text-5xl font-bold leading-none">{`${date.day} ${date.month}`}</p>
+                <p className="font-texto text-base">{date.time}</p>
               </div>
             )}
           </div>
@@ -142,6 +145,14 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
               <p className="inline-flex w-fit rounded-full bg-superficie-sutil px-3 py-1 font-titulo text-sm font-semibold text-texto-suave">
                 Evento finalizado
               </p>
+            ) : null}
+            {canPurchase ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 lg:hidden">
+                <p className="font-titulo text-lg font-bold text-texto">{priceLabel(event.ticketTypes)}</p>
+                <Link href="#entradas" className={buttonVariants({ variant: 'secundario' })}>
+                  Elegir entradas
+                </Link>
+              </div>
             ) : null}
           </header>
 

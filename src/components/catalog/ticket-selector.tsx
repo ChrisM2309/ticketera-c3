@@ -14,6 +14,25 @@ type TicketSelectorProps = Readonly<{
   disabled: boolean;
 }>;
 
+const minusPath = 'M5 12h14';
+const plusPath = 'M5 12h14M12 5v14';
+
+function StepperIcon({ path }: Readonly<{ path: string }>) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="size-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
 export function TicketSelector({ event, disabled }: TicketSelectorProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const availableTickets = event.ticketTypes.filter((ticket) => ticket.isActive && getAvailableQuantity(ticket) > 0);
@@ -24,11 +43,17 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
   const cartItems = selectedItems.map((item) => `${item.ticketTypeId}:${item.quantity}`).join(',');
   const cartHref = `/carrito/?evento=${encodeURIComponent(event.id)}&entradas=${encodeURIComponent(cartItems)}`;
 
+  function changeQuantity(ticketId: string, limit: number, next: (current: number) => number) {
+    setQuantities((current) => ({
+      ...current,
+      [ticketId]: Math.min(Math.max(next(current[ticketId] ?? 0), 0), limit),
+    }));
+  }
+
   function updateQuantity(ticketId: string, value: string, limit: number) {
     const parsed = Number.parseInt(value, 10);
-    const next = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 0), limit) : 0;
 
-    setQuantities((current) => ({ ...current, [ticketId]: next }));
+    changeQuantity(ticketId, limit, () => (Number.isFinite(parsed) ? parsed : 0));
   }
 
   const disabledMessage = event.status !== 'published'
@@ -56,36 +81,75 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-3" aria-label="Tipos de entrada">
+      <div role="group" aria-label="Tipos de entrada" className="flex flex-col gap-3">
         {event.ticketTypes.map((ticket) => {
           const available = getAvailableQuantity(ticket);
           const limit = getTicketQuantityLimit(ticket);
+          const quantity = quantities[ticket.id] ?? 0;
           const isDisabled = disabled || !ticket.isActive || available === 0;
 
           return (
-            <div key={ticket.id} className="flex items-center justify-between gap-4 rounded-md border border-borde p-4">
-              <div className="min-w-0">
-                <label htmlFor={`entrada-${ticket.id}`} className="font-titulo text-base font-semibold text-texto">
+            <div
+              key={ticket.id}
+              className={cn(
+                'flex flex-col gap-4 rounded-md border p-4',
+                quantity > 0 ? 'border-accion bg-superficie-sutil' : 'border-borde',
+                isDisabled && 'bg-superficie-sutil',
+              )}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <label
+                  htmlFor={`entrada-${ticket.id}`}
+                  className="min-w-0 font-titulo text-base font-semibold leading-6 text-texto"
+                >
                   {ticket.name}
                 </label>
-                <p id={`ayuda-${ticket.id}`} className="mt-1 font-texto text-sm leading-5 text-texto-suave">
-                  {formatUsd(ticket.priceCents)} · {available > 0 ? `${available} cupos disponibles` : 'Agotada'}
-                  {available > 0 ? ` · máximo ${ticket.maxPerOrder} por orden` : ''}
+                <p className="shrink-0 font-titulo text-lg font-bold tabular-nums text-texto">
+                  {formatUsd(ticket.priceCents)}
                 </p>
               </div>
-              <input
-                id={`entrada-${ticket.id}`}
-                name={`entrada-${ticket.id}`}
-                type="number"
-                min={0}
-                max={limit}
-                value={quantities[ticket.id] ?? 0}
-                onChange={(input) => updateQuantity(ticket.id, input.target.value, limit)}
-                disabled={isDisabled}
-                aria-describedby={`ayuda-${ticket.id}`}
-                aria-label={`Cantidad de ${ticket.name}`}
-                className="min-h-11 w-20 rounded-md border border-borde-fuerte bg-superficie px-3 text-center font-texto text-base text-texto"
-              />
+
+              <p id={`ayuda-${ticket.id}`} className="font-texto text-sm leading-5 text-texto-suave">
+                {available > 0
+                  ? `${available} cupos disponibles · máximo ${ticket.maxPerOrder} por orden`
+                  : 'Agotada'}
+              </p>
+
+              <div className="flex items-center">
+                <div className="flex items-center overflow-hidden rounded-md border border-borde-fuerte bg-superficie">
+                  <button
+                    type="button"
+                    aria-label={`Quitar una entrada de ${ticket.name}`}
+                    onClick={() => changeQuantity(ticket.id, limit, (current) => current - 1)}
+                    disabled={isDisabled || quantity === 0}
+                    className="flex size-11 cursor-pointer items-center justify-center text-texto transition-colors hover:bg-superficie-sutil disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    <StepperIcon path={minusPath} />
+                  </button>
+                  <input
+                    id={`entrada-${ticket.id}`}
+                    name={`entrada-${ticket.id}`}
+                    type="number"
+                    min={0}
+                    max={limit}
+                    value={quantity}
+                    onChange={(input) => updateQuantity(ticket.id, input.target.value, limit)}
+                    disabled={isDisabled}
+                    aria-describedby={`ayuda-${ticket.id}`}
+                    aria-label={`Cantidad de ${ticket.name}`}
+                    className="h-11 w-12 bg-transparent text-center font-texto text-base font-semibold text-texto tabular-nums [appearance:textfield] disabled:text-texto-suave [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                  <button
+                    type="button"
+                    aria-label={`Agregar una entrada de ${ticket.name}`}
+                    onClick={() => changeQuantity(ticket.id, limit, (current) => current + 1)}
+                    disabled={isDisabled || quantity >= limit}
+                    className="flex size-11 cursor-pointer items-center justify-center text-texto transition-colors hover:bg-superficie-sutil disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    <StepperIcon path={plusPath} />
+                  </button>
+                </div>
+              </div>
             </div>
           );
         })}
