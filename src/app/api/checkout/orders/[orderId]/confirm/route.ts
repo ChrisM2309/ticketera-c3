@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
 import { paymentIdempotencyKey, paymentOutcomeFor, parseConfirmRequest } from '@/features/checkout/payment';
-import { createTicketQrToken, hashTicketQrToken } from '@/features/ticketing/qr';
+import { createTicketId, deriveTicketQrToken, hashTicketQrToken } from '@/features/ticketing/qr';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
@@ -81,14 +81,23 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   const quantity = (itemsResult.data ?? []).reduce((sum, item) => sum + (item.quantity as number), 0);
-  const qrTokens = Array.from({ length: quantity }, () => createTicketQrToken());
+  // El QR de cada boleto sale del token de checkout y del id del boleto (D-29), así que la
+  // página de confirmación lo vuelve a calcular cuando el comprador abre su enlace.
+  const tickets = Array.from({ length: quantity }, () => {
+    const ticketId = createTicketId();
+
+    return {
+      ticketId,
+      qrTokenHash: hashTicketQrToken(deriveTicketQrToken(parsed.data.checkoutToken, ticketId)),
+    };
+  });
 
   const { data, error } = await client.rpc('confirm_order', {
     p_order_id: orderId,
     p_public_token_hash: publicTokenHash,
     p_payment_outcome: outcome,
     p_idempotency_key: outcome === 'free' ? null : paymentIdempotencyKey(orderId),
-    p_qr_token_hashes: qrTokens.map(hashTicketQrToken),
+    p_tickets: tickets,
   });
 
   if (error) {
@@ -105,15 +114,10 @@ export async function POST(request: Request, { params }: RouteContext) {
     return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
   }
 
-  // Los QR en claro solo salen cuando esta petición emitió los boletos.
-  // Un reintento no los recibe porque la base no los guardó.
-  const issuedNow = confirmed.result_status === 'confirmed' && !confirmed.result_already_processed;
-
   return NextResponse.json({
     orderId: confirmed.result_order_id,
     status: confirmed.result_status,
     ticketCount: confirmed.result_ticket_count,
     alreadyProcessed: confirmed.result_already_processed,
-    tickets: issuedNow ? qrTokens : [],
   });
 }
