@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // Los worktrees de agentes viven en .claude/ y no forman parte del código del repositorio.
+    '.claude/**',
   ]),
 ]);
 

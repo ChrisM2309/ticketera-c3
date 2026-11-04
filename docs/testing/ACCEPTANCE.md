@@ -68,6 +68,13 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Pruebas: recuperación de QR en unitarias; en base, el QR emitido por la RPC se recupera con el token (round-trip en PGlite), los ids quedan persistidos y los ids repetidos se rechazan.
 - [ ] Compra real por HTTP con la página de confirmación: pendiente de aplicar la migración `20261105130000` en producción. Sin ella, la RPC de producción no acepta `p_tickets`.
 
+### T13 — Pruebas del flujo de compra
+
+- [x] Escritorio: Home → categoría → ficha → carrito → checkout → confirmación, con registro gratuito, pago DEMO aprobado y pago DEMO rechazado (`tests/e2e/purchase-flow.spec.ts`, 3/3).
+- [x] Celular a 375 px: registro gratuito de extremo a extremo sin desbordamiento horizontal (1/1).
+- [x] El catálogo y la ficha salen de la base real. Crear y confirmar la orden se simulan para no escribir en producción (D-31).
+- [ ] Prueba con la API real y la base real: pendiente. Se corre manualmente con una compra de prueba, igual que T10 y T11.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
