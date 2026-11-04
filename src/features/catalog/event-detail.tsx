@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { EventCard } from '@/components/catalog/event-card';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
-import { modeLabel } from '@/features/catalog/format';
+import { buttonVariants } from '@/components/ui/button';
+import { modeLabel, priceLabel } from '@/features/catalog/format';
+import { coverImagePath, publicImagePath } from '@/features/catalog/images';
 import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity, hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import type { CatalogEvent, CatalogEventDetail } from '@/features/catalog/types';
@@ -26,14 +28,6 @@ function eventDateLabel(event: CatalogEventDetail): string {
   const end = event.endsAt ? ` · termina ${dateFormatter.format(new Date(event.endsAt))}` : '';
 
   return `${dateFormatter.format(date)}${end}`;
-}
-
-function publicImagePath(imagePath: string | null): string | null {
-  if (!imagePath || imagePath.startsWith('/') || imagePath.startsWith('https://')) {
-    return imagePath;
-  }
-
-  return null;
 }
 
 function structuredEvent(event: CatalogEventDetail) {
@@ -99,7 +93,6 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
   const past = isEventPast(event);
   const soldOut = !hasAvailableTickets(event);
   const canPurchase = !past && !soldOut;
-  const imagePath = publicImagePath(event.imagePath);
   const breadcrumbs = [
     { label: 'Ticketera C3', href: '/' },
     { label: event.eventType.name, href: `/${event.eventType.slug}/` },
@@ -116,21 +109,15 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start">
         <article className="flex min-w-0 flex-col gap-8">
           <div className="relative aspect-[16/8] overflow-hidden rounded-lg bg-navy shadow-sm">
-            {imagePath ? (
-              <Image
-                src={imagePath}
-                alt={`Portada de ${event.title}`}
-                fill
-                sizes="(max-width: 1024px) 100vw, 70vw"
-                className="object-cover"
-                unoptimized
-                priority
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center px-6 text-center font-titulo text-lg font-semibold text-texto-inverso">
-                Imagen del evento no disponible
-              </div>
-            )}
+            <Image
+              src={coverImagePath(event)}
+              alt={`Portada de ${event.title}`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 70vw"
+              className="object-cover"
+              unoptimized
+              priority
+            />
           </div>
 
           <header className="flex flex-col gap-4">
@@ -142,6 +129,14 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
               <p className="inline-flex w-fit rounded-full bg-superficie-sutil px-3 py-1 font-titulo text-sm font-semibold text-texto-suave">
                 Evento finalizado
               </p>
+            ) : null}
+            {canPurchase ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 lg:hidden">
+                <p className="font-titulo text-lg font-bold text-texto">{priceLabel(event.ticketTypes)}</p>
+                <Link href="#entradas" className={buttonVariants({ variant: 'secundario' })}>
+                  Elegir entradas
+                </Link>
+              </div>
             ) : null}
           </header>
 

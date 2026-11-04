@@ -24,6 +24,7 @@ type EventRow = {
   starts_at: string;
   mode: EventMode;
   venue: string | null;
+  image_path: string | null;
   event_type: { slug: string; name: string } | null;
   topic: { slug: string } | null;
   location: { slug: string; name: string } | null;
@@ -60,7 +61,7 @@ type EventDetailRow = {
 };
 
 const eventSelect = `
-  id, slug, title, starts_at, mode, venue,
+  id, slug, title, starts_at, mode, venue, image_path,
   event_type:categories!events_event_type_fk(slug, name),
   topic:categories!events_topic_fk(slug),
   location:categories!events_location_fk(slug, name),
@@ -106,6 +107,7 @@ function mapEvent(row: EventRow): CatalogEvent | null {
     startsAt: row.starts_at,
     mode: row.mode,
     venue: row.venue,
+    imagePath: row.image_path,
     eventType: row.event_type,
     topic: row.topic,
     location: row.location,
