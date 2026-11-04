@@ -70,6 +70,21 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Pruebas: recuperación de QR en unitarias; en base, el QR emitido por la RPC se recupera con el token (round-trip en PGlite), los ids quedan persistidos y los ids repetidos se rechazan.
 - [ ] Compra real por HTTP con la página de confirmación: pendiente de aplicar la migración `20261105130000` en producción. Sin ella, la RPC de producción no acepta `p_tickets`.
 
+### T14 — Autenticación y roles
+
+- [x] `/panel/` y `/admin/` redirigen a `/ingresar/` sin sesión (proxy y comprobación en servidor), verificado en el build de producción (307).
+- [x] Un organizador no entra a `/admin/`; el rol se lee con RLS en cada página.
+- [x] RLS y roles en PGlite: organizador sin acceso a eventos ajenos, anon sin borradores ni pendientes, admin con acceso total, nadie se autopromueve en `profiles`.
+- [ ] Inicio de sesión real contra Supabase Auth: pendiente. Requiere cuentas de prueba que el dueño del proyecto crea en Supabase Auth.
+
+### T15 — Publicar evento
+
+- [x] Formulario en `/panel/eventos/nuevo/` con datos, fecha en hora de El Salvador, modalidad, ciudad, lugar, portada https y hasta cuatro tipos de entrada.
+- [x] La validación corre en el servidor y los precios se guardan en centavos.
+- [x] `create_organizer_event` crea el evento como `pending` con sus entradas; un evento pendiente no aparece en el catálogo público (pruebas en PGlite, 6/6).
+- [x] Otro organizador o un usuario sin organización no puede insertar (RLS).
+- [ ] Envío real desde una cuenta de organizador: pendiente de las cuentas de prueba.
+
 ### T13 — Pruebas del flujo de compra
 
 - [x] Escritorio: Home → categoría → ficha → carrito → checkout → confirmación, con registro gratuito, pago DEMO aprobado y pago DEMO rechazado (`tests/e2e/purchase-flow.spec.ts`, 3/3).

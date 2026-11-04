@@ -4,6 +4,8 @@ import { signOutAction } from '@/features/auth/actions';
 import { eventStatusLabel, formatEventStart } from '@/features/organizers/panel';
 import { requireRole } from '@/lib/auth/require-role';
 import { organizerHomePath } from '@/lib/auth/access';
+import Link from 'next/link';
+
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +58,9 @@ export default async function PanelPage() {
           <p className="font-texto text-base leading-7 text-texto-suave">
             Modo DEMO. Aquí ves tus organizadores y el estado de sus eventos.
           </p>
+          <Link href="/panel/eventos/nuevo/" className={cn(buttonVariants({ variant: 'compra' }), 'w-full sm:w-auto')}>
+            Publicar evento
+          </Link>
         </div>
         <form action={signOutAction}>
           <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
