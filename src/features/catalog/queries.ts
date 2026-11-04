@@ -2,6 +2,7 @@ import { cache } from 'react';
 
 import { createPublicClient } from '@/lib/supabase/public';
 
+import type { CartEvent } from '../checkout/cart';
 import { isFree } from './format';
 import type {
   CatalogCategory,
@@ -60,6 +61,26 @@ type EventDetailRow = {
   }[];
 };
 
+type CartEventRow = {
+  id: string;
+  slug: string;
+  title: string;
+  starts_at: string;
+  mode: EventMode;
+  venue: string | null;
+  event_type: { slug: string; name: string } | null;
+  topic: { slug: string; name: string } | null;
+  ticket_types: {
+    id: string;
+    name: string;
+    price_cents: number;
+    quantity_total: number;
+    quantity_sold: number;
+    max_per_order: number;
+    is_active: boolean;
+  }[];
+};
+
 const eventSelect = `
   id, slug, title, starts_at, mode, venue, image_path,
   event_type:categories!events_event_type_fk(slug, name),
@@ -75,6 +96,13 @@ const eventDetailSelect = `
   topic:categories!events_topic_fk(slug, name),
   location:categories!events_location_fk(slug, name),
   organizer:organizers(name),
+  ticket_types(id, name, price_cents, quantity_total, quantity_sold, max_per_order, is_active)
+`;
+
+const cartEventSelect = `
+  id, slug, title, starts_at, mode, venue,
+  event_type:categories!events_event_type_fk(slug, name),
+  topic:categories!events_topic_fk(slug, name),
   ticket_types(id, name, price_cents, quantity_total, quantity_sold, max_per_order, is_active)
 `;
 
@@ -140,6 +168,32 @@ function mapEventDetail(row: EventDetailRow): CatalogEventDetail | null {
     topic: row.topic,
     location: row.location,
     organizer: row.organizer,
+    ticketTypes: row.ticket_types.map((ticket) => ({
+      id: ticket.id,
+      name: ticket.name,
+      priceCents: ticket.price_cents,
+      quantityTotal: ticket.quantity_total,
+      quantitySold: ticket.quantity_sold,
+      maxPerOrder: ticket.max_per_order,
+      isActive: ticket.is_active,
+    })),
+  };
+}
+
+function mapCartEvent(row: CartEventRow): CartEvent | null {
+  if (!row.event_type) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    startsAt: row.starts_at,
+    mode: row.mode,
+    venue: row.venue,
+    eventType: row.event_type,
+    topic: row.topic,
     ticketTypes: row.ticket_types.map((ticket) => ({
       id: ticket.id,
       name: ticket.name,
@@ -259,6 +313,39 @@ export type EventDetailResult =
   | { status: 'ok'; event: CatalogEventDetail; related: CatalogEvent[] }
   | { status: 'not_found' }
   | { status: 'unavailable' };
+
+export type CartEventResult =
+  | { status: 'ok'; event: CartEvent }
+  | { status: 'not_found' }
+  | { status: 'unavailable' };
+
+/** Lee los datos frescos que necesita el carrito; T09 volverá a validarlos al crear la orden. */
+export const getCartEvent = cache(async (eventId: string): Promise<CartEventResult> => {
+  const client = createPublicClient();
+
+  if (!client) {
+    return { status: 'unavailable' };
+  }
+
+  const result = await client
+    .from('events')
+    .select(cartEventSelect)
+    .eq('id', eventId)
+    .eq('status', 'published')
+    .maybeSingle();
+
+  if (result.error) {
+    return { status: 'unavailable' };
+  }
+
+  if (!result.data) {
+    return { status: 'not_found' };
+  }
+
+  const event = mapCartEvent(result.data as unknown as CartEventRow);
+
+  return event ? { status: 'ok', event } : { status: 'not_found' };
+});
 
 /** Lee una ficha publicada, incluyendo eventos pasados para mostrar su estado final. */
 export const getEventDetail = cache(async (slug: string): Promise<EventDetailResult> => {
