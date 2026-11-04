@@ -4,12 +4,10 @@ import Link from 'next/link';
 import { FormEvent, useState, useSyncExternalStore } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
-import { formatUsd } from '@/features/catalog/format';
 import {
   CART_STORAGE_KEY,
   calculateCartTotals,
   parseCartSnapshot,
-  type CartSnapshot,
 } from '@/features/checkout/cart';
 import { CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
