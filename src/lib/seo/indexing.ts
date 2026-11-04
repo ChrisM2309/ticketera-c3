@@ -11,7 +11,9 @@ export const privatePaths = [
   '/carrito/',
   '/checkout/',
   '/confirmacion/',
+  '/ingresar/',
   '/mis-boletos/',
+  '/panel/',
   '/publicar/',
 ];
 
