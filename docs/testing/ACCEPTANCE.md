@@ -9,7 +9,7 @@
 - [ ] Filtros funcionales por tipo, tema, fecha, ciudad, modalidad y gratis/de pago.
 - [ ] Categorías/subcategorías con URLs estables, metadata y breadcrumbs.
 - [ ] Fichas con agenda, imágenes, CTA visible, cantidad de entradas y disponibilidad.
-- [ ] Carrito de un evento; subtotal, comisión y total calculados en servidor.
+- [x] Carrito de un evento; subtotal, comisión y total calculados en servidor.
 - [ ] Registro gratuito sin cuenta => orden confirmada y ticket QR persistido.
 - [ ] Pago DEMO aprobado => orden confirmada, `payments` registrado, QR emitido.
 - [ ] Pago DEMO rechazado => orden fallida, no emisión de tickets.
@@ -30,6 +30,17 @@
 - [ ] Recalculo autoritativo en servidor y confirmación de orden: queda para T09.
 
 La corrida E2E completa del repositorio quedó en `3/5`: los tres escenarios de T08 pasan; los dos escenarios heredados de `tests/e2e/home.spec.ts` no pudieron cargar catálogo/ficha porque el proyecto Supabase remoto no respondió en este entorno. `npm run build` también quedó bloqueado antes de la compilación por la descarga de Montserrat y Poppins desde Google Fonts; `npm run lint`, `npm run typecheck` y `npm test -- --run` sí terminaron con código 0 (95/95).
+
+### T09 — Datos de comprador y orden pendiente
+
+- [x] Formulario de invitado con nombre y correo obligatorios, labels visibles, atributos nativos y errores anunciados.
+- [x] `POST /api/checkout/orders` acepta solo IDs/cantidades/datos de comprador y descarta totales recibidos desde navegador.
+- [x] La RPC protegida vuelve a leer el catálogo, valida evento/tipo/cupo/límite y persiste una orden `pending` con snapshots de precio e importes en centavos.
+- [x] El token de checkout tiene 32 bytes aleatorios; solo su SHA-256 llega a DB y el original permanece en `sessionStorage` tras el éxito.
+- [x] DB (3/3), unitarias (4/4), E2E local de carrito+checkout (5/5), lint, typecheck, suite completa (102/102) y build pasaron.
+- [ ] Confirmación atómica, actualización de inventario y boletos: queda para T10; pago gratuito/aprobado/rechazado: T11.
+
+La corrida E2E completa quedó en `5/7`: los cinco casos de carrito/checkout pasan; los dos casos heredados de `tests/e2e/home.spec.ts` siguen sin cargar catálogo/ficha porque el proyecto Supabase remoto no respondió. El build de T09 sí pasó cuando Next tuvo permiso para escribir su caché local.
 
 ## Criterios de salida P1
 
