@@ -19,6 +19,18 @@
 - [ ] Flujo completo usable en viewport móvil.
 - [ ] Solo eventos publicados aparecen en catálogo público.
 
+## Evidencia por tarea
+
+### T08 — Carrito de un evento
+
+- [x] Carrito local de un solo evento con varios tipos de entrada, edición de cantidades y eliminación.
+- [x] Límites provisionales derivados de cupos disponibles y `max_per_order`; snapshot local defensivo en `localStorage`.
+- [x] Subtotal, comisión DEMO configurable (supuesto por defecto: 5 %) y total provisional calculados en centavos, con pruebas unitarias.
+- [x] E2E del carrito local: `3 passed` con estado lleno, persistencia, estado vacío y query inválida.
+- [ ] Recalculo autoritativo en servidor y confirmación de orden: queda para T09.
+
+La corrida E2E completa del repositorio quedó en `3/5`: los tres escenarios de T08 pasan; los dos escenarios heredados de `tests/e2e/home.spec.ts` no pudieron cargar catálogo/ficha porque el proyecto Supabase remoto no respondió en este entorno. `npm run build` también quedó bloqueado antes de la compilación por la descarga de Montserrat y Poppins desde Google Fonts; `npm run lint`, `npm run typecheck` y `npm test -- --run` sí terminaron con código 0 (95/95).
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
