@@ -85,6 +85,13 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Otro organizador o un usuario sin organización no puede insertar (RLS).
 - [ ] Envío real desde una cuenta de organizador: pendiente de las cuentas de prueba.
 
+### T13 — Pruebas del flujo de compra
+
+- [x] Escritorio: Home → categoría → ficha → carrito → checkout → confirmación, con registro gratuito, pago DEMO aprobado y pago DEMO rechazado (`tests/e2e/purchase-flow.spec.ts`, 3/3).
+- [x] Celular a 375 px: registro gratuito de extremo a extremo sin desbordamiento horizontal (1/1).
+- [x] El catálogo y la ficha salen de la base real. Crear y confirmar la orden se simulan para no escribir en producción (D-31).
+- [ ] Prueba con la API real y la base real: pendiente. Se corre manualmente con una compra de prueba, igual que T10 y T11.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
