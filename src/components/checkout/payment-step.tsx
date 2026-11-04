@@ -102,6 +102,12 @@ export function PaymentStep({ order }: PaymentStepProps) {
             : `Emitimos ${view.ticketCount} boletos para esta orden.`}
         </p>
         <p className="font-texto text-sm leading-6 text-texto-suave">Número de orden: {order.orderId}</p>
+        <Link
+          href={`/confirmacion/${order.orderId}/${order.checkoutToken}/`}
+          className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
+        >
+          Ver mis boletos
+        </Link>
       </section>
     );
   }

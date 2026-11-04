@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
 
 import { asRole, asSuperuser, createDatabase } from './helpers';
+import { deriveTicketQrToken, hashTicketQrToken, recoverTicketQrs } from '../../src/features/ticketing/qr';
 
 type TicketRow = {
   id: string;
@@ -68,7 +70,7 @@ async function confirm(
   options: {
     outcome: 'free' | 'demo_approved' | 'demo_rejected';
     key?: string;
-    qrHashes?: string[];
+    tickets?: Array<{ ticketId: string; qrTokenHash: string }>;
     publicTokenHash?: string;
   },
 ) {
@@ -81,13 +83,14 @@ async function confirm(
       options.publicTokenHash ?? order.publicTokenHash,
       options.outcome,
       options.key ?? null,
-      JSON.stringify(options.qrHashes ?? []),
+      JSON.stringify(options.tickets ?? []),
     ],
   );
 }
 
-function qrHashesFor(quantity: number): string[] {
-  return Array.from({ length: quantity }, () => nextHash());
+/** Boletos con id y hash de QR, como los prepara el servidor antes de llamar a la RPC. */
+function issuedTickets(quantity: number): Array<{ ticketId: string; qrTokenHash: string }> {
+  return Array.from({ length: quantity }, () => ({ ticketId: randomUUID(), qrTokenHash: nextHash() }));
 }
 
 async function snapshot() {
@@ -143,7 +146,7 @@ describe('confirm_order', () => {
       { ticketTypeId: free.id, quantity: 2 },
     ]);
 
-    const result = await confirm(order, { outcome: 'free', qrHashes: qrHashesFor(2) });
+    const result = await confirm(order, { outcome: 'free', tickets: issuedTickets(2) });
 
     expect(result.rows[0]).toEqual({
       result_order_id: order.orderId,
@@ -165,6 +168,74 @@ describe('confirm_order', () => {
     expect(payments.rows).toHaveLength(0);
   });
 
+  it('guarda el id y el hash de QR que llegan del servidor en cada boleto', async () => {
+    const free = await ticket('hackathon-demo-en-linea', 'Registro gratuito');
+    const order = await createPendingOrder('hackathon-demo-en-linea', [{ ticketTypeId: free.id, quantity: 1 }]);
+    const ticketId = randomUUID();
+    const qrTokenHash = hashTicketQrToken(deriveTicketQrToken('C'.repeat(43), ticketId));
+
+    await confirm(order, { outcome: 'free', tickets: [{ ticketId, qrTokenHash }] });
+
+    await asSuperuser(db);
+    const stored = await db.query<{ id: string; qr_token_hash: string }>(
+      `select id, qr_token_hash from public.tickets where order_id = $1`,
+      [order.orderId],
+    );
+    expect(stored.rows).toEqual([{ id: ticketId, qr_token_hash: qrTokenHash }]);
+  });
+
+  it('el enlace recupera los QR emitidos sin haberlos guardado en claro', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    const order = await createPendingOrder('congreso-demo-ia', [{ ticketTypeId: general.id, quantity: 2 }]);
+    const checkoutToken = 'D'.repeat(43);
+    const tickets = Array.from({ length: 2 }, () => {
+      const ticketId = randomUUID();
+
+      return { ticketId, qrTokenHash: hashTicketQrToken(deriveTicketQrToken(checkoutToken, ticketId)) };
+    });
+
+    await confirm(order, { outcome: 'demo_approved', key: 'demo-recover-0001', tickets });
+
+    await asSuperuser(db);
+    const stored = await db.query<{ id: string; qr_token_hash: string; name: string }>(
+      `select t.id, t.qr_token_hash, tt.name
+         from public.tickets t
+         join public.ticket_types tt on tt.id = t.ticket_type_id
+        where t.order_id = $1`,
+      [order.orderId],
+    );
+    const recovered = recoverTicketQrs(
+      checkoutToken,
+      stored.rows.map((row) => ({ ticketId: row.id, qrTokenHash: row.qr_token_hash, typeName: row.name })),
+    );
+
+    expect(recovered).toHaveLength(2);
+    expect(recovered.map((ticket) => ticket.qrToken).sort()).toEqual(
+      tickets.map((ticket) => deriveTicketQrToken(checkoutToken, ticket.ticketId)).sort(),
+    );
+    expect(recoverTicketQrs('E'.repeat(43), stored.rows.map((row) => ({ ticketId: row.id, qrTokenHash: row.qr_token_hash, typeName: row.name })))).toEqual([]);
+  });
+
+  it('rechaza boletos con el mismo id sin persistir filas', async () => {
+    const free = await ticket('hackathon-demo-en-linea', 'Registro gratuito');
+    const order = await createPendingOrder('hackathon-demo-en-linea', [{ ticketTypeId: free.id, quantity: 2 }]);
+    const ticketId = randomUUID();
+    const before = await snapshot();
+
+    await expect(
+      confirm(order, {
+        outcome: 'free',
+        tickets: [
+          { ticketId, qrTokenHash: nextHash() },
+          { ticketId, qrTokenHash: nextHash() },
+        ],
+      }),
+    ).rejects.toThrow(/no son distintos/);
+
+    expect(await orderStatus(order.orderId)).toEqual({ status: 'pending', has_confirmed_at: false });
+    expect(await snapshot()).toEqual(before);
+  });
+
   it('confirma un pago DEMO aprobado con su pago registrado y los boletos', async () => {
     const general = await ticket('congreso-demo-ia', 'General');
     const order = await createPendingOrder('congreso-demo-ia', [{ ticketTypeId: general.id, quantity: 2 }]);
@@ -172,7 +243,7 @@ describe('confirm_order', () => {
     const result = await confirm(order, {
       outcome: 'demo_approved',
       key: 'demo-approved-0001',
-      qrHashes: qrHashesFor(2),
+      tickets: issuedTickets(2),
     });
 
     expect(result.rows[0]).toEqual({
@@ -236,17 +307,17 @@ describe('confirm_order', () => {
     const first = await confirm(order, {
       outcome: 'demo_approved',
       key: 'demo-retry-0001',
-      qrHashes: qrHashesFor(2),
+      tickets: issuedTickets(2),
     });
     const second = await confirm(order, {
       outcome: 'demo_approved',
       key: 'demo-retry-0001',
-      qrHashes: qrHashesFor(2),
+      tickets: issuedTickets(2),
     });
     const third = await confirm(order, {
       outcome: 'demo_approved',
       key: 'demo-retry-0002',
-      qrHashes: qrHashesFor(2),
+      tickets: issuedTickets(2),
     });
 
     expect(first.rows[0].result_already_processed).toBe(false);
@@ -278,7 +349,7 @@ describe('confirm_order', () => {
     const retry = await confirm(order, {
       outcome: 'demo_approved',
       key: 'demo-approve-0003',
-      qrHashes: qrHashesFor(1),
+      tickets: issuedTickets(1),
     });
 
     expect(retry.rows[0]).toEqual({
@@ -299,7 +370,7 @@ describe('confirm_order', () => {
       confirm(order, {
         outcome: 'demo_approved',
         key: 'demo-wrong-token-01',
-        qrHashes: qrHashesFor(1),
+        tickets: issuedTickets(1),
         publicTokenHash: 'f'.repeat(64),
       }),
     ).rejects.toThrow(/no existe o el token no coincide/);
@@ -308,7 +379,7 @@ describe('confirm_order', () => {
       confirm({ orderId: '00000000-0000-4000-8000-000000000000', publicTokenHash: order.publicTokenHash }, {
         outcome: 'demo_approved',
         key: 'demo-missing-order-1',
-        qrHashes: qrHashesFor(1),
+        tickets: issuedTickets(1),
       }),
     ).rejects.toThrow(/no existe o el token no coincide/);
 
@@ -327,10 +398,10 @@ describe('confirm_order', () => {
     const first = await createPendingOrder('congreso-demo-ia', [{ ticketTypeId: general.id, quantity: 1 }]);
     const second = await createPendingOrder('congreso-demo-ia', [{ ticketTypeId: general.id, quantity: 1 }]);
 
-    await confirm(first, { outcome: 'demo_approved', key: 'demo-last-seat-01', qrHashes: qrHashesFor(1) });
+    await confirm(first, { outcome: 'demo_approved', key: 'demo-last-seat-01', tickets: issuedTickets(1) });
 
     await expect(
-      confirm(second, { outcome: 'demo_approved', key: 'demo-last-seat-02', qrHashes: qrHashesFor(1) }),
+      confirm(second, { outcome: 'demo_approved', key: 'demo-last-seat-02', tickets: issuedTickets(1) }),
     ).rejects.toThrow(/cupos disponibles/);
 
     expect(await orderStatus(second.orderId)).toEqual({ status: 'pending', has_confirmed_at: false });
@@ -353,7 +424,7 @@ describe('confirm_order', () => {
     const before = await snapshot();
 
     await expect(
-      confirm(order, { outcome: 'demo_approved', key: 'demo-inactive-01', qrHashes: qrHashesFor(1) }),
+      confirm(order, { outcome: 'demo_approved', key: 'demo-inactive-01', tickets: issuedTickets(1) }),
     ).rejects.toThrow(/no está disponible/);
 
     expect(await orderStatus(order.orderId)).toEqual({ status: 'pending', has_confirmed_at: false });
@@ -367,7 +438,7 @@ describe('confirm_order', () => {
     await db.query(`update public.events set status = 'archived' where slug = 'congreso-demo-ia'`);
 
     await expect(
-      confirm(order, { outcome: 'demo_approved', key: 'demo-archived-01', qrHashes: qrHashesFor(1) }),
+      confirm(order, { outcome: 'demo_approved', key: 'demo-archived-01', tickets: issuedTickets(1) }),
     ).rejects.toThrow(/ya no está disponible/);
 
     expect(await orderStatus(order.orderId)).toEqual({ status: 'pending', has_confirmed_at: false });
@@ -382,10 +453,10 @@ describe('confirm_order', () => {
     const paidOrder = await createPendingOrder('congreso-demo-ia', [{ ticketTypeId: general.id, quantity: 1 }]);
 
     await expect(
-      confirm(paidOrder, { outcome: 'free', qrHashes: qrHashesFor(1) }),
+      confirm(paidOrder, { outcome: 'free', tickets: issuedTickets(1) }),
     ).rejects.toThrow(/requiere pago/);
     await expect(
-      confirm(freeOrder, { outcome: 'demo_approved', key: 'demo-free-mismatch', qrHashes: qrHashesFor(1) }),
+      confirm(freeOrder, { outcome: 'demo_approved', key: 'demo-free-mismatch', tickets: issuedTickets(1) }),
     ).rejects.toThrow(/no requiere pago/);
 
     expect(await orderStatus(paidOrder.orderId)).toEqual({ status: 'pending', has_confirmed_at: false });
@@ -398,7 +469,7 @@ describe('confirm_order', () => {
     const before = await snapshot();
 
     await expect(
-      confirm(order, { outcome: 'demo_approved', key: 'demo-count-mismatch', qrHashes: qrHashesFor(1) }),
+      confirm(order, { outcome: 'demo_approved', key: 'demo-count-mismatch', tickets: issuedTickets(1) }),
     ).rejects.toThrow(/cantidad de boletos/);
 
     expect(await orderStatus(order.orderId)).toEqual({ status: 'pending', has_confirmed_at: false });
@@ -410,7 +481,7 @@ describe('confirm_order', () => {
     const order = await createPendingOrder('congreso-demo-ia', [{ ticketTypeId: general.id, quantity: 1 }]);
 
     await expect(
-      confirm(order, { outcome: 'demo_approved', key: 'demo-bad-qr-hash', qrHashes: ['qr-en-claro'] }),
+      confirm(order, { outcome: 'demo_approved', key: 'demo-bad-qr-hash', tickets: [{ ticketId: randomUUID(), qrTokenHash: 'qr-en-claro' }] }),
     ).rejects.toThrow(/código QR/);
 
     expect(await orderStatus(order.orderId)).toEqual({ status: 'pending', has_confirmed_at: false });
@@ -428,7 +499,7 @@ describe('confirm_order', () => {
           order.publicTokenHash,
           'demo_approved',
           'demo-permission-01',
-          JSON.stringify(qrHashesFor(1)),
+          JSON.stringify(issuedTickets(1)),
         ]),
       ).rejects.toThrow(/permission denied/);
     }
