@@ -57,7 +57,9 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Rechazado: «Simular pago rechazado» deja la orden `failed` y muestra que no hubo boletos ni descuento de cupo (E2E simulado y pruebas de base de T10).
 - [x] Un error del servidor se anuncia y el comprador puede reintentar (E2E).
 - [x] Validación de la petición y mapeo del resultado: `tests/unit/payment.test.ts` (9/9).
-- [ ] Prueba con Supabase real y clave `service_role`: pendiente. Este entorno no tiene `SUPABASE_SERVICE_ROLE_KEY` y el proyecto remoto no respondió. La ruta devuelve 400 ante entrada inválida y 503 sin la clave, comprobado con `curl`.
+- [x] Compra de prueba en la base real de producción (gratis, aprobado, rechazado y reintento), dentro de una transacción revertida: resultados según lo esperado y sin órdenes, pagos ni boletos residuales (verificado con consulta de solo lectura).
+- [x] Compra gratis por la ruta HTTP en producción: orden `1b0c6a87-bca4-4acd-a983-e28d93012d35` confirmada con 1 boleto; el reintento responde `alreadyProcessed` sin duplicar.
+- [ ] Pagos aprobado y rechazado por HTTP: pendiente. Solo están probados en la base, dentro de una transacción revertida.
 
 ## Criterios de salida P1
 
