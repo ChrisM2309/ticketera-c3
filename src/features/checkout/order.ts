@@ -1,5 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 
+export const CHECKOUT_SESSION_STORAGE_KEY = 'ticketera-c3-checkout-v1';
+
 export type OrderItemRequest = {
   ticketTypeId: string;
   quantity: number;

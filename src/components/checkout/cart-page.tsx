@@ -266,16 +266,11 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
 
           <aside className="flex flex-col gap-4 lg:sticky lg:top-6">
             <CartSummary totals={totals} commissionPercent={siteConfig.demoCommissionPercent} />
-            <button
-              type="button"
-              disabled
-              aria-describedby="checkout-pendiente"
-              className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
-            >
+            <Link href="/checkout/" className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}>
               Continuar al checkout
-            </button>
-            <p id="checkout-pendiente" className="font-texto text-center text-xs leading-5 text-texto-suave">
-              El checkout DEMO se habilitará en el siguiente paso.
+            </Link>
+            <p className="font-texto text-center text-xs leading-5 text-texto-suave">
+              Tus datos y los importes se verificarán en el siguiente paso.
             </p>
           </aside>
         </div>
