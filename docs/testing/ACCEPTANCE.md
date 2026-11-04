@@ -42,6 +42,14 @@ La corrida E2E completa del repositorio quedó en `3/5`: los tres escenarios de 
 
 La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la corrida enfocada actual de carrito+checkout queda en `6/6`. Los dos casos heredados de `tests/e2e/home.spec.ts` siguen sin cargar catálogo/ficha porque el proyecto Supabase remoto no respondió. El build de T09 sí pasó cuando Next tuvo permiso para escribir su caché local.
 
+### T10 — Confirmación transaccional e inventario
+
+- [x] RPC `confirm_order` (`supabase/migrations/20261104140000_confirm_order.sql`): en una sola transacción confirma o rechaza la orden, valida evento, tipo activo, máximo por orden y cupo, descuenta `quantity_sold`, emite un boleto por unidad y registra el pago DEMO.
+- [x] Reintento o doble clic sobre una orden procesada: devuelve `already_processed` sin boletos nuevos ni descuento de cupo.
+- [x] Pago DEMO rechazado: orden `failed`, pago `demo_rejected`, 0 boletos y cupo intacto.
+- [x] Pruebas `tests/db/confirm-order.test.ts` (13/13): gratis, aprobado, rechazado, reintento, token incorrecto, sobreventa secuencial, tipo inactivo, evento archivado, importe incoherente, cantidad y formato de QR, permisos.
+- [ ] Concurrencia real con dos conexiones simultáneas: pendiente. PGlite usa una sola conexión y Docker no está disponible para levantar Postgres local. La exclusión mutua se apoya en `SELECT ... FOR UPDATE` sobre la orden y los tipos de entrada, pero no está demostrada en paralelo.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
