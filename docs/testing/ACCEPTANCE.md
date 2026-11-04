@@ -59,6 +59,21 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Validación de la petición y mapeo del resultado: `tests/unit/payment.test.ts` (9/9).
 - [ ] Prueba con Supabase real y clave `service_role`: pendiente. Este entorno no tiene `SUPABASE_SERVICE_ROLE_KEY` y el proyecto remoto no respondió. La ruta devuelve 400 ante entrada inválida y 503 sin la clave, comprobado con `curl`.
 
+### T14 — Autenticación y roles
+
+- [x] `/panel/` y `/admin/` redirigen a `/ingresar/` sin sesión (proxy y comprobación en servidor), verificado en el build de producción (307).
+- [x] Un organizador no entra a `/admin/`; el rol se lee con RLS en cada página.
+- [x] RLS y roles en PGlite: organizador sin acceso a eventos ajenos, anon sin borradores ni pendientes, admin con acceso total, nadie se autopromueve en `profiles`.
+- [ ] Inicio de sesión real contra Supabase Auth: pendiente. Requiere cuentas de prueba que el dueño del proyecto crea en Supabase Auth.
+
+### T15 — Publicar evento
+
+- [x] Formulario en `/panel/eventos/nuevo/` con datos, fecha en hora de El Salvador, modalidad, ciudad, lugar, portada https y hasta cuatro tipos de entrada.
+- [x] La validación corre en el servidor y los precios se guardan en centavos.
+- [x] `create_organizer_event` crea el evento como `pending` con sus entradas; un evento pendiente no aparece en el catálogo público (pruebas en PGlite, 6/6).
+- [x] Otro organizador o un usuario sin organización no puede insertar (RLS).
+- [ ] Envío real desde una cuenta de organizador: pendiente de las cuentas de prueba.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
