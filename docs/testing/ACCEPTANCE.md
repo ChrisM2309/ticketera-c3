@@ -59,6 +59,15 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Validación de la petición y mapeo del resultado: `tests/unit/payment.test.ts` (9/9).
 - [ ] Prueba con Supabase real y clave `service_role`: pendiente. Este entorno no tiene `SUPABASE_SERVICE_ROLE_KEY` y el proyecto remoto no respondió. La ruta devuelve 400 ante entrada inválida y 503 sin la clave, comprobado con `curl`.
 
+### T12 — Confirmación, QR y descarga
+
+- [x] Página `/confirmacion/[orderId]/[token]/`: estado, número de orden, evento, fecha, modalidad, total DEMO y un boleto con QR por cada entrada.
+- [x] Descarga de cada QR como SVG y botón para imprimir.
+- [x] Recuperación por enlace: el QR se recalcula desde el token y no se guarda en claro (D-29).
+- [x] Token o identificadores mal formados y órdenes inexistentes responden 404 con el mismo resultado (sin enumeración).
+- [x] Pruebas: recuperación de QR en unitarias; en base, el QR emitido por la RPC se recupera con el token (round-trip en PGlite), los ids quedan persistidos y los ids repetidos se rechazan.
+- [ ] Compra real por HTTP con la página de confirmación: pendiente de aplicar la migración `20261105130000` en producción. Sin ella, la RPC de producción no acepta `p_tickets`.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
