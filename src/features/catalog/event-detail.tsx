@@ -5,7 +5,8 @@ import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { EventCard } from '@/components/catalog/event-card';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
 import { buttonVariants } from '@/components/ui/button';
-import { eventDateParts, modeLabel, priceLabel } from '@/features/catalog/format';
+import { modeLabel, priceLabel } from '@/features/catalog/format';
+import { coverImagePath, publicImagePath } from '@/features/catalog/images';
 import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity, hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import type { CatalogEvent, CatalogEventDetail } from '@/features/catalog/types';
@@ -27,14 +28,6 @@ function eventDateLabel(event: CatalogEventDetail): string {
   const end = event.endsAt ? ` · termina ${dateFormatter.format(new Date(event.endsAt))}` : '';
 
   return `${dateFormatter.format(date)}${end}`;
-}
-
-function publicImagePath(imagePath: string | null): string | null {
-  if (!imagePath || imagePath.startsWith('/') || imagePath.startsWith('https://')) {
-    return imagePath;
-  }
-
-  return null;
 }
 
 function structuredEvent(event: CatalogEventDetail) {
@@ -100,8 +93,6 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
   const past = isEventPast(event);
   const soldOut = !hasAvailableTickets(event);
   const canPurchase = !past && !soldOut;
-  const imagePath = publicImagePath(event.imagePath);
-  const date = eventDateParts(event.startsAt);
   const breadcrumbs = [
     { label: 'Ticketera C3', href: '/' },
     { label: event.eventType.name, href: `/${event.eventType.slug}/` },
@@ -118,22 +109,15 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start">
         <article className="flex min-w-0 flex-col gap-8">
           <div className="relative aspect-[16/8] overflow-hidden rounded-lg bg-navy shadow-sm">
-            {imagePath ? (
-              <Image
-                src={imagePath}
-                alt={`Portada de ${event.title}`}
-                fill
-                sizes="(max-width: 1024px) 100vw, 70vw"
-                className="object-cover"
-                unoptimized
-                priority
-              />
-            ) : (
-              <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-6 text-texto-inverso md:p-8">
-                <p className="font-titulo text-5xl font-bold leading-none">{`${date.day} ${date.month}`}</p>
-                <p className="font-texto text-base">{date.time}</p>
-              </div>
-            )}
+            <Image
+              src={coverImagePath(event)}
+              alt={`Portada de ${event.title}`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 70vw"
+              className="object-cover"
+              unoptimized
+              priority
+            />
           </div>
 
           <header className="flex flex-col gap-4">

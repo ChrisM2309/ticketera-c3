@@ -1,6 +1,8 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { eventDateParts, modeLabel, priceLabel } from '@/features/catalog/format';
+import { coverImagePath } from '@/features/catalog/images';
 import { lineForEventType, type CatalogLine } from '@/features/catalog/lines';
 import { eventPath } from '@/features/catalog/paths';
 import type { CatalogEvent } from '@/features/catalog/types';
@@ -17,7 +19,10 @@ type EventCardProps = Readonly<{
   featured?: boolean;
 }>;
 
-/** Tarjeta de evento. La fecha va en una «entrada» recortada, como un boleto. */
+/**
+ * Tarjeta de evento: foto arriba, fecha en una «entrada» recortada como boleto.
+ * Todo el recuadro enlaza a la ficha; el título es el enlace accesible.
+ */
 export function EventCard({ event, featured = false }: EventCardProps) {
   const date = eventDateParts(event.startsAt);
   const line = lineForEventType(event.eventType.slug);
@@ -28,12 +33,19 @@ export function EventCard({ event, featured = false }: EventCardProps) {
   });
 
   return (
-    <article
-      className={cn(
-        'flex h-full flex-col overflow-hidden rounded-lg bg-superficie shadow-sm',
-      )}
-    >
+    <article className="relative flex h-full flex-col overflow-hidden rounded-lg bg-superficie shadow-sm">
+      <div className={cn('relative bg-navy', featured ? 'aspect-[2/1]' : 'aspect-[16/10]')}>
+        <Image
+          src={coverImagePath(event)}
+          alt=""
+          fill
+          sizes={featured ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'}
+          className="object-cover"
+          unoptimized
+        />
+      </div>
       <div className={cn('h-1.5', lineStripe[line])} aria-hidden="true" />
+
       <div className={cn('flex flex-1', featured ? 'flex-col md:flex-row' : 'flex-row')}>
         <div
           className={cn(
@@ -54,9 +66,9 @@ export function EventCard({ event, featured = false }: EventCardProps) {
           <span className="font-texto text-xs font-medium text-compite-claro">{date.time}</span>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
           <h3 className={cn('font-titulo font-bold leading-snug', featured ? 'text-2xl' : 'text-lg')}>
-            <Link href={href} className="hover:underline underline-offset-4">
+            <Link href={href} className="after:absolute after:inset-0 underline-offset-4 hover:underline">
               {event.title}
             </Link>
           </h3>

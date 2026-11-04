@@ -33,6 +33,7 @@ function event(id: string, overrides: Partial<CatalogEvent> = {}): CatalogEvent 
     startsAt: new Date(now.getTime() + 2 * DAY_MS).toISOString(),
     mode: 'presencial',
     venue: 'Sede',
+    imagePath: null,
     eventType: { slug: 'congresos', name: 'Congresos' },
     topic: { slug: 'cloud' },
     location: { slug: 'san-salvador', name: 'San Salvador' },

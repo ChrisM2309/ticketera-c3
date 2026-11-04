@@ -22,6 +22,7 @@ export type CatalogEvent = {
   startsAt: string;
   mode: EventMode;
   venue: string | null;
+  imagePath: string | null;
   eventType: { slug: string; name: string };
   topic: { slug: string } | null;
   location: { slug: string; name: string } | null;

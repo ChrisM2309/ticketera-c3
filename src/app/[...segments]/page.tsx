@@ -23,6 +23,7 @@ import {
   scopeSubcategories,
   scopeTitle,
 } from '@/features/catalog/routes';
+import { publicImagePath } from '@/features/catalog/images';
 import { eventPathMatches } from '@/features/catalog/paths';
 import { hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import { siteConfig } from '@/lib/site-config';
@@ -82,9 +83,7 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
       ? `/${segments.join('/')}/`
       : undefined;
     const noIndex = siteConfig.isDemo || isEventPast(event) || !hasAvailableTickets(event);
-    const image = event.imagePath && (event.imagePath.startsWith('/') || event.imagePath.startsWith('https://'))
-      ? event.imagePath
-      : undefined;
+    const image = publicImagePath(event.imagePath) ?? undefined;
 
     return {
       title: event.title,
