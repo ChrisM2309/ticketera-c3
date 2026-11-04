@@ -50,6 +50,15 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Pruebas `tests/db/confirm-order.test.ts` (13/13): gratis, aprobado, rechazado, reintento, token incorrecto, sobreventa secuencial, tipo inactivo, evento archivado, importe incoherente, cantidad y formato de QR, permisos.
 - [ ] Concurrencia real con dos conexiones simultáneas: pendiente. PGlite usa una sola conexión y Docker no está disponible para levantar Postgres local. La exclusión mutua se apoya en `SELECT ... FOR UPDATE` sobre la orden y los tipos de entrada, pero no está demostrada en paralelo.
 
+### T11 — Pago de demostración
+
+- [x] Gratis: «Confirmar registro gratuito» confirma sin pasarela y muestra los boletos emitidos (E2E con API simulada).
+- [x] Aprobado: «Simular pago aprobado» confirma la orden, registra el pago `demo_approved` y emite boletos (E2E simulado y pruebas de base de T10).
+- [x] Rechazado: «Simular pago rechazado» deja la orden `failed` y muestra que no hubo boletos ni descuento de cupo (E2E simulado y pruebas de base de T10).
+- [x] Un error del servidor se anuncia y el comprador puede reintentar (E2E).
+- [x] Validación de la petición y mapeo del resultado: `tests/unit/payment.test.ts` (9/9).
+- [ ] Prueba con Supabase real y clave `service_role`: pendiente. Este entorno no tiene `SUPABASE_SERVICE_ROLE_KEY` y el proyecto remoto no respondió. La ruta devuelve 400 ante entrada inválida y 503 sin la clave, comprobado con `curl`.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
