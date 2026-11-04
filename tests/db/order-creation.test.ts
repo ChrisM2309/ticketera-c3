@@ -28,14 +28,32 @@ async function eventId(slug: string): Promise<string> {
   return result.rows[0].id;
 }
 
-async function createPendingOrder(items: Array<{ ticketTypeId: string; quantity: number }>) {
-  const event = await eventId('congreso-demo-ia');
+async function createPendingOrderForEvent(
+  eventSlug: string,
+  items: Array<{ ticketTypeId: string; quantity: number }>,
+) {
+  const event = await eventId(eventSlug);
   await asRole(db, 'service_role');
 
   return db.query<{ order_id: string; subtotal_cents: number; fee_cents: number; total_cents: number }>(
     `select * from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6)`,
     [event, JSON.stringify(items), 'Comprador DEMO', 'comprador@example.test', 'a'.repeat(64), 5],
   );
+}
+
+async function createPendingOrder(items: Array<{ ticketTypeId: string; quantity: number }>) {
+  return createPendingOrderForEvent('congreso-demo-ia', items);
+}
+
+async function orderCounts() {
+  await asSuperuser(db);
+  const result = await db.query<{ orders: number; items: number }>(
+    `select
+       (select count(*)::int from public.orders) as orders,
+       (select count(*)::int from public.order_items) as items`,
+  );
+
+  return result.rows[0];
 }
 
 beforeEach(async () => {
@@ -122,5 +140,74 @@ describe('create_pending_order', () => {
     await asSuperuser(db);
     const after = await db.query<{ total: number }>(`select count(*)::int as total from public.orders`);
     expect(after.rows[0].total).toBe(before.rows[0].total);
+  });
+
+  it('rechaza un tipo de entrada de otro evento sin persistir filas', async () => {
+    const otherEventTicket = await ticket('hackathon-demo-en-linea', 'Registro gratuito');
+    const before = await orderCounts();
+
+    await expect(createPendingOrder([{ ticketTypeId: otherEventTicket.id, quantity: 1 }])).rejects.toThrow(
+      /no está disponible/i,
+    );
+
+    expect(await orderCounts()).toEqual(before);
+  });
+
+  it('rechaza un tipo inactivo sin persistir filas', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    await asSuperuser(db);
+    await db.query(`update public.ticket_types set is_active = false where id = $1`, [general.id]);
+    const before = await orderCounts();
+
+    await expect(createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }])).rejects.toThrow(
+      /no está disponible/i,
+    );
+
+    expect(await orderCounts()).toEqual(before);
+  });
+
+  it('rechaza un tipo agotado sin persistir filas', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    await asSuperuser(db);
+    await db.query(`update public.ticket_types set quantity_sold = quantity_total where id = $1`, [general.id]);
+    const before = await orderCounts();
+
+    await expect(createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }])).rejects.toThrow(
+      /cupos disponibles/i,
+    );
+
+    expect(await orderCounts()).toEqual(before);
+  });
+
+  it('usa el precio validado para el snapshot aunque cambie antes de insertar las líneas', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    await asSuperuser(db);
+    await db.exec(`
+      create or replace function public.test_bump_ticket_prices()
+      returns trigger
+      language plpgsql
+      as $$
+      begin
+        update public.ticket_types
+           set price_cents = price_cents + 100
+         where event_id = new.event_id;
+        return new;
+      end;
+      $$;
+
+      create trigger test_bump_ticket_prices_before_order
+      before insert on public.orders
+      for each row execute function public.test_bump_ticket_prices();
+    `);
+
+    const result = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }]);
+
+    await asSuperuser(db);
+    const items = await db.query<{ unit_price_cents: number; line_total_cents: number }>(
+      `select unit_price_cents, line_total_cents from public.order_items where order_id = $1`,
+      [result.rows[0].order_id],
+    );
+
+    expect(items.rows).toEqual([{ unit_price_cents: general.price_cents, line_total_cents: general.price_cents }]);
   });
 });

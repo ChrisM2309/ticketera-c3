@@ -252,7 +252,7 @@ export function CheckoutPage() {
               className="min-h-11 rounded-md border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto outline-none focus-visible:ring-2 focus-visible:ring-foco"
             />
             {fieldErrors.buyerName ? (
-              <p id="buyer-name-error" className="font-texto text-sm text-error">
+              <p id="buyer-name-error" role="alert" className="font-texto text-sm text-error">
                 {fieldErrors.buyerName}
               </p>
             ) : null}
@@ -276,7 +276,7 @@ export function CheckoutPage() {
               className="min-h-11 rounded-md border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto outline-none focus-visible:ring-2 focus-visible:ring-foco"
             />
             {fieldErrors.buyerEmail ? (
-              <p id="buyer-email-error" className="font-texto text-sm text-error">
+              <p id="buyer-email-error" role="alert" className="font-texto text-sm text-error">
                 {fieldErrors.buyerEmail}
               </p>
             ) : null}

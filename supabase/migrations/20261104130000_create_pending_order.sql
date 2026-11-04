@@ -28,6 +28,7 @@ declare
   v_email text := lower(btrim(p_buyer_email));
   v_item record;
   v_ticket record;
+  v_lines jsonb := '[]'::jsonb;
 begin
   if p_fee_percent is null or p_fee_percent not between 0 and 100 then
     raise exception 'Comisión DEMO inválida.' using errcode = '22023';
@@ -68,7 +69,8 @@ begin
     from public.events e
    where e.id = p_event_id
      and e.status = 'published'
-     and coalesce(e.ends_at, e.starts_at) >= now();
+     and coalesce(e.ends_at, e.starts_at) >= now()
+   for share;
 
   if not found then
     raise exception 'Este evento no está disponible para compra.' using errcode = '22023';
@@ -84,7 +86,8 @@ begin
       into v_ticket
       from public.ticket_types t
      where t.id = v_item.ticket_type_id
-       and t.event_id = v_event_id;
+        and t.event_id = v_event_id
+      for share;
 
     if not found or not v_ticket.is_active then
       raise exception 'Esta entrada ya no está disponible.' using errcode = '22023';
@@ -99,6 +102,12 @@ begin
     end if;
 
     v_subtotal_cents := v_subtotal_cents + (v_ticket.price_cents * v_item.quantity);
+    v_lines := v_lines || jsonb_build_array(jsonb_build_object(
+      'ticket_type_id', v_ticket.id,
+      'unit_price_cents', v_ticket.price_cents,
+      'quantity', v_item.quantity,
+      'line_total_cents', v_ticket.price_cents * v_item.quantity
+    ));
   end loop;
 
   v_fee_cents := round((v_subtotal_cents::numeric * p_fee_percent) / 100)::integer;
@@ -116,17 +125,16 @@ begin
   )
   select
     v_order_id,
-    t.id,
-    t.price_cents,
-    grouped.quantity,
-    t.price_cents * grouped.quantity
-  from (
-    select (selected.item ->> 'ticketTypeId')::uuid as ticket_type_id,
-           sum((selected.item ->> 'quantity')::integer)::integer as quantity
-      from jsonb_array_elements(p_items) as selected(item)
-     group by (selected.item ->> 'ticketTypeId')::uuid
-  ) as grouped
-  join public.ticket_types t on t.id = grouped.ticket_type_id and t.event_id = v_event_id;
+    lines.ticket_type_id,
+    lines.unit_price_cents,
+    lines.quantity,
+    lines.line_total_cents
+  from jsonb_to_recordset(v_lines) as lines(
+    ticket_type_id uuid,
+    unit_price_cents integer,
+    quantity integer,
+    line_total_cents integer
+  );
 
   return query
   select v_order_id, v_subtotal_cents, v_fee_cents, v_subtotal_cents + v_fee_cents;

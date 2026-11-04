@@ -53,7 +53,7 @@ Expected: FAIL porque RPC y rol aún no existen.
 
 - [x] **Step 3: Implementar la RPC y permisos mínimos**
 
-Usar `SECURITY DEFINER` con `search_path` fijo; agregar cantidades duplicadas, validar evento publicado/no pasado, tipo/cupo/límite y cálculos enteros; revocar `EXECUTE` de `public`, otorgarlo a `service_role` y ampliar el shim PGlite.
+Usar `SECURITY DEFINER` con `search_path` fijo; agregar cantidades duplicadas, validar evento publicado/no pasado, tipo/cupo/límite y cálculos enteros; bloquear las filas validadas y materializar esas mismas líneas para el snapshot; revocar `EXECUTE` de `public`, otorgarlo a `service_role` y ampliar el shim PGlite.
 
 - [x] **Step 4: Verificar las pruebas de DB**
 

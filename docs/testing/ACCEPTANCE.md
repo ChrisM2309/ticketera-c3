@@ -37,10 +37,10 @@ La corrida E2E completa del repositorio quedó en `3/5`: los tres escenarios de 
 - [x] `POST /api/checkout/orders` acepta solo IDs/cantidades/datos de comprador y descarta totales recibidos desde navegador.
 - [x] La RPC protegida vuelve a leer el catálogo, valida evento/tipo/cupo/límite y persiste una orden `pending` con snapshots de precio e importes en centavos.
 - [x] El token de checkout tiene 32 bytes aleatorios; solo su SHA-256 llega a DB y el original permanece en `sessionStorage` tras el éxito.
-- [x] DB (3/3), unitarias (4/4), E2E local de carrito+checkout (5/5), lint, typecheck, suite completa (102/102) y build pasaron.
+- [x] DB (7/7), unitarias (4/4), E2E local de carrito+checkout (6/6), lint, typecheck, suite completa (106/106) y build pasaron.
 - [ ] Confirmación atómica, actualización de inventario y boletos: queda para T10; pago gratuito/aprobado/rechazado: T11.
 
-La corrida E2E completa quedó en `5/7`: los cinco casos de carrito/checkout pasan; los dos casos heredados de `tests/e2e/home.spec.ts` siguen sin cargar catálogo/ficha porque el proyecto Supabase remoto no respondió. El build de T09 sí pasó cuando Next tuvo permiso para escribir su caché local.
+La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la corrida enfocada actual de carrito+checkout queda en `6/6`. Los dos casos heredados de `tests/e2e/home.spec.ts` siguen sin cargar catálogo/ficha porque el proyecto Supabase remoto no respondió. El build de T09 sí pasó cuando Next tuvo permiso para escribir su caché local.
 
 ## Criterios de salida P1
 

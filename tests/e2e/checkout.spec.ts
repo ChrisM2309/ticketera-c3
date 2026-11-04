@@ -107,3 +107,15 @@ test('checkout vacío explica cómo volver al evento', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Todavía no agregaste entradas.' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Volver al carrito' })).toBeVisible();
 });
+
+test('checkout anuncia los errores de datos de comprador', async ({ page }) => {
+  await page.evaluate(({ key, value }) => {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }, { key: cartStorageKey, value: storedCart });
+  await page.reload();
+
+  await page.getByRole('button', { name: 'Crear orden DEMO' }).click();
+
+  await expect(page.getByRole('alert').filter({ hasText: 'Ingresá tu nombre completo.' })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Ingresá un correo electrónico válido.' })).toBeVisible();
+});
