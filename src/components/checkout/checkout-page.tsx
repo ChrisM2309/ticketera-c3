@@ -14,6 +14,7 @@ import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
 import { CartSummary } from './cart-summary';
+import { PaymentStep, type PendingOrder } from './payment-step';
 
 type FieldErrors = {
   buyerName?: string;
@@ -21,12 +22,9 @@ type FieldErrors = {
   form?: string;
 };
 
-type CreatedOrder = {
-  orderId: string;
+type CreatedOrder = PendingOrder & {
   subtotalCents: number;
   feeCents: number;
-  totalCents: number;
-  checkoutToken: string;
 };
 
 function subscribeToCartStorage(onChange: () => void) {
@@ -188,12 +186,7 @@ export function CheckoutPage() {
 
     return (
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14">
-        <header className="flex flex-col gap-3">
-          <h1 className="font-titulo text-4xl font-bold leading-tight tracking-tight">Orden pendiente creada</h1>
-          <p className="max-w-2xl font-texto text-base leading-7 text-texto-suave">
-            Verificamos tus entradas y guardamos la orden DEMO. En el siguiente paso elegirás el resultado del pago de demostración.
-          </p>
-        </header>
+        <PaymentStep order={createdOrder} />
         <CartSummary
           totals={verifiedTotals}
           commissionPercent={siteConfig.demoCommissionPercent}
