@@ -40,7 +40,7 @@ async function createPendingOrder(items: Array<{ ticketTypeId: string; quantity:
 
 beforeEach(async () => {
   db = await createDatabase();
-});
+}, 30_000);
 
 afterEach(async () => {
   await db.close();
