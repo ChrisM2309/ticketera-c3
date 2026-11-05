@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { signOutAction } from '@/features/auth/actions';
 import { eventStatusLabel, formatEventStart } from '@/features/organizers/panel';
+import { ticketsIssuedText } from '@/features/organizers/review';
 import { requireRole } from '@/lib/auth/require-role';
 import { organizerHomePath } from '@/lib/auth/access';
 import Link from 'next/link';
@@ -48,6 +49,20 @@ export default async function PanelPage() {
 
   const events = eventsResult?.data ?? [];
 
+  // Boletos emitidos por evento: la función solo devuelve filas de eventos del propio organizador.
+  const countsResult = organizerIds.length > 0 ? await account.client.rpc('organizer_event_ticket_counts') : null;
+
+  if (countsResult?.error) {
+    throw new Error('No pudimos cargar los registros de tus eventos.');
+  }
+
+  const ticketsByEvent = new Map<string, number>(
+    ((countsResult?.data ?? []) as { event_id: string; tickets_issued: number | string }[]).map((row) => [
+      row.event_id,
+      Number(row.tickets_issued),
+    ]),
+  );
+
   return (
     <section aria-labelledby="panel-title" className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -93,7 +108,8 @@ export default async function PanelPage() {
                     <li key={event.id} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <span className="font-texto text-base font-medium text-texto">{event.title}</span>
                       <span className="font-texto text-sm text-texto-suave">
-                        {formatEventStart(event.starts_at)} · {eventStatusLabel(event.status)}
+                        {formatEventStart(event.starts_at)} · {eventStatusLabel(event.status)} ·{' '}
+                        {ticketsIssuedText(ticketsByEvent.get(event.id) ?? 0)}
                       </span>
                     </li>
                   ))}
