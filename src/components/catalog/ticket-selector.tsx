@@ -65,7 +65,7 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
         : null;
 
   return (
-    <section aria-labelledby="entradas" className="flex flex-col gap-5 rounded-lg bg-superficie p-5 shadow-md">
+    <section aria-labelledby="entradas" className="flex flex-col gap-5 rounded-lg bg-superficie p-5 shadow-sm">
       <div className="flex flex-col gap-2">
         <h2 id="entradas" className="font-titulo text-2xl font-bold">
           Elegí tus entradas

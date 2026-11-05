@@ -128,7 +128,7 @@ export default async function Home() {
         <div className="flex flex-col items-start gap-6 rounded-lg bg-navy p-8 text-texto-inverso md:flex-row md:items-center md:justify-between md:p-10">
           <div className="max-w-2xl">
             <h2 className="font-titulo text-2xl font-bold">¿Organizas un evento?</h2>
-            <p className="mt-2 text-compite-claro">
+            <p className="mt-2">
               Propón tu evento y lo revisamos antes de publicarlo.
             </p>
           </div>
