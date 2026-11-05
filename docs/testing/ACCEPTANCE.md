@@ -92,6 +92,15 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] El catálogo y la ficha salen de la base real. Crear y confirmar la orden se simulan para no escribir en producción (D-31).
 - [ ] Prueba con la API real y la base real: pendiente. Se corre manualmente con una compra de prueba, igual que T10 y T11.
 
+### T16 — Moderación mínima
+
+- [x] `review_organizer_event`: el administrador aprueba o rechaza solo eventos pendientes; un evento ya publicado no cambia y uno cuya fecha pasó no se publica (`tests/db/review-organizer-event.test.ts`, 9/9 con los conteos).
+- [x] Un organizador no puede aprobar, rechazar ni publicar su evento con un UPDATE, y no revisa ni edita eventos ajenos (RLS y pruebas de base).
+- [x] El organizador ve los boletos emitidos de sus propios eventos; los de otro organizador no aparecen (`organizer_event_ticket_counts`).
+- [x] Migración `20261105150000` aplicada en producción (2026-11-05) y verificada en solo lectura: funciones SECURITY DEFINER, permisos de EXECUTE correctos y migración registrada en remoto.
+- [ ] Aprobación real: el administrador aprueba un evento en el deployment y aparece en el catálogo público. Pendiente de una prueba con `admin@demo.c3`; producción no tiene eventos pendientes todavía.
+- [ ] `/admin/` con sesión real: lista de eventos pendientes y órdenes recientes. Pendiente de la misma prueba.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.
