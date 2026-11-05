@@ -72,7 +72,7 @@ export default async function Home() {
                 Ver evento destacado
               </Link>
             ) : null}
-            <Link href="/publicar" className={buttonVariants({ variant: 'secundario', size: 'lg' })}>
+            <Link href="/panel/eventos/nuevo/" className={buttonVariants({ variant: 'secundario', size: 'lg' })}>
               Publicar evento
             </Link>
           </div>
@@ -94,7 +94,7 @@ export default async function Home() {
           <h2 id="proximos" className="font-titulo text-3xl font-bold">
             Próximos eventos
           </h2>
-          <Link href="/buscar" className="font-titulo font-semibold text-enlace underline-offset-4 hover:underline">
+          <Link href="/buscar/" className="font-titulo font-semibold text-enlace underline-offset-4 hover:underline">
             Ver todos los eventos
           </Link>
         </div>
@@ -132,7 +132,7 @@ export default async function Home() {
               Propón tu evento y lo revisamos antes de publicarlo.
             </p>
           </div>
-          <Link href="/publicar" className={buttonVariants({ variant: 'compra' })}>
+          <Link href="/panel/eventos/nuevo/" className={buttonVariants({ variant: 'compra' })}>
             Publicar evento
           </Link>
         </div>

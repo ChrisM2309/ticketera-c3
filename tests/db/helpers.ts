@@ -28,6 +28,9 @@ const supabaseShimSql = `
     language sql stable
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   grant usage on schema auth to anon, authenticated, service_role;
+  -- Supabase concede EXECUTE a anon y authenticated sobre las funciones nuevas de public por defecto.
+  -- Sin esto, PGlite no detecta grants que dependen de esos privilegios por defecto.
+  alter default privileges in schema public grant execute on functions to anon, authenticated;
   grant execute on function auth.uid() to anon, authenticated, service_role;
 `;
 

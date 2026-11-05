@@ -52,3 +52,5 @@ next-env.d.ts
 
 # Supabase CLI temporary files (project link metadata)
 supabase/.temp/
+# Worktrees de agentes (T17: evitar que git los trate como repositorios anidados)
+.claude/worktrees/

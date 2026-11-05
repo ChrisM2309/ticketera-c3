@@ -8,6 +8,7 @@ import type { CatalogEvent, CatalogTaxonomy } from '../../features/catalog/types
 export const privatePaths = [
   '/admin/',
   '/api/',
+  '/buscar/',
   '/carrito/',
   '/checkout/',
   '/confirmacion/',
