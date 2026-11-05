@@ -123,6 +123,18 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Sin credenciales en el HTML ni en los chunks JS de producción.
 - [x] Validación final: T13 cerrado con compras reales, y T17 revisado en código y producción. Terminado.
 
+### T23 — Integración del sistema visual de marca C3 (extra, fuera de plan)
+
+- [x] Plan escrito antes de cambiar nada: `docs/superpowers/plans/2026-11-05-integracion-sistema-visual.md`. Documento de marca copiado en `docs/design/SISTEMA-VISUAL-C3-2026-11.md`.
+- [x] Decisiones registradas en D-33 (línea Conecta, acción violeta, CTA de compra, neutrales, radios, sombras, modo oscuro, `info`, movimiento).
+- [x] Contraste AA comprobado por prueba: texto inverso sobre acción en claro (6.35:1) y oscuro (4.82:1); hover oscuro 6.99:1; foco y enlace; borde de campos 3:1 en claro (`tests/unit/design-tokens.test.ts`).
+- [x] Ninguna clase usa un token que no existe (`text-compite-claro` retirado) ni el turquesa como acción (`tests/unit/no-undefined-tokens.test.ts`, `tests/unit/button-variants.test.ts`).
+- [x] Campos con radio de 6 px en un solo componente compartido (`tests/unit/field-class.test.ts`).
+- [x] Suite completa: 30/30 archivos. Lint, typecheck y build sin errores.
+- [x] E2E con la API simulada: 16/16 (`purchase-flow`, `cart`, `checkout`, `home`, `catalog`).
+- [x] Capturas antes y después a 390 y 1280 px (`scratchpad`): sin desbordamiento horizontal; botones de compra y distintivo DEMO legibles. Revisión visual a cargo del responsable.
+- [ ] Pendientes fuera de alcance (D-33): modo oscuro global, token `info`, voz «tú», auditoría de contraste con herramienta, manual de marca oficial.
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.

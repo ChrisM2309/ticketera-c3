@@ -14,5 +14,7 @@ export default defineConfig({
     // paralelo, la creación puede tardar más que el límite por defecto.
     testTimeout: 60_000,
     hookTimeout: 60_000,
+    // Las pruebas de base crean PGlite con todas las migraciones; con 8 workers el arranque supera 30 s.
+    maxWorkers: 4,
   },
 });
