@@ -103,8 +103,8 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Un organizador no puede aprobar, rechazar ni publicar su evento con un UPDATE, y no revisa ni edita eventos ajenos (RLS y pruebas de base).
 - [x] El organizador ve los boletos emitidos de sus propios eventos; los de otro organizador no aparecen (`organizer_event_ticket_counts`).
 - [x] Migración `20261105150000` aplicada en producción (2026-11-05) y verificada en solo lectura: funciones SECURITY DEFINER, permisos de EXECUTE correctos y migración registrada en remoto.
-- [ ] Aprobación real: el administrador aprueba un evento en el deployment y aparece en el catálogo público. Pendiente de una prueba con `admin@demo.c3`; producción no tiene eventos pendientes todavía.
-- [ ] `/admin/` con sesión real: lista de eventos pendientes y órdenes recientes. Pendiente de la misma prueba.
+- [x] Aprobación real (2026-11-05): `empresa@demo.c3` envió «CONGRESO DE IA 2027!!!» (organizador DEMO Uno); `admin@demo.c3` lo aprobó desde `/admin/`. Estado `published`, sin pendientes, visible en `/congresos/` y `/congresos/inteligencia-artificial/` de producción.
+- [x] `/admin/` con sesión real: lista de eventos pendientes y órdenes recientes, con Aprobar y Rechazar.
 
 ### T17 — Revisión integral
 
@@ -121,7 +121,7 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Producción en `https://demo.ticketera.c3.com.sv`: HTTPS con HSTS y redirección desde http.
 - [x] Catálogo, categorías y fichas responden 200 en producción; rutas inexistentes responden 404.
 - [x] Sin credenciales en el HTML ni en los chunks JS de producción.
-- [ ] Validación final junto con T17 (pendiente de T13).
+- [x] Validación final: T13 cerrado con compras reales, y T17 revisado en código y producción. Terminado.
 
 ## Criterios de salida P1
 
