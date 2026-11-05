@@ -90,7 +90,12 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Escritorio: Home → categoría → ficha → carrito → checkout → confirmación, con registro gratuito, pago DEMO aprobado y pago DEMO rechazado (`tests/e2e/purchase-flow.spec.ts`, 3/3).
 - [x] Celular a 375 px: registro gratuito de extremo a extremo sin desbordamiento horizontal (1/1).
 - [x] El catálogo y la ficha salen de la base real. Crear y confirmar la orden se simulan para no escribir en producción (D-31).
-- [ ] Prueba con la API real y la base real: pendiente. Se corre manualmente con una compra de prueba, igual que T10 y T11.
+- [x] Prueba con la API real y la base real (`tests/e2e/purchase-flow-real.spec.ts`, 4/4, con `REAL_PURCHASE=1`). Ejecutada el 2026-11-05 contra el servidor de producción local (`next start`) y la base del proyecto. No simula la API.
+  - Gratis en escritorio: orden `29577f25-12f2-4794-8553-39234b5bdb02`, `confirmed`, 1 boleto, total 0.
+  - Pago DEMO aprobado: orden `678e3653-72f5-454b-b1d2-be9d3c14d6c1`, `confirmed`, 2 boletos, pago `demo_approved`, total 2100 centavos.
+  - Pago DEMO rechazado: orden `376715ca-e0cd-4db7-a4a2-4220b8ea3845`, `failed`, 0 boletos, pago `demo_rejected`, cupo intacto.
+  - Gratis en 375 px: orden `4052c2ec-d11d-437e-bbc6-600e370c905d`, `confirmed`, 1 boleto.
+  - Las cuatro órdenes tienen correo `e2e-real-*@example.test`. Se dejaron en la base como registro; no se borraron.
 
 ### T16 — Moderación mínima
 
@@ -138,9 +143,9 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 
 | Escenario | Resultado esperado | ID prueba | Evidencia | Estado |
 |---|---|---|---|---|
-| Evento gratis | Orden confirmada y QR | pendiente | pendiente | No ejecutado |
-| Pago DEMO aprobado | Orden confirmada y QR | pendiente | pendiente | No ejecutado |
-| Pago DEMO rechazado | Orden fallida, sin QR | pendiente | pendiente | No ejecutado |
+| Evento gratis | Orden confirmada y QR | `tests/e2e/purchase-flow-real.spec.ts` | `29577f25-12f2-4794-8553-39234b5bdb02` (1 boleto) | Ejecutado el 2026-11-05 |
+| Pago DEMO aprobado | Orden confirmada y QR | `tests/e2e/purchase-flow-real.spec.ts` | `678e3653-72f5-454b-b1d2-be9d3c14d6c1` (2 boletos, `demo_approved`) | Ejecutado el 2026-11-05 |
+| Pago DEMO rechazado | Orden fallida, sin QR | `tests/e2e/purchase-flow-real.spec.ts` | `376715ca-e0cd-4db7-a4a2-4220b8ea3845` (`failed`, 0 boletos, `demo_rejected`) | Ejecutado el 2026-11-05 |
 
 **Nunca** marcar estas filas como exitosas si no se han ejecutado.
 
