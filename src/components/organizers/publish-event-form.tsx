@@ -108,7 +108,7 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
           <FieldError id="agenda-error" message={errors.agenda} />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid min-w-0 gap-5 sm:grid-cols-[repeat(2,minmax(0,1fr))] [&>*]:min-w-0">
           <div className="flex flex-col gap-2">
             <label htmlFor="eventTypeId" className={labelClass}>Tipo de evento</label>
             <select
@@ -162,7 +162,7 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
         </div>
 
         {isVirtual ? null : (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid min-w-0 gap-5 sm:grid-cols-[repeat(2,minmax(0,1fr))] [&>*]:min-w-0">
             <div className="flex flex-col gap-2">
               <label htmlFor="locationId" className={labelClass}>Ciudad</label>
               <select
@@ -200,7 +200,7 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
           </div>
         )}
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid min-w-0 gap-5 sm:grid-cols-[repeat(2,minmax(0,1fr))] [&>*]:min-w-0">
           <div className="flex flex-col gap-2">
             <label htmlFor="startsAt" className={labelClass}>Inicio (hora de El Salvador)</label>
             <input
@@ -258,7 +258,10 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
         <FieldError id="tickets-error" message={errors.tickets} />
 
         {Array.from({ length: maxTicketTypes }, (_, index) => (
-          <div key={index} className="grid gap-3 rounded-md border border-borde p-4 sm:grid-cols-[2fr_1fr_1fr_1fr]">
+          <div
+            key={index}
+            className="grid min-w-0 gap-3 rounded-md border border-borde p-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] [&>*]:min-w-0"
+          >
             <div className="flex flex-col gap-2">
               <label htmlFor={`ticket-${index}-name`} className={labelClass}>Nombre</label>
               <input
