@@ -33,7 +33,7 @@ export function EventCard({ event, featured = false }: EventCardProps) {
   });
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-lg bg-superficie shadow-sm">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-md bg-superficie shadow-sm">
       <div className={cn('relative bg-navy', featured ? 'aspect-[2/1]' : 'aspect-[16/10]')}>
         <Image
           src={coverImagePath(event)}
@@ -63,7 +63,7 @@ export function EventCard({ event, featured = false }: EventCardProps) {
             {date.day}
           </span>
           <span className="font-texto text-sm font-medium">{date.month}</span>
-          <span className="font-texto text-xs font-medium text-compite-claro">{date.time}</span>
+          <span className="font-texto text-xs font-medium">{date.time}</span>
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">

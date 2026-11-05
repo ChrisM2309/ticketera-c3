@@ -15,7 +15,7 @@ export function CartSummary({
   note = 'El precio y los cupos se verifican nuevamente antes de confirmar la orden.',
 }: CartSummaryProps) {
   return (
-    <section aria-labelledby="resumen-carrito" className="flex flex-col gap-4 rounded-lg bg-superficie p-5 shadow-md">
+    <section aria-labelledby="resumen-carrito" className="flex flex-col gap-4 rounded-lg bg-superficie p-5 shadow-sm">
       <h2 id="resumen-carrito" className="font-titulo text-xl font-bold">
         Resumen
       </h2>

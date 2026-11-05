@@ -6,6 +6,7 @@ import { publishEventAction, type PublishState } from '@/features/organizers/act
 import { maxTicketTypes, type PublishFieldErrors } from '@/features/organizers/publish';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { fieldClass } from '@/components/ui/field';
 
 export type FormOption = { id: string; name: string };
 
@@ -17,8 +18,7 @@ type PublishEventFormProps = {
 
 const initialState: PublishState = {};
 
-const inputClass =
-  'min-h-11 rounded-md border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto outline-none focus-visible:ring-2 focus-visible:ring-foco';
+const inputClass = fieldClass;
 
 const labelClass = 'font-titulo text-sm font-semibold';
 

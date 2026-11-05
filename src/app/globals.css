@@ -7,18 +7,17 @@
 :root {
   --fondo: #f3f6fa;
   --superficie: #ffffff;
-  --superficie-sutil: #e9eff7;
+  --superficie-sutil: #f6f8fb;
   --texto: #0f203e;
-  --texto-suave: #475569;
+  --texto-suave: #536178;
   --texto-inverso: #ffffff;
-  --borde: #d9e1ec;
+  --borde: #dce3ed;
   --borde-fuerte: #7c8ba0;
-  --accion: #205298;
-  --accion-intensa: #19406f;
-  --enlace: #205298;
-  --foco: #2c62b0;
-  --compra: #33beac;
-  --compra-intensa: #2aa996;
+  /* Acción de la línea Conecta (D-33). Texto blanco: 6.35:1; hover: 8.36:1. */
+  --accion: #6548c7;
+  --accion-intensa: #5236b0;
+  --enlace: #6548c7;
+  --foco: #6548c7;
   --navy: #0f203e;
   --compite: #205298;
   --crea: #33beac;
@@ -40,10 +39,11 @@
   --texto-inverso: #eaf0f8;
   --borde: #2c3f63;
   --borde-fuerte: #4a5f85;
-  --accion: #2c62b0;
-  --accion-intensa: #3f74c2;
-  --enlace: #7fb0ea;
-  --foco: #7fb0ea;
+  /* Oscuro (D-33): texto #eaf0f8 sobre la acción: 4.82:1; sobre el hover: 6.99:1. */
+  --accion: #6e54cc;
+  --accion-intensa: #55409f;
+  --enlace: #b9a8f0;
+  --foco: #b9a8f0;
   --crea-texto: #4fd6c4;
   --exito: #4fd99e;
   --advertencia: #e8b15c;
@@ -64,8 +64,6 @@
   --color-accion-intensa: var(--accion-intensa);
   --color-enlace: var(--enlace);
   --color-foco: var(--foco);
-  --color-compra: var(--compra);
-  --color-compra-intensa: var(--compra-intensa);
   --color-navy: var(--navy);
   --color-compite: var(--compite);
   --color-crea: var(--crea);
@@ -84,9 +82,12 @@
   --radius-lg: 20px;
   --radius-pill: 999px;
 
+  /* Etiquetas de botón y de navegación (documento §3: 13 px, tracking 0.08 em). */
+  --text-etiqueta: 0.8125rem;
+  --tracking-etiqueta: 0.08em;
+
   --shadow-sm: 0 1px 2px rgb(15 32 62 / 0.08);
   --shadow-md: 0 6px 16px rgb(15 32 62 / 0.12);
-  --shadow-tarjeta: 0 14px 32px rgb(15 32 62 / 0.14);
   --shadow-lg: 0 16px 40px rgb(15 32 62 / 0.16);
 }
 
@@ -106,4 +107,15 @@ body {
 :focus-visible {
   outline: 3px solid var(--foco);
   outline-offset: 2px;
+}
+
+/* Movimiento reducido: transiciones y animaciones casi instantáneas (documento §7). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

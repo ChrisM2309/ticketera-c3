@@ -18,7 +18,7 @@ export function CategoryTile({ category }: Readonly<{ category: CatalogCategory 
     <Link
       href={`/${category.slug}/`}
       className={cn(
-        'flex min-h-24 items-end rounded-lg p-4 font-titulo text-lg font-bold leading-tight underline-offset-4 hover:underline',
+        'flex min-h-24 items-end rounded-md p-4 font-titulo text-lg font-bold leading-tight underline-offset-4 hover:underline',
         lineTile[line],
       )}
     >

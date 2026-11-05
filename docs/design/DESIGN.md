@@ -22,16 +22,15 @@ Apariencia técnica, limpia y profesional, basada en el manual C3. Es un **proto
 | `texto-inverso` | `#ffffff` | `#eaf0f8` | texto sobre rellenos fuertes |
 | `borde` | `#d9e1ec` | `#2c3f63` | divisores |
 | `borde-fuerte` | `#7c8ba0` | `#4a5f85` | bordes de campos (3:1) |
-| `accion` | `#205298` | `#2c62b0` | botón primario, elementos interactivos |
-| `accion-intensa` | `#19406f` | `#3f74c2` | hover/activo del primario |
-| `enlace` | `#205298` | `#7fb0ea` | enlaces de texto |
-| `foco` | `#2c62b0` | `#7fb0ea` | anillo de foco, siempre visible |
-| `compra` | `#33beac` | `#33beac` | CTA de compra: relleno turquesa con texto navy, un solo CTA por vista |
-| `compra-intensa` | `#2aa996` | `#2aa996` | hover del CTA de compra |
+| `accion` | `#6548c7` | `#6e54cc` | acción de la línea Conecta (D-33): botón primario, CTA de compra, elementos interactivos |
+| `accion-intensa` | `#5236b0` | `#55409f` | hover/activo de la acción |
+| `enlace` | `#6548c7` | `#b9a8f0` | enlaces de texto |
+| `foco` | `#6548c7` | `#b9a8f0` | anillo de foco, siempre visible |
+| `compra` | — | — | retirado (D-33): el CTA de compra usa `accion` |
 | `overlay-foto` | `rgba(15,32,62,0.86)` | `rgba(15,32,62,0.86)` | velo navy sobre fotos para legibilidad |
 | `navy` | `#0f203e` | — | navegación, pie, bloques de marca |
 | `compite` | `#205298` | — | línea Compite (azul) |
-| `crea` | `#33beac` | — | línea Crea (turquesa); **CTA de compra**; solo relleno |
+| `crea` | `#33beac` | — | línea Crea (turquesa); solo relleno de tarjetas y mosaicos de línea |
 | `crea-texto` | `#0f766e` | `#4fd6c4` | turquesa legible como texto |
 | `conecta` | `#4f5ba9` | — | línea Conecta (morado) |
 | `exito` / `advertencia` / `error` | `#157a52` / `#9a5b00` / `#b83227` | `#4fd99e` / `#e8b15c` / `#f28b7e` | estados |
@@ -46,20 +45,20 @@ Apariencia técnica, limpia y profesional, basada en el manual C3. Es un **proto
 ### Espaciado y forma
 
 - Espaciado: 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 px (`--space-1` a `--space-10`).
-- Radios: 6 px campos e inputs · 12 px botones y tarjetas estándar · 20 px tarjetas grandes y mockups · 999 px chips y píldoras.
-- Sombras: `sombra-sm` (inputs, chips), `sombra-md` (tarjetas flotantes, menús), `sombra-lg` (modales).
+- Radios: 6 px campos e inputs (`radius-sm`) · 12 px botones, tarjetas de evento y de categoría (`radius-md`) · 20 px módulos grandes y mockups · 999 px chips y píldoras (D-33).
+- Sombras: `sombra-sm` (tarjetas, inputs, chips y bloques de resumen), `sombra-md` (solo elementos flotantes y menús), `sombra-lg` (modales). Sin sombra-tarjeta propia (D-33).
 
 ## Reglas de estilo
 
 1. **Solo tokens.** Nunca escribir colores, tamaños ni radios literales en las pantallas: usar `var(--...)`. Excepción documentada: `#fff` dentro de `bundle.css` para texto sobre `accion`.
 2. **Turquesa (`crea`) no es texto sobre fondo claro.** Como relleno, sí; como texto, `crea-texto`. Sobre navy, el turquesa sí se usa como texto.
-3. **Un CTA de compra por vista.** El botón de compra usa `crea` con texto `navy` (`c3-btn--crea`). El primario azul (`accion`) es para acciones de formulario y publicación. En la barra navy, las acciones secundarias usan texto `texto-inverso`.
+3. **Un CTA de compra por vista.** El botón de compra usa `accion` con texto `texto-inverso` (variante `compra` de `Button`, D-33). El turquesa `crea` no es acción: es color de línea. En la barra navy, las acciones secundarias usan texto `texto-inverso`.
 4. **Azul marino para navegación y acentos.** Header y pie en `navy`; el contenido, en claro (`fondo`/`superficie`).
 5. **Logo y navegación.** El logotipo lleva al Home. El menú **no** contiene «Inicio». Las 12 categorías van en el orden del Excel (ver `docs/architecture/SEO_ROUTES.md`).
 6. **Etiqueta DEMO visible.** `DEMO · Proyecto académico` en el header (badge `c3-badge--advertencia`), y en el pie y en el checkout. Los pagos se muestran como «Pago de demostración».
 7. **Estados no solo por color.** Cada estado lleva texto o icono (`c3-badge` con etiqueta).
 8. **Foco visible.** Nunca `outline: none` sin reemplazo. Las clases de `bundle.css` ya usan `foco` de 3 px.
-9. **Contraste.** Texto 4.5:1 en ambos temas; controles y bordes 3:1. Texto blanco sobre `accion` (`#205298`) y `navy` con `#a9b8d0` cumplen.
+9. **Contraste.** Texto 4.5:1 en ambos temas; controles y bordes 3:1. Texto blanco sobre `accion` (`#6548c7`, 6.35:1) y `texto-inverso` oscuro (`#eaf0f8`) sobre `accion` oscura (`#6e54cc`, 4.82:1) cumplen. Lo verifica `tests/unit/design-tokens.test.ts`.
 10. **Sin emojis en UI.** Los iconos son SVG de trazo, `aria-hidden` cuando decoran.
 11. **Sin degradados ni texturas sobre el logotipo.** Ni deformar ni recolorear el logo fuera de la paleta (ver «Uso del logotipo» del design system).
 12. **Móvil primero.** Campos de 16 px mínimo para evitar zoom en iOS; áreas táctiles de 44 px; sin scroll horizontal en la página (solo en la barra de categorías, contenida en su propio contenedor).
@@ -68,7 +67,7 @@ Apariencia técnica, limpia y profesional, basada en el manual C3. Es un **proto
 
 | Necesidad | Clase | Notas |
 |---|---|---|
-| Botón de compra | `c3-btn c3-btn--crea c3-btn--lg` | texto navy |
+| Botón de compra | `Button variant="compra"` (acción de marca) | texto `texto-inverso` |
 | Botón primario | `c3-btn c3-btn--primario` | formularios, publicar |
 | Secundario / fantasma | `c3-btn--secundario`, `c3-btn--fantasma` | en navy, sobrescribir `--_fg` y `--_bd` |
 | Campos | `c3-field`, `c3-label`, `c3-input`, `c3-help`, `c3-error-text` | `label[for]` obligatorio |
