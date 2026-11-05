@@ -101,6 +101,23 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [ ] Aprobación real: el administrador aprueba un evento en el deployment y aparece en el catálogo público. Pendiente de una prueba con `admin@demo.c3`; producción no tiene eventos pendientes todavía.
 - [ ] `/admin/` con sesión real: lista de eventos pendientes y órdenes recientes. Pendiente de la misma prueba.
 
+### T17 — Revisión integral
+
+- [x] Secretos: el repo y los chunks JS de producción no contienen credenciales; `service_role` solo en servidor (revisión de solo lectura).
+- [x] Permisos: `create_pending_order` deja de ser ejecutable por `anon` con la migración `20261105160000` (`tests/db/privileges.test.ts`). Aplicada en producción el 2026-11-05 y verificada en solo lectura.
+- [x] SEO: el catálogo demo lleva `noindex`; `robots.txt` y `sitemap.xml` correctos; rutas privadas excluidas.
+- [x] Rutas: CTA, menú y búsqueda apuntan a rutas existentes; `/buscar/` responde.
+- [x] Cabeceras: `X-Content-Type-Options`, `Referrer-Policy` y `X-Frame-Options` en todas las rutas.
+- [ ] Flujo E2E con API y base reales (T13). Bloquea el cierre de T17.
+- [ ] Pendientes registrados: CSP, `owner_user_id` visible a usuarios autenticados, límite de tasa en órdenes, validación de imagen y fechas en `create_organizer_event`.
+
+### T18 — Publicación
+
+- [x] Producción en `https://demo.ticketera.c3.com.sv`: HTTPS con HSTS y redirección desde http.
+- [x] Catálogo, categorías y fichas responden 200 en producción; rutas inexistentes responden 404.
+- [x] Sin credenciales en el HTML ni en los chunks JS de producción.
+- [ ] Validación final junto con T17 (pendiente de T13).
+
 ## Criterios de salida P1
 
 - [ ] Organizador inicia sesión.

@@ -11,8 +11,7 @@ export type CategoryItem = MenuItem & {
 
 /** Enlaces de cuenta y publicación. El logo lleva al Home; el menú no incluye «Inicio». */
 export const accountLinks: readonly MenuItem[] = [
-  { href: '/publicar', label: 'Publicar evento' },
-  { href: '/mis-boletos', label: 'Mis boletos' },
+  { href: '/panel/eventos/nuevo/', label: 'Publicar evento' },
   { href: '/carrito', label: 'Carrito' },
 ];
 

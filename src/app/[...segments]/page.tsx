@@ -107,7 +107,7 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
     title: scopeTitle(scope),
     description: scopeIntro(scope),
     alternates: { canonical: scopePath(scope) },
-    robots: indexable ? undefined : { index: false, follow: true },
+    robots: indexable && !siteConfig.isDemo ? undefined : { index: false, follow: true },
   };
 }
 
