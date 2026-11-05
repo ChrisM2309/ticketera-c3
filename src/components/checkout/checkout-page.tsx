@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState, useSyncExternalStore } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
+import { fieldClass } from '@/components/ui/field';
 import {
   CART_STORAGE_KEY,
   calculateCartTotals,
@@ -242,7 +243,7 @@ export function CheckoutPage() {
               onChange={(input) => setBuyerName(input.target.value)}
               aria-invalid={Boolean(fieldErrors.buyerName)}
               aria-describedby={fieldErrors.buyerName ? 'buyer-name-error' : undefined}
-              className="min-h-11 rounded-md border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto outline-none focus-visible:ring-2 focus-visible:ring-foco"
+              className={fieldClass}
             />
             {fieldErrors.buyerName ? (
               <p id="buyer-name-error" role="alert" className="font-texto text-sm text-error">
@@ -266,7 +267,7 @@ export function CheckoutPage() {
               onChange={(input) => setBuyerEmail(input.target.value)}
               aria-invalid={Boolean(fieldErrors.buyerEmail)}
               aria-describedby={fieldErrors.buyerEmail ? 'buyer-email-error' : undefined}
-              className="min-h-11 rounded-md border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto outline-none focus-visible:ring-2 focus-visible:ring-foco"
+              className={fieldClass}
             />
             {fieldErrors.buyerEmail ? (
               <p id="buyer-email-error" role="alert" className="font-texto text-sm text-error">

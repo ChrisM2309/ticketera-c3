@@ -5,6 +5,7 @@ import { useActionState } from 'react';
 import { signInAction, type SignInState } from '@/features/auth/actions';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { fieldClass } from '@/components/ui/field';
 
 type LoginFormProps = {
   next: string;
@@ -12,8 +13,7 @@ type LoginFormProps = {
 
 const initialState: SignInState = {};
 
-const inputClass =
-  'min-h-11 rounded-md border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto outline-none focus-visible:ring-2 focus-visible:ring-foco';
+const inputClass = fieldClass;
 
 export function LoginForm({ next }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(signInAction, initialState);

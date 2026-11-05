@@ -5,7 +5,7 @@ import { hasActiveFilters, type CatalogFilters } from '@/features/catalog/filter
 import type { CatalogCategory } from '@/features/catalog/types';
 
 const fieldClass =
-  'min-h-11 w-full rounded-md border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto';
+  'min-h-11 w-full rounded-sm border border-borde-fuerte bg-superficie px-3 font-texto text-base text-texto';
 
 const labelClass = 'font-texto text-sm font-medium text-texto';
 
