@@ -1,6 +1,12 @@
+import { fileURLToPath } from 'node:url';
+
 import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Mismo alias que tsconfig: los componentes importan con «@/» y las pruebas de UI los necesitan.
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
   test: {
     // Los worktrees de agentes viven dentro de .claude/ y repiten las pruebas del repositorio.
     exclude: [...configDefaults.exclude, '**/.claude/**'],
