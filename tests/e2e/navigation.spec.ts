@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * Navegación del header (D-34): cuatro grupos de categorías, carrito visible en móvil y menú que se cierra.
+ * Navegación del header (D-34): cuatro grupos desplegables, carrito visible en móvil y menú que se cierra.
  * Lee el catálogo de la base real con la clave anónima, igual que el resto de las pruebas de lectura.
  */
 
@@ -12,19 +12,29 @@ const categoriasVisibles = (page: Page) =>
 test.describe('escritorio 1280 px', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test('los cuatro grupos están a la vista y un enlace lleva a su categoría', async ({ page }) => {
+  test('cada grupo es un desplegable y un enlace lleva a su categoría', async ({ page }) => {
     await page.goto('/');
 
-    await expect(categoriasVisibles(page).getByRole('heading', { name: 'Congresos y ferias' })).toBeVisible();
-    await expect(categoriasVisibles(page).getByRole('heading', { name: 'Competencias y hackathons' })).toBeVisible();
-    await expect(categoriasVisibles(page).getByRole('heading', { name: 'Formación' })).toBeVisible();
-    await expect(categoriasVisibles(page).getByRole('heading', { name: 'Comunidad' })).toBeVisible();
+    const formacion = categoriasVisibles(page).locator('summary', { hasText: 'Formación' });
+    await expect(formacion).toBeVisible();
+    await formacion.click();
+    await expect(categoriasVisibles(page).getByRole('link', { name: 'Workshops' })).toBeVisible();
 
     await categoriasVisibles(page).getByRole('link', { name: 'Workshops' }).click();
     await expect(page).toHaveURL(/\/workshops\/$/);
   });
 
-  test('no hay desplazamiento horizontal con las cuatro secciones visibles', async ({ page }) => {
+  test('Escape cierra el desplegable abierto', async ({ page }) => {
+    await page.goto('/');
+
+    await categoriasVisibles(page).locator('summary', { hasText: 'Competencias y hackathons' }).click();
+    await expect(categoriasVisibles(page).getByRole('link', { name: 'Hackathons' })).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(categoriasVisibles(page).getByRole('link', { name: 'Hackathons' })).toBeHidden();
+  });
+
+  test('no hay desplazamiento horizontal con la cabecera completa', async ({ page }) => {
     await page.goto('/');
     const fits = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
 
@@ -41,15 +51,14 @@ test.describe('celular 375 px', () => {
     await expect(page.getByRole('link', { name: 'Carrito' })).toBeVisible();
   });
 
-  test('el menú muestra los cuatro grupos, navega y se cierra al cambiar de página', async ({ page }) => {
+  test('el menú abre los grupos como acordeones, navega y se cierra al cambiar de página', async ({ page }) => {
     await page.goto('/');
 
     const boton = page.getByRole('button', { name: 'Menú' });
     await boton.click();
     await expect(boton).toHaveAttribute('aria-expanded', 'true');
-    await expect(categoriasVisibles(page).getByRole('heading', { name: 'Formación' })).toBeVisible();
-    await expect(categoriasVisibles(page).getByRole('heading', { name: 'Comunidad' })).toBeVisible();
 
+    await categoriasVisibles(page).locator('summary', { hasText: 'Competencias y hackathons' }).click();
     await categoriasVisibles(page).getByRole('link', { name: 'Hackathons' }).click();
     await expect(page).toHaveURL(/\/hackathons\/$/);
     await expect(page.getByRole('button', { name: 'Menú' })).toHaveAttribute('aria-expanded', 'false');

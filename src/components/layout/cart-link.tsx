@@ -55,8 +55,9 @@ export function CartLink({ className }: CartLinkProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M5 8h14l-1.2 11.1a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9L5 8z" />
-        <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+        <path d="M2 3h2.6l2.4 12.1a1.6 1.6 0 0 0 1.6 1.3h8.9a1.6 1.6 0 0 0 1.6-1.2L21 7H6.1" />
+        <circle cx="9" cy="20.5" r="1.5" />
+        <circle cx="17" cy="20.5" r="1.5" />
       </svg>
       Carrito
       {cantidad > 0 ? (
