@@ -9,6 +9,7 @@ import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity } from '@/features/catalog/tickets';
 import type { CartEvent, CartItem } from '@/features/checkout/cart';
 import {
+  CART_CHANGED_EVENT,
   CART_STORAGE_KEY,
   calculateCartTotals,
   createCartSnapshot,
@@ -84,6 +85,8 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
       } else {
         window.localStorage.removeItem(CART_STORAGE_KEY);
       }
+      // Avisa a la cabecera en la misma pestaña para actualizar el contador del carrito.
+      window.dispatchEvent(new Event(CART_CHANGED_EVENT));
     } catch {
       // El carrito sigue funcionando durante la sesión si el navegador bloquea storage.
     }

@@ -214,3 +214,11 @@ export function parseCartSnapshot(value: string | null): CartSnapshot | null {
     return null;
   }
 }
+
+/** Entradas guardadas en el carrito local: suma de cantidades; sin carrito, cero. */
+export function cartItemCount(snapshot: Pick<CartSnapshot, 'items'> | null): number {
+  return snapshot ? snapshot.items.reduce((total, item) => total + item.quantity, 0) : 0;
+}
+
+/** Aviso en la misma pestaña cuando cambia el carrito guardado (el evento «storage» solo llega a otras pestañas). */
+export const CART_CHANGED_EVENT = 'ticketera-cart-changed';
