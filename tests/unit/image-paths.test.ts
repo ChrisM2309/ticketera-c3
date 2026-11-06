@@ -4,7 +4,6 @@ import { coverImagePath, publicImagePath } from '../../src/features/catalog/imag
 
 describe('publicImagePath', () => {
   it('acepta rutas locales de las carpetas de imágenes del sitio', () => {
-    expect(publicImagePath('/images/mockups/conecta.jpg')).toBe('/images/mockups/conecta.jpg');
     expect(publicImagePath('/images/tipos/congresos.webp')).toBe('/images/tipos/congresos.webp');
     expect(publicImagePath('/images/stock/crea-01.webp')).toBe('/images/stock/crea-01.webp');
   });

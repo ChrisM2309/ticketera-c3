@@ -4,7 +4,7 @@ import { coverImagePath, publicImagePath } from '../../src/features/catalog/imag
 
 describe('publicImagePath', () => {
   it('acepta rutas locales y enlaces HTTPS', () => {
-    expect(publicImagePath('/images/mockups/crea.jpg')).toBe('/images/mockups/crea.jpg');
+    expect(publicImagePath('/images/mockups/crea.jpg')).toBeNull();
     expect(publicImagePath('https://ejemplo.org/portada.jpg')).toBe('https://ejemplo.org/portada.jpg');
   });
 
