@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 
-import { cn } from '@/lib/utils';
 import { CART_CHANGED_EVENT, CART_STORAGE_KEY, cartItemCount, parseCartSnapshot } from '@/features/checkout/cart';
+import { cn } from '@/lib/utils';
 
 function suscribir(avisar: () => void) {
   window.addEventListener('storage', avisar);
@@ -25,12 +25,12 @@ function cantidadGuardada(): number {
   }
 }
 
-/**
- * Enlace al carrito con el número de entradas guardadas. Visible en móvil sin abrir el menú (D-34).
- * En el servidor no hay almacenamiento local, así que el contador aparece al cargar en el navegador.
- */
 type CartLinkProps = Readonly<{ className?: string }>;
 
+/**
+ * Enlace al carrito con icono y número de entradas guardadas. Visible en móvil sin abrir el menú (D-34).
+ * En el servidor no hay almacenamiento local, así que el contador aparece al cargar en el navegador.
+ */
 export function CartLink({ className }: CartLinkProps) {
   const cantidad = useSyncExternalStore(suscribir, cantidadGuardada, () => 0);
   const etiqueta = cantidad === 1 ? 'Carrito, 1 entrada' : `Carrito, ${cantidad} entradas`;
@@ -39,8 +39,25 @@ export function CartLink({ className }: CartLinkProps) {
     <Link
       href="/carrito/"
       aria-label={cantidad > 0 ? etiqueta : 'Carrito'}
-      className={cn("inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-sm px-3 text-sm font-medium text-texto-inverso underline-offset-4 hover:underline", className)}
+      className={cn(
+        'inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-sm px-3 text-sm font-medium text-texto-inverso underline-offset-4 hover:underline',
+        className,
+      )}
     >
+      <svg
+        aria-hidden="true"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5 8h14l-1.2 11.1a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9L5 8z" />
+        <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+      </svg>
       Carrito
       {cantidad > 0 ? (
         <span

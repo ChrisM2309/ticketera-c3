@@ -19,10 +19,10 @@ describe('grupos del menú de categorías', () => {
     }
   });
 
-  it('los nombres de grupo describen lo que busca el visitante, sin nombres de marca', () => {
+  it('los nombres de grupo usan las palabras clave del equipo, sin nombres de marca', () => {
     const labels = categoryGroups.map((group) => group.label);
 
-    expect(labels).toEqual(['Aprender', 'Conocer y conectar', 'Competir']);
+    expect(labels).toEqual(['Congresos y ferias', 'Competencias y hackathons', 'Formación', 'Comunidad']);
     for (const label of labels) {
       expect(label).not.toMatch(/\b(compite|crea|conecta)\b/i);
     }

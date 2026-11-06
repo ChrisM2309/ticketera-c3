@@ -42,23 +42,29 @@ function itemsFor(slugs: readonly string[]): readonly CategoryItem[] {
 }
 
 /**
- * Grupos del menú según lo que busca el visitante (decisión del 6-nov-2026). No usan nombres de marca.
- * Cada categoría aparece una vez; el orden dentro de cada grupo sigue el Excel.
+ * Grupos del menú (D-34), según la investigación de palabras clave del equipo (docs/architecture/SEO_ROUTES.md).
+ * Cada grupo usa el nombre que busca la gente y el orden sigue el volumen de búsqueda total del grupo:
+ * Congresos y ferias 50 610; Competencias y hackathons 45 800; Formación 44 600; Comunidad 26 600.
  */
 export const categoryGroups: readonly CategoryGroup[] = [
   {
-    id: 'aprender',
-    label: 'Aprender',
+    id: 'congresos-y-ferias',
+    label: 'Congresos y ferias',
+    items: itemsFor(['congresos', 'conferencias', 'ferias-tecnologicas']),
+  },
+  {
+    id: 'competencias-y-hackathons',
+    label: 'Competencias y hackathons',
+    items: itemsFor(['competencias', 'concursos', 'hackathons']),
+  },
+  {
+    id: 'formacion',
+    label: 'Formación',
     items: itemsFor(['workshops', 'bootcamps', 'webinars', 'charlas']),
   },
   {
-    id: 'conocer-y-conectar',
-    label: 'Conocer y conectar',
-    items: itemsFor(['congresos', 'networking', 'conferencias', 'meetups', 'ferias-tecnologicas']),
-  },
-  {
-    id: 'competir',
-    label: 'Competir',
-    items: itemsFor(['competencias', 'concursos', 'hackathons']),
+    id: 'comunidad',
+    label: 'Comunidad',
+    items: itemsFor(['networking', 'meetups']),
   },
 ];

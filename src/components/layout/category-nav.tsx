@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useId, useRef, useState, type KeyboardEvent } from 'react';
 
 import { NavLink } from '@/components/layout/nav-link';
 import type { CategoryGroup, MenuItem } from '@/lib/navigation';
@@ -14,16 +13,15 @@ type CategoryNavProps = Readonly<{
 }>;
 
 /**
- * Navegación de categorías en tres grupos (D-34).
- * Escritorio: un desplegable por grupo. Móvil: botón Menú que muestra los grupos completos.
- * Se cierra al navegar, con Escape y al tocar fuera.
+ * Categorías en cuatro grupos (D-34).
+ * Escritorio: una franja con los grupos a la vista, sin desplegables ni clics extra.
+ * Móvil: botón Menú que muestra los grupos completos. Se cierra al cambiar de página y con Escape.
  */
 export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
   const [abierto, setAbierto] = useState(false);
   const pathname = usePathname();
   const menuId = useId();
   const botonRef = useRef<HTMLButtonElement>(null);
-  const desplegablesRef = useRef<HTMLElement>(null);
 
   // Al cambiar de ruta, el menú móvil se cierra: no queda abierto en la página siguiente.
   const [rutaAnterior, setRutaAnterior] = useState(pathname);
@@ -32,22 +30,6 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
     setAbierto(false);
   }
 
-  // Al tocar fuera de un desplegable de escritorio, se cierra.
-  useEffect(() => {
-    function cerrarFuera(event: MouseEvent) {
-      const destino = event.target as Node;
-      desplegablesRef.current?.querySelectorAll('details[open]').forEach((detalle) => {
-        if (!detalle.contains(destino)) {
-          detalle.removeAttribute('open');
-        }
-      });
-    }
-
-    document.addEventListener('mousedown', cerrarFuera);
-
-    return () => document.removeEventListener('mousedown', cerrarFuera);
-  }, []);
-
   function cerrarConEscape(event: KeyboardEvent<HTMLElement>) {
     if (event.key !== 'Escape') {
       return;
@@ -55,7 +37,6 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
 
     setAbierto(false);
     botonRef.current?.focus();
-    desplegablesRef.current?.querySelectorAll('details[open]').forEach((detalle) => detalle.removeAttribute('open'));
   }
 
   return (
@@ -83,7 +64,7 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
         Menú
       </button>
 
-      {/* Móvil: panel completo, con los tres grupos a la vista. */}
+      {/* Móvil: panel con los grupos completos. */}
       <div id={menuId} className={cn('w-full border-t border-borde pt-3 md:hidden', abierto ? 'block' : 'hidden')}>
         <nav aria-label="Cuenta" className="mb-4">
           <ul className="flex flex-col gap-1">
@@ -115,39 +96,33 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
         </nav>
       </div>
 
-      {/* Escritorio: un desplegable por grupo, en una sola fila. */}
+      {/* Escritorio: los cuatro grupos a la vista, en columnas. */}
       <nav
-        ref={desplegablesRef}
         aria-label="Categorías de eventos"
-        className="hidden w-full border-t border-borde pt-2 [color-scheme:dark] md:block md:border-t-0 md:pt-0"
+        className="hidden w-full border-t border-borde/40 pt-4 md:block md:border-t-0 md:pt-0"
       >
-        <ul className="flex flex-wrap items-center gap-1">
+        <div className="grid grid-cols-4 gap-6">
           {groups.map((grupo) => (
-            <li key={grupo.id} className="relative">
-              <details className="group">
-                <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-sm px-3 text-sm font-medium text-texto-inverso hover:underline underline-offset-4 [&::-webkit-details-marker]:hidden">
-                  {grupo.label}
-                  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" className="transition-transform group-open:rotate-180">
-                    <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                </summary>
-                <ul className="absolute left-0 top-full z-20 mt-2 grid w-72 gap-1 rounded-md bg-superficie p-3 text-texto shadow-md">
-                  {grupo.items.map((categoria) => (
-                    <li key={categoria.slug}>
-                      <Link
-                        href={categoria.href}
-                        aria-current={pathname.startsWith(categoria.href) ? 'page' : undefined}
-                        className="flex min-h-11 items-center rounded-sm px-3 font-texto text-sm font-medium text-texto underline-offset-4 hover:underline aria-[current=page]:bg-superficie-sutil"
-                      >
-                        {categoria.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            </li>
+            <section key={grupo.id} aria-labelledby={`${menuId}-escritorio-${grupo.id}`}>
+              <h2 id={`${menuId}-escritorio-${grupo.id}`} className="font-titulo text-sm font-bold text-texto-inverso">
+                {grupo.label}
+              </h2>
+              <ul className="mt-2 flex flex-col">
+                {grupo.items.map((categoria) => (
+                  <li key={categoria.slug}>
+                    <NavLink
+                      href={categoria.href}
+                      active={pathname.startsWith(categoria.href)}
+                      className="min-h-9 px-0 font-normal"
+                    >
+                      {categoria.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       </nav>
     </div>
   );

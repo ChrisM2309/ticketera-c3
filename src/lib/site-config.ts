@@ -6,7 +6,7 @@ function parseDemoCommissionPercent(value: string | undefined): number {
 
 export const siteConfig = {
   name: 'Ticketera C3',
-  demoLabel: 'DEMO · Proyecto académico',
+  demoLabel: 'DEMO',
   currency: 'USD',
   locale: 'es-SV',
   demoCommissionPercent: parseDemoCommissionPercent(
