@@ -25,6 +25,6 @@ describe('publicImagePath', () => {
 
 describe('coverImagePath', () => {
   it('sin imagen propia usa la foto de la línea', () => {
-    expect(coverImagePath({ imagePath: null, eventType: { slug: 'workshops' } })).toBe('/images/mockups/crea.jpg');
+    expect(coverImagePath({ imagePath: null, eventType: { slug: 'workshops' } })).toBe('/images/stock/stock-sala-conferencia-02.jpg');
   });
 });

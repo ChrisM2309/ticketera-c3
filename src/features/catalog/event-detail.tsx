@@ -6,7 +6,7 @@ import { EventCard } from '@/components/catalog/event-card';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
 import { buttonVariants } from '@/components/ui/button';
 import { modeLabel, priceLabel } from '@/features/catalog/format';
-import { coverImagePath, publicImagePath } from '@/features/catalog/images';
+import { coverImagePath, isIllustrativeCover, publicImagePath } from '@/features/catalog/images';
 import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity, hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import type { CatalogEvent, CatalogEventDetail } from '@/features/catalog/types';
@@ -115,9 +115,14 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
               fill
               sizes="(max-width: 1024px) 100vw, 70vw"
               className="object-cover"
-              unoptimized
+              unoptimized={!coverImagePath(event).startsWith('/')}
               priority
             />
+            {isIllustrativeCover(event) ? (
+              <span className="absolute bottom-3 left-3 rounded-sm bg-navy/85 px-2 py-1 font-texto text-xs font-medium text-texto-inverso">
+                Imagen ilustrativa, no es una foto del evento
+              </span>
+            ) : null}
           </div>
 
           <header className="flex flex-col gap-4">
