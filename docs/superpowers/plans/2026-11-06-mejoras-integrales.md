@@ -1,6 +1,14 @@
 # Mejoras integrales de Ticketera · Plan para aprobación
 
-> **Estado:** propuesto, pendiente de aprobación. No se ha cambiado código.
+> **Estado:** aprobado el 2026-11-06 con las decisiones de abajo. Se ejecuta por bloques.
+
+## Decisiones aprobadas (2026-11-06)
+
+1. **Menú:** nada de nombres de marca (Compite, Crea, Conecta). Se agrupa por lo que busca el visitante: **Aprender** (Workshops, Bootcamps, Webinars, Charlas), **Conocer y conectar** (Congresos, Conferencias, Networking, Meetups, Ferias tecnológicas) y **Competir** (Competencias, Concursos, Hackathons).
+2. **Destacados:** los administra el administrador desde su panel con una columna nueva (migración). Si no hay destacados marcados, la portada usa los próximos eventos.
+3. **Imágenes:** ilustraciones propias y fotos de stock gratuitas que aporta el responsable; se registra su crédito y licencia en `public/images/CREDITOS.md`.
+4. **`public/images/temp/`:** se elimina del repositorio.
+5. **Migraciones de administración:** fases 2 y 3 del bloque D aprobadas. Ninguna migración se aplica en producción sin confirmación.
 > **Alcance:** mejoras de producto y de interfaz fuera del backlog T01–T18 y T23. No toca los archivos de T19 a T22 (investigación, competencia, wireframes, presentación), que trabaja otro equipo.
 
 **Goal:** Mejorar la navegación, los destacados, las imágenes y la administración de Ticketera, sin cambiar el objetivo del producto: que el visitante encuentre y compre entradas con claridad, y que el organizador y el administrador trabajen con datos completos.
