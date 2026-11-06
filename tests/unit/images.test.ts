@@ -4,7 +4,7 @@ import { coverImagePath, publicImagePath } from '../../src/features/catalog/imag
 
 describe('publicImagePath', () => {
   it('acepta rutas locales y enlaces HTTPS', () => {
-    expect(publicImagePath('/images/mockups/crea.jpg')).toBe('/images/mockups/crea.jpg');
+    expect(publicImagePath('/images/mockups/crea.jpg')).toBeNull();
     expect(publicImagePath('https://ejemplo.org/portada.jpg')).toBe('https://ejemplo.org/portada.jpg');
   });
 
@@ -18,20 +18,20 @@ describe('publicImagePath', () => {
 
 describe('coverImagePath', () => {
   it('usa la imagen propia del evento cuando es válida', () => {
-    expect(coverImagePath({ imagePath: '/images/propia.jpg', eventType: { slug: 'congresos' } })).toBe(
-      '/images/propia.jpg',
+    expect(coverImagePath({ imagePath: '/images/tipos/congresos.webp', eventType: { slug: 'congresos' } })).toBe(
+      '/images/tipos/congresos.webp',
     );
   });
 
   it('usa la foto temporal de la línea de C3 cuando el evento no tiene imagen', () => {
     expect(coverImagePath({ imagePath: null, eventType: { slug: 'competencias' } })).toBe(
-      '/images/mockups/compite.jpg',
+      '/images/stock/stock-auditorio-01.jpg',
     );
     expect(coverImagePath({ imagePath: '', eventType: { slug: 'hackathons' } })).toBe(
-      '/images/mockups/crea.jpg',
+      '/images/stock/stock-sala-conferencia-02.jpg',
     );
     expect(coverImagePath({ imagePath: null, eventType: { slug: 'congresos' } })).toBe(
-      '/images/mockups/conecta.jpg',
+      '/images/stock/stock-salon-evento-01.jpg',
     );
   });
 });

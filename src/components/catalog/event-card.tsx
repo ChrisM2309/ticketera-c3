@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { eventDateParts, modeLabel, priceLabel } from '@/features/catalog/format';
-import { coverImagePath } from '@/features/catalog/images';
+import { coverImagePath, isIllustrativeCover } from '@/features/catalog/images';
 import { lineForEventType, type CatalogLine } from '@/features/catalog/lines';
 import { eventPath } from '@/features/catalog/paths';
 import type { CatalogEvent } from '@/features/catalog/types';
@@ -41,8 +41,13 @@ export function EventCard({ event, featured = false }: EventCardProps) {
           fill
           sizes={featured ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'}
           className="object-cover"
-          unoptimized
+          unoptimized={!coverImagePath(event).startsWith('/')}
         />
+        {isIllustrativeCover(event) ? (
+          <span className="absolute bottom-2 left-2 rounded-sm bg-navy/85 px-2 py-0.5 font-texto text-xs font-medium text-texto-inverso">
+            Imagen ilustrativa
+          </span>
+        ) : null}
       </div>
       <div className={cn('h-1.5', lineStripe[line])} aria-hidden="true" />
 
