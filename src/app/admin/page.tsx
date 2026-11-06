@@ -5,6 +5,7 @@ import { signOutAction } from '@/features/auth/actions';
 import { formatEventStart, pendingReviewText } from '@/features/organizers/panel';
 import { orderStatusLabel, reviewResultMessage } from '@/features/organizers/review';
 import { reviewEventAction } from '@/features/organizers/review-actions';
+import { setFeaturedAction } from '@/features/organizers/featured-actions';
 import { adminHomePath } from '@/lib/auth/access';
 import { requireRole } from '@/lib/auth/require-role';
 import { buttonVariants } from '@/components/ui/button';
@@ -24,6 +25,13 @@ type PendingEvent = {
   title: string;
   starts_at: string;
   mode: string;
+  organizer: { name: string } | null;
+};
+
+type PublishedEvent = {
+  id: string;
+  title: string;
+  starts_at: string;
   organizer: { name: string } | null;
 };
 
@@ -47,6 +55,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     revision: firstParam(params.revision),
     error: firstParam(params.error),
   });
+  const destacados = firstParam(params.destacados);
+  const featuredMessage =
+    destacados === 'ok'
+      ? 'Destacados actualizados. La portada se actualiza en menos de un minuto.'
+      : destacados === 'limite'
+        ? 'Ya hay cuatro destacados. Quita uno antes de agregar otro.'
+        : destacados === 'error'
+          ? 'No pudimos actualizar los destacados. Intenta nuevamente.'
+          : null;
 
   // RLS del administrador: ve todos los eventos y todas las órdenes.
   const pendingResult = await account.client
@@ -72,6 +89,24 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   // PostgREST devuelve la relación muchos-a-uno como objeto; el cliente sin tipos la infiere como lista.
   const pending = (pendingResult.data ?? []) as unknown as PendingEvent[];
   const orders = (ordersResult.data ?? []) as unknown as RecentOrder[];
+
+  const publishedResult = await account.client
+    .from('events')
+    .select('id, title, starts_at, organizer:organizers(name)')
+    .eq('status', 'published')
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at')
+    .limit(50);
+  const featuredResult = await account.client.from('event_featured').select('event_id, position').order('position');
+
+  if (publishedResult.error || featuredResult.error) {
+    throw new Error('No pudimos cargar los destacados.');
+  }
+
+  const published = (publishedResult.data ?? []) as unknown as PublishedEvent[];
+  const featuredPosition = new Map(
+    ((featuredResult.data ?? []) as { event_id: string; position: number }[]).map((row) => [row.event_id, row.position]),
+  );
 
   return (
     <section aria-labelledby="admin-title" className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6">
@@ -125,6 +160,50 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             ))}
           </ul>
         ) : null}
+      </section>
+
+      <section aria-labelledby="featured-title" className="flex flex-col gap-4">
+        <h2 id="featured-title" className="font-titulo text-xl font-bold">
+          Destacados de la portada
+        </h2>
+        <p className="font-texto text-base leading-7 text-texto-suave">
+          Hasta cuatro eventos publicados. Si no hay ninguno marcado, la portada muestra los próximos.
+        </p>
+        {featuredMessage ? (
+          <p role="status" className="rounded-lg bg-superficie p-4 font-texto text-sm leading-6 text-texto">
+            {featuredMessage}
+          </p>
+        ) : null}
+        {published.length === 0 ? (
+          <p className="rounded-lg bg-superficie p-6 font-texto text-base leading-7 text-texto-suave">
+            No hay eventos publicados y próximos.
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-borde rounded-lg bg-superficie">
+            {published.map((event) => {
+              const posicion = featuredPosition.get(event.id);
+
+              return (
+                <li key={event.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-texto text-base font-medium text-texto">{event.title}</span>
+                    <span className="font-texto text-sm text-texto-suave">
+                      {event.organizer?.name ?? 'Sin organizador'} · {formatEventStart(event.starts_at)}
+                      {posicion ? ` · Destacado ${posicion}` : ''}
+                    </span>
+                  </div>
+                  <form action={setFeaturedAction}>
+                    <input type="hidden" name="eventId" value={event.id} />
+                    <input type="hidden" name="featured" value={posicion ? 'false' : 'true'} />
+                    <button type="submit" className={buttonVariants({ variant: posicion ? 'secundario' : 'compra' })}>
+                      {posicion ? 'Quitar de destacados' : 'Destacar en portada'}
+                    </button>
+                  </form>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <section aria-labelledby="orders-title" className="flex flex-col gap-4">
