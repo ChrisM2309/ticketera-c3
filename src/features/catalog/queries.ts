@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { createPublicClient } from '@/lib/supabase/public';
 
 import type { CartEvent } from '../checkout/cart';
-import { isFree } from './format';
+import { chooseHomeEvents } from './home';
 import type {
   CatalogCategory,
   CatalogEvent,
@@ -112,7 +112,7 @@ export const CATALOG_EVENT_LIMIT = 200;
 export type HomeCatalog =
   | {
       status: 'ok';
-      featured: CatalogEvent | null;
+      featured: CatalogEvent[];
       upcoming: CatalogEvent[];
       free: CatalogEvent[];
       categories: CatalogCategory[];
@@ -206,7 +206,7 @@ function mapCartEvent(row: CartEventRow): CartEvent | null {
   };
 }
 
-/** Datos del Home: solo eventos publicados y próximos, y las 12 categorías en orden del Excel. */
+/** Datos del Home: destacados marcados por el administrador, próximos, gratuitos y las 12 categorías. */
 export async function getHomeCatalog(now: Date = new Date()): Promise<HomeCatalog> {
   const client = createPublicClient();
 
@@ -214,7 +214,7 @@ export async function getHomeCatalog(now: Date = new Date()): Promise<HomeCatalo
     return { status: 'unavailable' };
   }
 
-  const [eventsResult, categoriesResult] = await Promise.all([
+  const [eventsResult, featuredResult, categoriesResult] = await Promise.all([
     client
       .from('events')
       .select(eventSelect)
@@ -222,6 +222,7 @@ export async function getHomeCatalog(now: Date = new Date()): Promise<HomeCatalo
       .gte('starts_at', now.toISOString())
       .order('starts_at', { ascending: true })
       .limit(30),
+    client.from('event_featured').select('event_id, position').order('position', { ascending: true }),
     client
       .from('categories')
       .select('slug, name')
@@ -233,15 +234,38 @@ export async function getHomeCatalog(now: Date = new Date()): Promise<HomeCatalo
     return { status: 'unavailable' };
   }
 
-  const events = ((eventsResult.data ?? []) as unknown as EventRow[])
+  const upcomingAll = ((eventsResult.data ?? []) as unknown as EventRow[])
     .map(mapEvent)
     .filter((event): event is CatalogEvent => event !== null);
 
+  // Los destacados pueden caer fuera de los próximos 30; se piden aparte, solo si están publicados.
+  // Si la tabla de destacados aún no existe en el proyecto, la portada sigue con los próximos eventos.
+  const featuredIds = featuredResult.error ? [] : (featuredResult.data ?? []).map((row) => row.event_id as string);
+  let featuredEvents: CatalogEvent[] = [];
+
+  if (featuredIds.length > 0) {
+    const featuredRows = await client.from('events').select(eventSelect).eq('status', 'published').in('id', featuredIds);
+
+    if (featuredRows.error) {
+      return { status: 'unavailable' };
+    }
+
+    const byId = new Map(
+      ((featuredRows.data ?? []) as unknown as EventRow[])
+        .map(mapEvent)
+        .filter((event): event is CatalogEvent => event !== null)
+        .map((event) => [event.id, event]),
+    );
+    featuredEvents = featuredIds.map((id) => byId.get(id)).filter((event): event is CatalogEvent => event !== undefined);
+  }
+
+  const selection = chooseHomeEvents({ featured: featuredEvents, upcoming: upcomingAll });
+
   return {
     status: 'ok',
-    featured: events[0] ?? null,
-    upcoming: events.slice(1, 7),
-    free: events.filter((event) => isFree(event.ticketTypes)).slice(0, 3),
+    featured: selection.featured,
+    upcoming: selection.upcoming,
+    free: selection.free,
     categories: (categoriesResult.data ?? []) as CatalogCategory[],
   };
 }
