@@ -18,8 +18,8 @@ describe('publicImagePath', () => {
 
 describe('coverImagePath', () => {
   it('usa la imagen propia del evento cuando es válida', () => {
-    expect(coverImagePath({ imagePath: '/images/propia.jpg', eventType: { slug: 'congresos' } })).toBe(
-      '/images/propia.jpg',
+    expect(coverImagePath({ imagePath: '/images/tipos/congresos.webp', eventType: { slug: 'congresos' } })).toBe(
+      '/images/tipos/congresos.webp',
     );
   });
 

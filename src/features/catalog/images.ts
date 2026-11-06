@@ -7,9 +7,25 @@ const mockupByLine: Readonly<Record<CatalogLine, string>> = {
   conecta: '/images/mockups/conecta.jpg',
 };
 
-/** Solo se aceptan rutas locales o HTTPS; cualquier otra cosa se ignora. */
+/** Carpetas locales permitidas para imágenes de eventos (D-36). */
+const allowedLocalPrefixes = ['/images/mockups/', '/images/tipos/', '/images/stock/'] as const;
+
+/**
+ * Solo se aceptan rutas locales de las carpetas del sitio o URL HTTPS. «//» apunta a otro host
+ * y «..» sale de la carpeta; ambos se ignoran.
+ */
 export function publicImagePath(imagePath: string | null): string | null {
-  if (imagePath && (imagePath.startsWith('/') || imagePath.startsWith('https://'))) {
+  if (!imagePath) {
+    return null;
+  }
+
+  if (imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+
+  const esLocalPermitida = allowedLocalPrefixes.some((prefijo) => imagePath.startsWith(prefijo));
+
+  if (esLocalPermitida && !imagePath.includes('..') && !imagePath.startsWith('//')) {
     return imagePath;
   }
 
