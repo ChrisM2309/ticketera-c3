@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { CategoryTile } from '@/components/catalog/category-tile';
 import { EventCard } from '@/components/catalog/event-card';
+import { FeaturedCarousel } from '@/components/catalog/featured-carousel';
 import { buttonVariants } from '@/components/ui/button';
 import { getHomeCatalog } from '@/features/catalog/queries';
 import type { CatalogEvent } from '@/features/catalog/types';
@@ -48,6 +49,7 @@ export default async function Home() {
   }
 
   const { featured, upcoming, free, categories } = catalog;
+  const primero = featured[0];
 
   return (
     <div className="flex flex-col gap-20 pb-20">
@@ -60,12 +62,12 @@ export default async function Home() {
             Congresos, hackathons y workshops, presenciales o en línea. Compra tu entrada en pocos pasos.
           </p>
           <div className="flex flex-wrap gap-3">
-            {featured ? (
+            {primero ? (
               <Link
                 href={eventPath({
-                  slug: featured.slug,
-                  eventTypeSlug: featured.eventType.slug,
-                  topicSlug: featured.topic?.slug ?? null,
+                  slug: primero.slug,
+                  eventTypeSlug: primero.eventType.slug,
+                  topicSlug: primero.topic?.slug ?? null,
                 })}
                 className={buttonVariants({ variant: 'compra', size: 'lg' })}
               >
@@ -78,9 +80,9 @@ export default async function Home() {
           </div>
         </div>
 
-        <div>
-          {featured ? (
-            <EventCard event={featured} featured />
+        <div className="min-w-0">
+          {featured.length > 0 ? (
+            <FeaturedCarousel events={featured} />
           ) : (
             <div className="flex min-h-72 items-center justify-center rounded-lg bg-superficie-sutil p-8 text-center text-texto-suave">
               Todavía no hay eventos publicados.
