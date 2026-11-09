@@ -4,7 +4,10 @@ import { filterCatalogEvents, noCatalogFilters } from '../../features/catalog/fi
 import { resolveCatalogRoute } from '../../features/catalog/routes';
 import type { CatalogEvent, CatalogTaxonomy } from '../../features/catalog/types';
 
-/** Rutas privadas o transaccionales: no se rastrean (SEO_ROUTES.md, sección 5). */
+/**
+ * Rutas privadas o transaccionales: no se rastrean (SEO_ROUTES.md, sección 5).
+ * Solo se listan rutas que existen; `/mis-boletos/` la crea la Fase 3.
+ */
 export const privatePaths = [
   '/admin/',
   '/api/',
@@ -15,7 +18,6 @@ export const privatePaths = [
   '/ingresar/',
   '/mis-boletos/',
   '/panel/',
-  '/publicar/',
 ];
 
 /**
