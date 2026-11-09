@@ -3,21 +3,21 @@
 ## Criterios de salida P0
 
 - [ ] App compila y despliega en Vercel con HTTPS y dominio propio.
-- [ ] Logo lleva al home y navbar no contiene 'Inicio'.
-- [ ] Doce tipos de evento en orden por keyword del Excel.
+- [x] Logo lleva al home y navbar no contiene 'Inicio'.
+- [x] Doce tipos de evento en orden por keyword del Excel.
 - [ ] Diez eventos demo con fecha, lugar/modalidad, organizador y precio.
-- [ ] Filtros funcionales por tipo, tema, fecha, ciudad, modalidad y gratis/de pago.
+- [x] Filtros funcionales por tipo, tema, fecha, ciudad, modalidad y gratis/de pago.
 - [ ] Categorías/subcategorías con URLs estables, metadata y breadcrumbs.
-- [ ] Fichas con agenda, imágenes, CTA visible, cantidad de entradas y disponibilidad.
+- [x] Fichas con agenda, imágenes, CTA visible, cantidad de entradas y disponibilidad.
 - [x] Carrito de un evento; subtotal, comisión y total calculados en servidor.
-- [ ] Registro gratuito sin cuenta => orden confirmada y ticket QR persistido.
-- [ ] Pago DEMO aprobado => orden confirmada, `payments` registrado, QR emitido.
-- [ ] Pago DEMO rechazado => orden fallida, no emisión de tickets.
+- [x] Registro gratuito sin cuenta => orden confirmada y ticket QR persistido.
+- [x] Pago DEMO aprobado => orden confirmada, `payments` registrado, QR emitido.
+- [x] Pago DEMO rechazado => orden fallida, no emisión de tickets.
 - [ ] Doble clic/reintento no duplica tickets. Sin sobreventa en concurrencia.
-- [ ] Confirmación guest segura con token; no enumeración de órdenes.
-- [ ] Botón descarga/imprime boleto QR (sin email obligatorio).
+- [x] Confirmación guest segura con token; no enumeración de órdenes.
+- [x] Botón descarga/imprime boleto QR (sin email obligatorio).
 - [ ] Flujo completo usable en viewport móvil.
-- [ ] Solo eventos publicados aparecen en catálogo público.
+- [x] Solo eventos publicados aparecen en catálogo público.
 
 ## Evidencia por tarea
 

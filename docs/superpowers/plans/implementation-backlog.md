@@ -41,6 +41,24 @@
 | T21 | Evidencias | SEO y marketing documental | P-A | T05, T06 | Pendiente |
 | T22 | Presentación | Capturas, video de compra y respaldo | P-A | T13, T18, T19, T20, T21 | Pendiente |
 
+> Nota T10: concurrencia real pendiente (dos conexiones simultáneas; ver `docs/testing/ACCEPTANCE.md`). El resto de la tarea está verificado.
+
+### Nuevas áreas (Fases 0–7)
+
+Detalle y orden en el [roadmap](2026-11-09-roadmap-nuevas-areas.md); decisiones D-37 a D-57 en `docs/DECISIONS.md`.
+
+| ID | Área | Fase (plan) | Prioridad | Depende de | Estado |
+|---|---|---|---|---|---|
+| F0 | Nuevas áreas | [Fundamentos y documentación](2026-11-09-fase-0-fundamentos.md) | — | — | En curso |
+| F1 | Nuevas áreas | [Diseño, iconos, imágenes y wireframes](2026-11-09-fase-1-diseno-iconos.md) | — | 0 | Pendiente |
+| F2 | Nuevas áreas | [Compra refinada y post-compra simulada](2026-11-09-fase-2-compra.md) | — | 0, 1 (iconos) | Pendiente |
+| F3 | Nuevas áreas | [Cuentas de comprador y alta de organizadores](2026-11-09-fase-3-cuentas.md) | — | 2 | Pendiente |
+| F4 | Nuevas áreas | [Ingresos: destacados por día y paquete empresas](2026-11-09-fase-4-ingresos.md) | — | 2, 3 | Pendiente |
+| F5 | Nuevas áreas | [Contenido, SEO, indexación y analítica](2026-11-09-fase-5-contenido-seo.md) | — | 4 (`site_settings`) | Pendiente |
+| F6 | Nuevas áreas | [Check-in y post-evento](2026-11-09-fase-6-checkin.md) | — | 3, 4 | Pendiente |
+| F7 | Nuevas áreas | [Cierre y entrega](2026-11-09-fase-7-cierre.md) | — | 1 a 6 | Pendiente |
+
+
 ## Área A — Fundamentos y sistema visual
 
 ### T01 · Inicializar proyecto [P0]

@@ -18,6 +18,10 @@
 
 **Opcional:** `event_speakers` si no es suficiente almacenar agenda estructurada JSON validada. Evitar tablas extra si no contribuyen a la entrega.
 
+## Estados
+
+- `orders.status = cancelled` está reservado; hoy ninguna ruta lo escribe (CO-12).
+
 ## Relaciones
 
 `profiles 1:N organizers 1:N events 1:N ticket_types`; `events 1:N orders 1:N order_items`; `orders 1:N payments`; `order_items 1:N tickets`.
