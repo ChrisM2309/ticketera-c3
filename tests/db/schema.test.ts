@@ -179,6 +179,6 @@ describe('migraciones y seed', () => {
          (select count(*)::int from public.seo_routes) as rutas`,
     );
 
-    expect(result.rows[0]).toEqual({ categorias: 29, eventos: 50, entradas: 56, organizadores: 3, rutas: 128 });
+    expect(result.rows[0]).toEqual({ categorias: 29, eventos: 50, entradas: 56, organizadores: 4, rutas: 128 });
   });
 });

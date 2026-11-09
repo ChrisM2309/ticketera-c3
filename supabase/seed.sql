@@ -214,6 +214,11 @@ insert into public.organizers (slug, name, description, status) values
   ('organizador-demo-tres', 'Organizador DEMO Tres', 'Organizador ficticio para la demostración académica.', 'active')
 on conflict (slug) do nothing;
 
+-- Organizador DEMO de la Copa Salvadoreña (sin propietario; D-47: no se siembran terceros)
+insert into public.organizers (slug, name, description, status) values
+  ('copa', 'Copa Salvadoreña', 'Organizador DEMO del proyecto académico.', 'active')
+on conflict (slug) do nothing;
+
 insert into public.seo_routes (path, kind, keyword, search_volume, is_indexable, sort_order) values
   ('/congresos/', 'event_type', 'congreso', 40500, true, 1),
   ('/congresos/inteligencia-artificial/', 'subtopic', 'congreso ia', 30, true, 2),
@@ -770,3 +775,8 @@ insert into public.ticket_types (event_id, name, price_cents, quantity_total, ma
   ((select id from public.events where slug = 'concurso-demo-ideas-tecnologicas'), 'Entrada general', 200, 150, 2),
   ((select id from public.events where slug = 'bootcamp-demo-fundamentos-digitales'), 'Cupo regular', 5000, 30, 1)
 on conflict (event_id, name) do nothing;
+
+-- Tres eventos DEMO de competencias y hackathons pasan a la Copa Salvadoreña
+update public.events
+set organizer_id = (select id from public.organizers where slug = 'copa')
+where slug in ('competencia-demo-ia', 'hackathon-demo-ia', 'hackathon-demo-datos-abiertos');
