@@ -8,7 +8,7 @@ Ticketera C3 es un prototipo funcional de marketplace B2C/B2B para descubrir, co
 
 - **Frontend y backend web:** Next.js (App Router), TypeScript y Tailwind CSS; shadcn/ui para componentes.
 - **Persistencia:** Supabase PostgreSQL, Auth y Storage. Las operaciones de compra son reales contra la base de datos; los cobros son **simulados**.
-- **Despliegue:** Vercel + dominio propio ya existente (hostname por definir; no comprar uno nuevo).
+- **Despliegue:** Vercel + dominio propio ya existente (hoy en `demo.ticketera.c3.com.sv`; el dominio final `ticketera.c3.com.sv` está decidido pero aún no está activo; no comprar uno nuevo).
 - **Asistentes:** compra invitada (sin cuenta). **Organizadores:** inicio de sesión y formulario básico de evento. **Administrador:** aprobación manual.
 - **Agentes:** documentación general para Codex y Claude Code. Superpowers como metodología; instalación particular por herramienta fuera del repositorio.
 - **Seguimiento:** backlog por funcionalidades y dependencias, sin planificación por días.

@@ -58,7 +58,6 @@ Detalle y orden en el [roadmap](2026-11-09-roadmap-nuevas-areas.md); decisiones 
 | F6 | Nuevas áreas | [Check-in y post-evento](2026-11-09-fase-6-checkin.md) | — | 3, 4 | Pendiente |
 | F7 | Nuevas áreas | [Cierre y entrega](2026-11-09-fase-7-cierre.md) | — | 1 a 6 | Pendiente |
 
-
 ## Área A — Fundamentos y sistema visual
 
 ### T01 · Inicializar proyecto [P0]

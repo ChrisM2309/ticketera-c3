@@ -3,12 +3,12 @@
 ## Criterios de salida P0
 
 - [ ] App compila y despliega en Vercel con HTTPS y dominio propio.
-- [x] Logo lleva al home y navbar no contiene 'Inicio'.
-- [x] Doce tipos de evento en orden por keyword del Excel.
+- [x] Logo lleva al home y navbar no contiene 'Inicio'. Evidencia: `src/components/layout/site-header.tsx` enlaza el logo a `/` y `tests/unit/navigation.test.ts` comprueba que el menú no contiene «Inicio».
+- [x] Doce tipos de evento en orden por keyword del Excel. Evidencia: `tests/unit/navigation.test.ts` y `tests/unit/navigation-groups.test.ts` (12 categorías, orden del Excel).
 - [ ] Diez eventos demo con fecha, lugar/modalidad, organizador y precio.
-- [x] Filtros funcionales por tipo, tema, fecha, ciudad, modalidad y gratis/de pago.
+- [x] Filtros funcionales por tipo, tema, fecha, ciudad, modalidad y gratis/de pago. Evidencia: `tests/unit/filters.test.ts` (ruta, precio, modalidad, ciudad, fecha y combinados).
 - [ ] Categorías/subcategorías con URLs estables, metadata y breadcrumbs.
-- [x] Fichas con agenda, imágenes, CTA visible, cantidad de entradas y disponibilidad.
+- [ ] Fichas con agenda, imágenes, CTA visible, cantidad de entradas y disponibilidad. Evidencia parcial: cantidad y disponibilidad en `tests/unit/event-detail.test.ts` y la ficha se recorre en `tests/e2e/purchase-flow.spec.ts`; agenda e imágenes sin prueba propia, por eso sigue sin marcar.
 - [x] Carrito de un evento; subtotal, comisión y total calculados en servidor.
 - [x] Registro gratuito sin cuenta => orden confirmada y ticket QR persistido.
 - [x] Pago DEMO aprobado => orden confirmada, `payments` registrado, QR emitido.
@@ -17,7 +17,7 @@
 - [x] Confirmación guest segura con token; no enumeración de órdenes.
 - [x] Botón descarga/imprime boleto QR (sin email obligatorio).
 - [ ] Flujo completo usable en viewport móvil.
-- [x] Solo eventos publicados aparecen en catálogo público.
+- [x] Solo eventos publicados aparecen en catálogo público. Evidencia: `tests/db/rls.test.ts` (anon ve solo los 50 publicados y no ve borradores) y T16 (aprobación visible en `/congresos/`).
 
 ## Evidencia por tarea
 
