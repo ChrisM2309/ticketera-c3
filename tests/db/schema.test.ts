@@ -5,6 +5,7 @@ import { createDatabase, seedSql } from './helpers';
 
 const expectedTables = [
   'categories',
+  'event_featured',
   'events',
   'order_items',
   'orders',
