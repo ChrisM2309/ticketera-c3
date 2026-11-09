@@ -22,6 +22,7 @@ Estas personas son material del equipo. Algunos de sus valores siguen pendientes
 - **Profesional y sobrio.** Debe leerse como un sitio serio de venta de entradas, no como una maqueta de clase.
 - **Eventos y datos primero.** Fecha, hora, lugar, modalidad y precio se leen de un vistazo. La decoración sirve a esos datos, no los compite.
 - **Marca C3.** Navy, azul, violeta y turquesa. Títulos en Montserrat y texto en Poppins. Los tokens y reglas están en `docs/design/DESIGN.md`.
+- **Guías de diseño.** La dirección visual y el detector de calidad están en [Guías de diseño](docs/design/DESIGN.md#guías-de-diseño).
 - **Español directo.** Los botones dicen la acción. No hay exageraciones ni cifras que no existan.
 
 ## Requisitos que no cambian

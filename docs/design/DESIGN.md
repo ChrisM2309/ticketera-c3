@@ -62,6 +62,7 @@ Apariencia técnica, limpia y profesional, basada en el manual C3. Es un **proto
 10. **Sin emojis en UI.** Los iconos son SVG de trazo, `aria-hidden` cuando decoran.
 11. **Sin degradados ni texturas sobre el logotipo.** Ni deformar ni recolorear el logo fuera de la paleta (ver «Uso del logotipo» del design system).
 12. **Móvil primero.** Campos de 16 px mínimo para evitar zoom en iOS; áreas táctiles de 44 px; sin scroll horizontal en la página (solo en la barra de categorías, contenida en su propio contenedor).
+13. **Iconos de `lucide-react`.** Los iconos salen de `lucide-react` mediante el componente `Icon` (Fase 1); no se escriben SVG a mano. Cómo se introducen: `docs/superpowers/plans/2026-11-09-fase-1-diseno-iconos.md`.
 
 ## Componentes (clases de `bundle.css`)
 
@@ -122,6 +123,13 @@ Estas reglas salen de la skill `impeccable` del plugin de Impeccable (`pbakaus/i
 - **Selección y foco en la paleta.** La selección de texto usa `crea` y `navy` (en `globals.css`). El anillo de foco es siempre visible.
 - **Revisión antes de dar por terminado un cambio de UI.** Revisar en escritorio y en móvil (375 px) y correr el detector sobre los archivos cambiados: `npx impeccable detect --json <archivos>` (instalado como devDependency, `impeccable@4.8.1`; imprime JSON, `[]` si no hay hallazgos; código de salida 2 = hay hallazgos, 1 = no se pudo analizar un archivo).
 - **Contexto de producto.** Está en `PRODUCT.md` (raíz). Para rediseños o nuevas superficies, partir de ahí.
+
+## Guías de diseño
+
+- **`frontend-design` marca la dirección.** Esta skill guía el diseño visual intencionado: jerarquía, tipografía y decisiones deliberadas en lugar de plantillas genéricas. Se usa al construir o rehacer una pantalla.
+- **Impeccable detecta y revisa.** Es el detector y la lista de comprobación de calidad; el comando está en «Reglas de calidad de interfaz (Impeccable)» (`npx impeccable detect --json <archivos>`).
+- **Los tokens de marca mandan.** Los tokens y las reglas de este documento prevalecen siempre sobre ambas guías. Si una sugerencia choca con ellos, gana este documento.
+- **Iconos.** Se introducen en la Fase 1, según `docs/superpowers/plans/2026-11-09-fase-1-diseno-iconos.md` (regla 13).
 
 ## Cómo se mantiene este documento
 
