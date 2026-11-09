@@ -120,8 +120,8 @@ Estas reglas salen de la skill `impeccable` del plugin de Impeccable (`pbakaus/i
 - **Precios limpios.** Montos enteros sin decimales (`Desde $10`). Decimales solo cuando existen (`$10.50`).
 - **Copy sin tecnicismos.** Los botones dicen la acción; los errores dicen qué pasó y qué hacer. La UI no menciona bases de datos ni sistemas internos.
 - **Selección y foco en la paleta.** La selección de texto usa `crea` y `navy` (en `globals.css`). El anillo de foco es siempre visible.
-- **Revisión antes de dar por terminado un cambio de UI.** Revisar en escritorio y en móvil (375 px) y correr el detector sobre los archivos cambiados: `impeccable detect --json <archivos>`.
-- **Contexto de producto pendiente.** Falta `PRODUCT.md`. Para rediseños o nuevas superficies, primero hay que capturarlo con `/impeccable init`.
+- **Revisión antes de dar por terminado un cambio de UI.** Revisar en escritorio y en móvil (375 px) y correr el detector sobre los archivos cambiados: `npx impeccable detect --json <archivos>` (instalado como devDependency, `impeccable@4.8.1`; imprime JSON, `[]` si no hay hallazgos; código de salida 2 = hay hallazgos, 1 = no se pudo analizar un archivo).
+- **Contexto de producto.** Está en `PRODUCT.md` (raíz). Para rediseños o nuevas superficies, partir de ahí.
 
 ## Cómo se mantiene este documento
 
