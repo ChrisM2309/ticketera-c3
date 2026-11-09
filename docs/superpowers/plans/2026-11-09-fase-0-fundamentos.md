@@ -21,7 +21,7 @@
 ## Review Focus
 
 1. Un archivo de documento nuevo que no aparece en `docs/README.md` rompe el índice: lo detecta `tests/unit/docs-index.test.ts` (tarea 0.2).
-2. Una palabra clave del seed con carácter de reemplazo `�` vuelve a colarse: lo detecta `tests/db/seed-encoding.test.ts` (tarea 0.3).
+2. Una palabra clave del seed con carácter de reemplazo `[U+FFFD]` vuelve a colarse: lo detecta `tests/db/seed-encoding.test.ts` (tarea 0.3).
 3. Las páginas legales deben existir y enlazarse desde el pie en todas las rutas públicas: E2E de 0.8.
 
 ---
@@ -80,14 +80,14 @@
 ### Tarea 0.3: Seed sin caracteres rotos (TX-05)
 
 **Files:**
-- Modify: `supabase/seed.sql` (la fila con `registro programaci�n`; buscar con `grep -n $'\xEF\xBF\xBD' supabase/seed.sql`)
+- Modify: `supabase/seed.sql` (la fila con `registro programaci[U+FFFD]n`; buscar con `grep -n $'\xEF\xBF\xBD' supabase/seed.sql`)
 - Create: `tests/db/seed-encoding.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
 ```ts
 import { seedSql } from './helpers';
-// test('el seed no contiene caracteres de reemplazo'): expect(seedSql.includes('�')).toBe(false)
+// test('el seed no contiene caracteres de reemplazo'): expect(seedSql.includes('[U+FFFD]')).toBe(false)
 ```
 
 - [ ] **Step 2: Run** `npx vitest run tests/db/seed-encoding.test.ts` — Expected: FAIL.

@@ -293,7 +293,7 @@ Las cifras se mantienen tal como están en el documento (DP-15). Las inconsisten
 | I-26 | Perfil de comprador | Sin tabla, sin login, sin pantalla «Mis boletos» | CP-02 a CP-04 |
 | I-27 | Check-in | Sin pantalla. La columna `tickets.checked_in_at` existe, pero nada la escribe | CI-01 |
 | I-28 | `src/app/robots.ts` y `src/lib/seo/indexing.ts` | La lista de rutas privadas incluye `/mis-boletos/` y `/publicar/`, que no tienen ruta | SEO-12 |
-| I-29 | `supabase/seed.sql` | Una palabra clave tiene un carácter roto («registro programaci�n») por codificación | TX-05 |
+| I-29 | `supabase/seed.sql` | **Corregido en la Fase 0 (tarea 0.3; eran 19 apariciones, no una).** Una palabra clave tenía un carácter roto («registro programaci[U+FFFD]n») por codificación | TX-05 |
 | I-30 | `package.json` | `lucide-react` instalado y sin uso; los iconos están escritos a mano | DI-07 |
 | I-31 | `src/features/catalog/search.ts` | El buscador no busca por tema, aunque el texto de ayuda dice «temas» | TX-06 |
 | I-32 | Esquema de órdenes | El estado `cancelled` existe y tiene etiqueta, pero nada lo escribe | CO-12 |
