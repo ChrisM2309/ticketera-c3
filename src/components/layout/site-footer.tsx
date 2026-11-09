@@ -37,6 +37,12 @@ export function SiteFooter() {
               {link.label}
             </Link>
           ))}
+          <Link href="/privacidad/" className={enlace}>
+            Privacidad
+          </Link>
+          <Link href="/terminos/" className={enlace}>
+            Términos
+          </Link>
         </nav>
       </div>
 
