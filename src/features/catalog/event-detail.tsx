@@ -223,7 +223,14 @@ export function EventDetailPage({ event, related, indexingEnabled = false }: Eve
               </dt>
               <dd className={detailValueClass}>
                 {modeLabel(event.mode)}
-                {event.location ? ` · ${event.location.name}` : ''}
+                {event.location ? (
+                  <>
+                    {' · '}
+                    <Link href={`/${event.location.slug}/`} className="underline underline-offset-4">
+                      {event.location.name}
+                    </Link>
+                  </>
+                ) : null}
                 {event.venue ? ` · ${event.venue}` : ''}
               </dd>
             </div>
