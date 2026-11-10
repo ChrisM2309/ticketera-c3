@@ -113,7 +113,7 @@ async function goToCategory(page: Page, event: PurchaseEvent, mobile: boolean) {
     await page.getByRole('button', { name: 'Menú' }).click();
   }
 
-  const categories = page.getByRole('navigation', { name: 'Categorías de eventos' }).locator('visible=true');
+  const categories = page.locator('nav[aria-label="Categorías de eventos"]:visible').last();
   await categories.locator('summary', { hasText: event.group }).click();
   await categories.getByRole('link', { name: event.link }).click();
   await expect(page).toHaveURL(new RegExp(event.category.replace(/\//g, '\\/')));

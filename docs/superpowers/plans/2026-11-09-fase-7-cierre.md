@@ -31,7 +31,7 @@
 
 ### Tarea 7.1: Auditoría SEO (SEO-09)
 
-**Estado:** parcial; se auditó el dominio DEMO y se documentó el hallazgo/pendiente, pero falta un preview aislado con base de pruebas para validar el modo indexable.
+**Estado:** auditoría pública completada y hallazgos documentados; queda pendiente el preview aislado para validar modo indexable.
 
 **Files:**
 - Create: `docs/analisis/auditoria-seo.md`
@@ -44,7 +44,7 @@
 
 ### Tarea 7.2: Verificación de URLs y rendimiento (SEO-08, SEO-10)
 
-**Estado:** URLs 5/5 E2E; métricas Lighthouse pendientes por cuota PSI 0 y sin runner local disponible.
+**Estado:** URLs 5/5 E2E y Lighthouse móvil 4/4 medido; Home y ficha superan el presupuesto LCP.
 
 **Files:**
 - Create: `tests/e2e/urls.spec.ts`, `docs/analisis/evidencias/fase-7/rendimiento.md`
@@ -56,7 +56,7 @@
 
 ### Tarea 7.3: E2E final y compras de evidencia (CO-09)
 
-**Estado:** parcial. Vitest 656/656; Playwright general 71 aprobadas, 19 omitidas y 2 fallidas (navegación/datos DEMO dinámicos). Tras aplicar las migraciones, la ruta de confirmación real respondió HTTP 200 con comprobante, QR y entrega; el E2E aún excedió 30 s al pedir el `.ics`.
+**Estado:** Vitest 656/656; Playwright general 73 aprobadas, 19 omitidas y 0 fallidas; E2E de compra real 4/4. Lint, typecheck y build pasan.
 
 **Files:**
 - Modify: `docs/testing/ACCEPTANCE.md`
@@ -89,7 +89,7 @@
 
 ### Tarea 7.6: Capturas del sitio final
 
-**Estado:** 10 capturas (Home, categoría, evento, carrito y checkout; móvil y escritorio) en `docs/analisis/evidencias/fase-7/`. Confirmación pendiente por el bloqueo de outbox registrado en ACCEPTANCE.md.
+**Estado:** 12 capturas (Home, categoría, evento, carrito, checkout y confirmación; móvil y escritorio) en `docs/analisis/evidencias/fase-7/`; datos personales anonimizados.
 
 **Files:**
 - Create: `docs/analisis/evidencias/fase-7/README.md` y capturas finales del sitio
@@ -118,5 +118,6 @@
 
 ## Cierre de la fase
 
-- [ ] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, `npx playwright test --project=chromium` — Expected: todo en verde.
-- [ ] Actualizar el backlog con el alcance revisado y abrir PR de `codex/fase-7-cierre`.
+- [x] `npm test` (656/656), lint, typecheck, build; Playwright general previamente: 73 aprobadas, 19 omitidas, 0 fallidas; corrida enfocada posterior de navegación/compra: 13/13. Una repetición completa posterior se interrumpió por errores del servidor local y no cuenta como verde.
+- [x] Backlog actualizado al alcance aprobado y PR #39 abierto contra `master` (sin fusionar).
+- [ ] Preview SEO aislado con base de pruebas: no configurado; antes de habilitar indexación deben resolverse A1 y los hallazgos pendientes documentados.

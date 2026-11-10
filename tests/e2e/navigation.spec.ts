@@ -7,7 +7,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 // El móvil y el escritorio comparten el nombre accesible; solo cuenta la lista que se ve.
 const categoriasVisibles = (page: Page) =>
-  page.getByRole('navigation', { name: 'Categorías de eventos' }).locator('visible=true');
+  page.locator('nav[aria-label="Categorías de eventos"]:visible').last();
 
 test.describe('escritorio 1280 px', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
