@@ -27,6 +27,7 @@ function event(overrides: Partial<CatalogEventDetail> = {}): CatalogEventDetail 
     topic: { slug: 'cloud', name: 'Cloud' },
     location: { slug: 'san-salvador', name: 'San Salvador' },
     organizer: { name: 'Organizador DEMO' },
+    speakers: [],
     ticketTypes: [
       {
         id: 'ticket-general',

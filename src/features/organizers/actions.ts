@@ -72,6 +72,7 @@ export async function publishEventAction(_previous: PublishState, formData: Form
     p_event_type_id: data.eventTypeId,
     p_topic_id: data.topicId,
     p_location_id: data.locationId,
+    p_speakers: data.speakers,
     p_ticket_types: data.ticketTypes.map((ticket) => ({
       name: ticket.name,
       price_cents: ticket.priceCents,
