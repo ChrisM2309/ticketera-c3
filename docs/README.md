@@ -9,6 +9,7 @@
 - `checkout/DEMO_PAYMENT.md` — simulación de pagos y diferencias frente a sandbox externo.
 - `testing/ACCEPTANCE.md` — criterios de aceptación, pruebas y pruebas de usabilidad.
 - `analisis/2026-11-09-brechas-y-requerimientos.md` — análisis de brechas y requerimientos de las nuevas áreas.
+- `analisis/auditoria-flujo-compra.md` — auditoría del flujo de compra (CO-01, Fase 2).
 - `../PRODUCT.md` — contexto de producto y de diseño (raíz del repositorio).
 - `superpowers/specs/2026-11-02-ticketera-design.md` — especificación base de la solución.
 - `superpowers/plans/2026-11-02-t01-next-project-plan.md` — plan de T01 (proyecto Next.js).
