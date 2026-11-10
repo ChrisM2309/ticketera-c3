@@ -7,6 +7,7 @@ import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
 import { FeaturedBlock } from '@/components/catalog/featured-block';
 import { CategoryIntro } from '@/components/content/category-intro';
+import { OrganizerPage } from '@/components/catalog/organizer-page';
 import { EventDetailPage } from '@/features/catalog/event-detail';
 import {
   filterCatalogEvents,
@@ -18,6 +19,7 @@ import {
 import { CATALOG_EVENT_LIMIT, getCatalogListing, getEventDetail } from '@/features/catalog/queries';
 import { getCategoryFeaturedIds } from '@/features/featured/queries';
 import { getEditorialPage } from '@/features/content/queries';
+import { getOrganizerPage, isOrganizerSlugAllowed, type OrganizerPageData } from '@/features/catalog/organizers';
 import { getSiteSettings } from '@/features/settings/settings';
 import {
   isCatalogRouteIndexable,
@@ -42,6 +44,7 @@ type CatalogPageProps = Readonly<{
 type PublicRoute =
   | { kind: 'unavailable' }
   | { kind: 'catalog'; listing: Extract<Awaited<ReturnType<typeof getCatalogListing>>, { status: 'ok' }>; scope: NonNullable<ReturnType<typeof resolveCatalogRoute>> }
+  | { kind: 'organizer'; organizer: OrganizerPageData }
   | { kind: 'event'; event: Extract<Awaited<ReturnType<typeof getEventDetail>>, { status: 'ok' }>['event']; related: Extract<Awaited<ReturnType<typeof getEventDetail>>, { status: 'ok' }>['related'] }
   | { kind: 'not_found' };
 
@@ -56,6 +59,14 @@ async function resolvePublicRoute(segments: string[]): Promise<PublicRoute> {
 
   if (scope) {
     return { kind: 'catalog', listing, scope };
+  }
+
+  if (segments.length === 1) {
+    const taxonomySlugs = [...listing.taxonomy.eventTypes, ...listing.taxonomy.topics, ...listing.taxonomy.locations].map((category) => category.slug);
+    if (isOrganizerSlugAllowed(segments[0], taxonomySlugs)) {
+      const organizer = await getOrganizerPage(segments[0]);
+      if (organizer) return { kind: 'organizer', organizer };
+    }
   }
 
   if (segments.length !== 2 && segments.length !== 3) {
@@ -95,6 +106,11 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
     return buildPageMetadata({ title: `${event.title} · ${eventDate} · ${place}`, description: event.description, path: canonical ?? `/${segments.join('/')}/`, indexable: !isEventPast(event) && hasAvailableTickets(event), indexingEnabled: settings.indexingEnabled, image }, siteConfig.siteUrl);
   }
 
+  if (route.kind === 'organizer') {
+    const settings = await getSiteSettings();
+    return buildPageMetadata({ title: `${route.organizer.name} · Organizador DEMO`, description: route.organizer.description, path: `/${segments[0]}/`, indexable: route.organizer.events.length > 0, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
+  }
+
   const { listing, scope } = route;
   const settings = await getSiteSettings();
   const hasEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, new Date()).length > 0;
@@ -124,6 +140,11 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   if (route.kind === 'event') {
     const settings = await getSiteSettings();
     return <EventDetailPage event={route.event} related={route.related} indexingEnabled={settings.indexingEnabled} />;
+  }
+
+  if (route.kind === 'organizer') {
+    const settings = await getSiteSettings();
+    return <OrganizerPage organizer={route.organizer} indexingEnabled={settings.indexingEnabled} />;
   }
 
   const { listing, scope } = route;
