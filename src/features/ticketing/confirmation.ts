@@ -1,7 +1,9 @@
 import 'server-only';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
+import { eventPath } from '@/features/catalog/paths';
 import { buildReceipt, type Receipt } from '@/features/checkout/payment-flow';
+import { siteConfig } from '@/lib/site-config';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 import { recoverTicketQrs, type RecoveredTicket } from './qr';
@@ -23,6 +25,8 @@ export type OrderConfirmation = {
     startsAt: string;
     mode: 'presencial' | 'virtual';
     venue: string | null;
+    /** URL pública de la ficha del evento (la que se comparte; nunca la de la orden). Nula si no se puede resolver. */
+    url: string | null;
   };
   tickets: ConfirmationTicket[];
   /** Envíos simulados del boleto, con el destino ya enmascarado. */
@@ -81,7 +85,11 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
 
   const eventResult = await client
     .from('events')
-    .select('title, starts_at, mode, venue')
+    .select(
+      `title, slug, starts_at, mode, venue,
+       event_type:categories!events_event_type_fk(slug),
+       topic:categories!events_topic_fk(slug)`,
+    )
     .eq('id', order.event_id)
     .maybeSingle();
 
@@ -89,11 +97,14 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     return { status: 'unavailable' };
   }
 
-  const event = eventResult.data as {
+  const event = eventResult.data as unknown as {
     title: string;
+    slug: string;
     starts_at: string;
     mode: OrderConfirmation['event']['mode'];
     venue: string | null;
+    event_type: { slug: string } | null;
+    topic: { slug: string } | null;
   };
 
   const paymentResult = await client
@@ -180,6 +191,12 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
         startsAt: event.starts_at,
         mode: event.mode,
         venue: event.venue,
+        url: event.event_type
+          ? new URL(
+              eventPath({ slug: event.slug, eventTypeSlug: event.event_type.slug, topicSlug: event.topic?.slug ?? null }),
+              siteConfig.siteUrl,
+            ).toString()
+          : null,
       },
       tickets,
       deliveries,

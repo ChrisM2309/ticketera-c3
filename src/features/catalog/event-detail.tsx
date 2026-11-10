@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { EventCard } from '@/components/catalog/event-card';
 import { MobileBuyBar } from '@/components/catalog/mobile-buy-bar';
+import { ShareButton } from '@/components/catalog/share-button';
 import { SpeakersList } from '@/components/catalog/speakers-list';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
 import { buttonVariants } from '@/components/ui/button';
@@ -80,6 +81,18 @@ const detailValueClass =
   'text-right font-texto text-sm leading-6 text-texto-suave sm:mt-1 sm:text-left';
 const detailTermClass = 'flex items-center gap-2 font-titulo text-sm font-semibold text-texto';
 
+/** URL pública absoluta de la ficha; es la que se comparte y la que declara el JSON-LD. */
+function eventUrl(event: CatalogEventDetail): string {
+  return new URL(
+    eventPath({
+      slug: event.slug,
+      eventTypeSlug: event.eventType.slug,
+      topicSlug: event.topic?.slug ?? null,
+    }),
+    siteConfig.siteUrl,
+  ).toString();
+}
+
 function structuredEvent(event: CatalogEventDetail) {
   const imagePath = publicImagePath(event.imagePath);
   const activeTickets = event.ticketTypes.filter((ticket) => ticket.isActive);
@@ -89,14 +102,7 @@ function structuredEvent(event: CatalogEventDetail) {
     name: event.title,
     description: event.description,
     startDate: event.startsAt,
-    url: new URL(
-      eventPath({
-        slug: event.slug,
-        eventTypeSlug: event.eventType.slug,
-        topicSlug: event.topic?.slug ?? null,
-      }),
-      siteConfig.siteUrl,
-    ).toString(),
+    url: eventUrl(event),
     eventAttendanceMode:
       event.mode === 'virtual'
         ? 'https://schema.org/OnlineEventAttendanceMode'
@@ -256,13 +262,16 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
               {event.description}
             </p>
             {past ? null : (
-              <a
-                href={`/calendario/${event.id}/`}
-                className={cn(buttonVariants({ variant: 'secundario' }), 'w-fit')}
-              >
-                <Icon name="calendarPlus" />
-                Agregar al calendario
-              </a>
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <a
+                  href={`/calendario/${event.id}/`}
+                  className={cn(buttonVariants({ variant: 'secundario' }), 'w-fit')}
+                >
+                  <Icon name="calendarPlus" />
+                  Agregar al calendario
+                </a>
+                <ShareButton title={event.title} startsAt={event.startsAt} eventUrl={eventUrl(event)} />
+              </div>
             )}
           </section>
 

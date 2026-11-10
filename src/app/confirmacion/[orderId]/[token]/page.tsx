@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
 
+import { ShareButton } from '@/components/catalog/share-button';
 import { PrintButton } from '@/components/checkout/print-button';
 import { SimulatedDelivery } from '@/components/checkout/simulated-delivery';
 import { buttonVariants } from '@/components/ui/button';
@@ -140,13 +141,22 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
           </div>
         </dl>
         {confirmation.status === 'confirmed' ? (
-          <a
-            href={`/calendario/${confirmation.event.id}/`}
-            className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-fit print:hidden')}
-          >
-            <Icon name="calendarPlus" />
-            Agregar al calendario
-          </a>
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap print:hidden">
+            <a
+              href={`/calendario/${confirmation.event.id}/`}
+              className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-fit print:hidden')}
+            >
+              <Icon name="calendarPlus" />
+              Agregar al calendario
+            </a>
+            {confirmation.event.url ? (
+              <ShareButton
+                title={confirmation.event.title}
+                startsAt={confirmation.event.startsAt}
+                eventUrl={confirmation.event.url}
+              />
+            ) : null}
+          </div>
         ) : null}
       </section>
 
