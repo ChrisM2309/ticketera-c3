@@ -49,7 +49,7 @@ Detalle y orden en el [roadmap](2026-11-09-roadmap-nuevas-areas.md); decisiones 
 
 | ID | Área | Fase (plan) | Prioridad | Depende de | Estado |
 |---|---|---|---|---|---|
-| F0 | Nuevas áreas | [Fundamentos y documentación](2026-11-09-fase-0-fundamentos.md) | — | — | En curso |
+| F0 | Nuevas áreas | [Fundamentos y documentación](2026-11-09-fase-0-fundamentos.md) | — | — | Terminado (tareas 0.1–0.8; evidencia: `npm test` 40 archivos y 269 pruebas, lint y typecheck en verde; revisión final con arreglos aplicados; migraciones: ninguna) |
 | F1 | Nuevas áreas | [Diseño, iconos, imágenes y wireframes](2026-11-09-fase-1-diseno-iconos.md) | — | 0 | Pendiente |
 | F2 | Nuevas áreas | [Compra refinada y post-compra simulada](2026-11-09-fase-2-compra.md) | — | 0, 1 (iconos) | Pendiente |
 | F3 | Nuevas áreas | [Cuentas de comprador y alta de organizadores](2026-11-09-fase-3-cuentas.md) | — | 2 | Pendiente |
