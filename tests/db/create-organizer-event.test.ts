@@ -23,7 +23,7 @@ async function categoryId(kind: string, slug: string): Promise<string> {
 async function createEventAs(
   userId: string,
   organizerId: string,
-  options: { slug: string; tickets?: string },
+  options: { slug: string; tickets?: string; speakers?: string },
 ) {
   // Los ids se leen antes de cambiar de rol: categoryId() corre como superusuario.
   const eventTypeId = await categoryId('event_type', 'congresos');
@@ -32,13 +32,27 @@ async function createEventAs(
 
   await asRole(db, 'authenticated', userId);
 
+  const baseArgs = [organizerId, options.slug, eventTypeId, topicId, locationId, options.tickets ?? ticketTypes];
+
+  // Sin ponentes se usa la llamada de 14 argumentos (p_speakers toma su valor por defecto).
+  if (options.speakers === undefined) {
+    return db.query<{ id: string }>(
+      `select public.create_organizer_event(
+         $1, $2, 'Evento de prueba', 'Descripción suficiente para la prueba.', null,
+         'presencial', 'Sede de prueba', null, '2027-09-01T18:00:00Z'::timestamptz, null,
+         $3, $4, $5, $6::jsonb
+       ) as id`,
+      baseArgs,
+    );
+  }
+
   return db.query<{ id: string }>(
     `select public.create_organizer_event(
        $1, $2, 'Evento de prueba', 'Descripción suficiente para la prueba.', null,
        'presencial', 'Sede de prueba', null, '2027-09-01T18:00:00Z'::timestamptz, null,
-       $3, $4, $5, $6::jsonb
+       $3, $4, $5, $6::jsonb, $7::jsonb
      ) as id`,
-    [organizerId, options.slug, eventTypeId, topicId, locationId, options.tickets ?? ticketTypes],
+    [...baseArgs, options.speakers],
   );
 }
 
@@ -70,6 +84,39 @@ describe('create_organizer_event', () => {
       { name: 'General', price_cents: 1000, quantity_sold: 0, is_active: true },
       { name: 'Premium', price_cents: 2500, quantity_sold: 0, is_active: true },
     ]);
+  });
+
+  it('guarda los ponentes recibidos en p_speakers', async () => {
+    const owner = await createUser(db, 'organizer');
+    const organizerId = await createOrganizer(db, owner, 'organizador-con-ponentes');
+    const speakers = [
+      { name: 'Ponente DEMO 1', role: 'Rol de ejemplo (DEMO)' },
+      { name: 'Ponente DEMO 2', role: '' },
+    ];
+
+    const created = await createEventAs(owner, organizerId, {
+      slug: 'evento-con-ponentes-g7',
+      speakers: JSON.stringify(speakers),
+    });
+
+    await asRole(db, 'authenticated', owner);
+    const event = await db.query<{ speakers: unknown }>(`select speakers from public.events where id = $1`, [
+      created.rows[0].id,
+    ]);
+    expect(event.rows[0].speakers).toEqual(speakers);
+  });
+
+  it('sin p_speakers el evento queda con la lista de ponentes vacía', async () => {
+    const owner = await createUser(db, 'organizer');
+    const organizerId = await createOrganizer(db, owner, 'organizador-sin-ponentes');
+
+    const created = await createEventAs(owner, organizerId, { slug: 'evento-sin-ponentes-h8' });
+
+    await asRole(db, 'authenticated', owner);
+    const event = await db.query<{ speakers: unknown }>(`select speakers from public.events where id = $1`, [
+      created.rows[0].id,
+    ]);
+    expect(event.rows[0].speakers).toEqual([]);
   });
 
   it('un evento recién creado no es visible en el catálogo público', async () => {
