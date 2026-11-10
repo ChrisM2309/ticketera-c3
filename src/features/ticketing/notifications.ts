@@ -1,5 +1,5 @@
 export type OutboxChannel = 'email' | 'whatsapp';
-export type OutboxTemplate = 'ticket' | 'reminder_24h';
+export type OutboxTemplate = 'ticket' | 'reminder_24h' | 'survey';
 
 export type OutboxRow = {
   orderId: string;

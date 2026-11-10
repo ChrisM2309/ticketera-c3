@@ -170,26 +170,12 @@ Detalle y orden en el [roadmap](2026-11-09-roadmap-nuevas-areas.md); decisiones 
 
 **Terminado cuando:** catálogo y compra demo funcionan en el deployment público; no se filtran credenciales.
 
-### T19 · Investigación UX y benchmarking [P-A]
-**Qué hacer:** documentar competencia con capturas/URLs y estudiar el flujo. Realizar test con **5 usuarios, 3 tareas** y métricas de éxito, tiempo y errores, según presentación del equipo.
+### Evidencias finales — alcance revisado (Fase 7)
+**Dentro del alcance de desarrollo:** auditoría SEO técnica (T21 parcial, evidencia y pendientes en `docs/analisis/auditoria-seo.md`), documentación actualizada de cómo funciona el sitio, capturas del sitio terminado (T22 parcial) y lista mínima manual de activación (`docs/analisis/activacion.md`).
 
-**Terminado cuando:** hay resultados reales anonimizados, hallazgos y cambios concretos; no se inventan entrevistas ni métricas.
+**Fuera del alcance de desarrollo por decisión del responsable:** investigación UX y benchmarking (T19), wireframes/fotos y justificación visual (T20), marketing, costos, presentación y video (T21/T22 originales). Los hará el equipo por su cuenta; no crear plantillas ni marcarlos como entregables del repositorio.
 
-### T20 · Wireframes y justificación de diseño [P-A]
-**Qué hacer:** elaborar las cinco pantallas pedidas (Home, Categoría, Producto, Carrito/Pasarela, Confirmación) en desktop o móvil, explicando decisiones con buyer personas, SEO, competencia y hallazgos del test.
-
-**Terminado cuando:** los cinco wireframes coinciden con el comportamiento de la web y tienen una justificación documentada.
-
-### T21 · Respaldo SEO y marketing [P-A]
-**Qué hacer:** registrar keyword research y árbol; documentar on-page SEO, canales por buyer persona, objetivos SMART, distribución de presupuesto, captación orgánica y proyección de visitas, conversiones, ventas, ticket promedio y ROAS. No inventar datos medidos: señalar supuestos.
-
-**Terminado cuando:** cada apartado exigido en rúbrica tiene fundamento y evidencia documentada.
-
-### T22 · Presentación y demo [P-A]
-**Qué hacer:** capturas comparativas, evidencias de compra, PPT y documentos de apoyo; grabar video corto con compra completa como respaldo. Priorizar explicación comercial/UX/SEO sobre detalles técnicos.
-
-**Terminado cuando:** hay presentación, anexos y demo operativa respaldada, sin afirmaciones de mediciones inexistentes.
-
+**Terminado cuando:** están presentes los documentos técnicos y capturas del sitio final; pruebas, limitaciones y pasos manuales se registran con evidencia. Los entregables externos no bloquean el cierre de desarrollo.
 ## Área F — Opcionales [P2, no bloquean entrega]
 
 - Correo transaccional con boleto, newsletter opt-in.

@@ -11,6 +11,11 @@ for (const viewport of [
 
     test('el pie enlaza privacidad y términos y ambas páginas cargan', async ({ page }) => {
       await page.goto('/');
+      const consent = page.locator('[aria-label="Consentimiento de analítica"]');
+      if (await consent.isVisible()) {
+        await consent.getByRole('button', { name: 'Solo lo necesario' }).click();
+      }
+
       const pie = page.getByRole('navigation', { name: 'Enlaces del pie' });
 
       await pie.getByRole('link', { name: 'Privacidad' }).click();

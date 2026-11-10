@@ -18,9 +18,22 @@ export const revalidate = 60;
 /** Palabra clave del Excel «boletos para el salvador» (SEO_ROUTES.md, sección 5). */
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
+  const title = `Boletos para eventos tecnológicos en El Salvador · ${siteConfig.name} · ${siteConfig.demoLabel}`;
+  const description = siteConfig.description;
+
   return {
-    title: 'Boletos para eventos tecnológicos en El Salvador',
+    title: { absolute: title },
+    description,
     alternates: { canonical: '/' },
+    openGraph: {
+      type: 'website',
+      title,
+      description,
+      url: '/',
+      siteName: siteConfig.name,
+      locale: siteConfig.locale.replace('-', '_'),
+    },
+    twitter: { card: 'summary', title, description },
     robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: true }),
   };
 }

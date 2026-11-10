@@ -68,7 +68,7 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Recuperación por enlace: el QR se recalcula desde el token y no se guarda en claro (D-29).
 - [x] Token o identificadores mal formados y órdenes inexistentes responden 404 con el mismo resultado (sin enumeración).
 - [x] Pruebas: recuperación de QR en unitarias; en base, el QR emitido por la RPC se recupera con el token (round-trip en PGlite), los ids quedan persistidos y los ids repetidos se rechazan.
-- [ ] Compra real por HTTP con la página de confirmación: pendiente de aplicar la migración `20261105130000` en producción. Sin ella, la RPC de producción no acepta `p_tickets`.
+- [x] Confirmación real por HTTP: tras aplicar `20261105130000` históricamente y F6 el 2026-11-10, una orden E2E existente responde HTTP 200 con comprobante, QR y entrega simulada; capturas anonimizadas en `docs/analisis/evidencias/fase-7/`.
 
 ### T14 — Autenticación y roles
 
@@ -161,16 +161,16 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 
 **Nunca** marcar estas filas como exitosas si no se han ejecutado.
 
-## Investigación y testeo UX requerido por la PPT
+## Entregables externos fuera del cierre de desarrollo
 
-La presentación del equipo propone **5 usuarios, 3 tareas y 3 métricas** (éxito, tiempo, errores). Tareas: comprar un workshop de IA; encontrar evento gratis en San Salvador; encontrar una entrada comprada.
+Por decisión del responsable, investigación UX, benchmarking, wireframes, marketing, costos, PPT y video corresponden al equipo y se gestionan fuera del repositorio de desarrollo. No son criterios de cierre de estas fases.
+## Cierre Fases 6 y 7 (2026-11-10)
 
-Guardar resultados genuinos en anexo: participante (anonimizado), dispositivo, tarea, completada/no, duración, errores, comentarios, cambios propuestos y evidencia del cambio. Los resultados siguen **pendientes** hasta que se realicen pruebas.
-
-## Checklist de presentación
-
-- [ ] Capturas de la competencia revisada, con fecha/URL.
-- [ ] Demostración de SEO on-page y árbol de categorías.
-- [ ] Video de 1–2 min mostrando compra y confirmación, como respaldo.
-- [ ] PPT con decisiones justificadas por keyword research, perfiles, entrevistas o testeo.
-- [ ] Modelo de marketing: objetivos, canales, presupuesto y proyecciones sin inventar datos medidos.
+- Fase 6: pruebas unitarias y PGlite cubren check-in, reportes y encuesta. Las migraciones `20261113100000_check_in_and_reports.sql`, `20261113106000_advanced_report.sql` y `20261113110000_event_survey.sql` se aplicaron a producción el 2026-11-10 y aparecen registradas en `supabase migration list --linked`.
+- Playwright general: 73 aprobadas, 19 omitidas y 0 fallidas (ejecución final contra build local). Las omitidas dependen de sesión/fixtures o de `REAL_PURCHASE=1`.
+- Repetición posterior de Playwright: interrumpida antes del resumen tras errores del stream del servidor local de Next y múltiples timeouts de páginas dependientes del catálogo dinámico; no se usa como corrida verde. La corrida enfocada de navegación/compra fue 13/13.
+- Compra real E2E (build local de producción, 2026-11-10): **4/4 pasaron** tras iniciar el proceso con una clave efímera local que no se persistió. Gratis escritorio `b0a12532-6eab-4ebd-b325-1a55d9f91caf`; pago DEMO aprobado `90343284-4143-4584-b58e-64bb683b85b1` (2 boletos); pago DEMO rechazado `cd681c96-9821-4331-9f17-74b3f6bf52fe` (`failed`, sin boletos); gratis móvil `80434f0c-ffa1-4c7d-b11d-2100937c0757`. Órdenes confirmadas adicionales de intentos previos: `209175c4-5f08-4b4c-a6f3-306d7f1f0628`, `1869d294-0b5d-46ff-bd3f-a85c1cf86f6f`, `ef87fdf9-ccff-46cd-91a3-a68b49aec391`. El pago es simulado, sin cobro real.
+- `npm test`: 656/656; `npm run lint`, `npm run typecheck` y `npm run build`: completados correctamente en el checkout de cierre.
+- Lighthouse móvil de laboratorio (10-11-2026): Home Performance 0.64, LCP 2.9 s, CLS 0; categoría 0.71, 0.9 s, 0; ficha 0.64, 2.8 s, 0; checkout 0.73, 0.9 s, 0. Home y ficha superan el presupuesto LCP de 2.5 s; detalle en `docs/analisis/evidencias/fase-7/rendimiento.md`.- La auditoría SEO pública y sus limitaciones están en `docs/analisis/auditoria-seo.md`. La indexación se dejó apagada por autorización del responsable.
+- El responsable conserva la activación manual mínima en `docs/analisis/activacion.md`; la indexación permanece apagada.
+- Alcance revisado de Fase 7: auditoría SEO, URLs, rendimiento y capturas del sitio final. No incluye investigación UX, benchmarking, wireframes, marketing, costos, PPT ni video.

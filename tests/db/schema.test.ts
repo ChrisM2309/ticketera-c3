@@ -9,6 +9,7 @@ const expectedTables = [
   'business_packages',
   'categories',
   'editorial_pages',
+  'event_survey_responses',
   'events',
   'featured_placements',
   'notification_outbox',

@@ -29,7 +29,7 @@ Empates se resuelven según el orden del Excel. Valores aportados por el equipo;
 
 **Ubicaciones:** `/san-miguel/`, `/san-salvador/`, `/santa-ana/`.
 
-**Organizadores:** `/claude/`, `/copa/` (slugs exactamente como en el Excel; usar como datos académicos, verificar nombres visibles antes de mostrar como entidades reales).
+**Organizadores:** el Excel contempla `/claude/` y `/copa/`; el alcance aprobado conserva solo `/copa/` (D-47). La página requiere un organizador activo y se hace indexable cuando tiene eventos próximos publicados. No atribuir afiliaciones oficiales al contenido DEMO.
 
 **No** mezclar estas nueve páginas con los 12 tipos del menú primario; deben estar en navegación secundaria, filtros o footer.
 
@@ -54,17 +54,18 @@ Un tema anidado puede tener `/virtual/`, `/presencial/` o `/gratis/`, **solo cua
 
 **Precaución:** tercera sección `/virtual/`, `/presencial/`, `/gratis/` ya se usa para landing de modalidad/precio. Son slugs reservados; nunca permitir que un evento use un slug igual a ellos. El resolvedor de rutas consulta la taxonomía antes de interpretar un segmento como evento.
 
-Implementación sugerida: catch-all `src/app/(marketplace)/[...segments]/page.tsx` para rutas públicas SEO, con verificación en DB y `notFound()` para inexistentes. Rutas fijas `/checkout/`, `/carrito/`, `/publicar/`, `/admin/`, `/mis-boletos/` y confirmaciones fuera de catch-all, con precedencia de estáticas.
+Implementación vigente: catch-all `src/app/[...segments]/page.tsx` para catálogo, organizadores y fichas, con verificación en DB y `notFound()` para inexistentes. Las rutas fijas de compra, cuenta, panel, administración y confirmaciones tienen precedencia. Publicar un evento se hace en `/panel/eventos/nuevo/`; no existe una página `/publicar/`.
 
 ## 5. Metadatos y datos estructurados
 
 - Home: title/H1 vinculados a 'boletos para El Salvador' + eventos tecnológicos; meta description sin afirmaciones no respaldadas.
 - Categoría: title, H1 y texto introductorio con keyword del Excel; filtros aplicables y contenido contextual.
 - Evento: title específico, imagen, fecha y lugar/modo; JSON-LD `Event` con información realmente almacenada.
-- Modalidad/precio sin eventos: `noindex` y sin sitemap hasta tener inventario.
+- Modalidad/precio: `noindex` y sin sitemap incluso con inventario; categorías, temas y ciudades vacíos también quedan fuera.
 - Checkout, confirmaciones, panel y rutas de autenticación: `noindex`; enlaces a orden bajo token privado.
 - `sitemap.xml` y `robots.txt`, canonical por URL limpia y trailing slash consistente.
-- No indexar como eventos **reales** los diez ejemplos ficticios; mantener marca DEMO.
+- `site_settings.indexing_enabled` gobierna la indexación (apagado por defecto): apagado genera `Disallow: /`, sitemap vacío, metadatos `noindex` y omite JSON-LD. Encendido habilita solo las páginas elegibles. La etiqueta DEMO sigue visible y no gobierna el interruptor (D-63).
+- JSON-LD implementado: `WebSite` en Home y `Organization` en la página de organizador, `BreadcrumbList` en la navegación correspondiente, `Event` en fichas elegibles y `Article` en artículos publicados. Su existencia en código no acredita validación remota ni resultados de búsqueda.
 
 ## 6. Navegación
 
@@ -73,3 +74,32 @@ Logo clicable vuelve al Home; no 'Inicio' en menú. Menú compacto con 12 catego
 ## 7. Estrategia de generación
 
 Crear un sistema de rutas y plantillas a partir de taxonomía. Mantener 134 entradas en dataset/documentación si así se desea, pero no servir páginas indexables vacías ni duplicadas. Para la entrega bastan 12 categorías y al menos 2–3 subcategorías pobladas, con los ejemplos que se usen en el flujo de compra.
+
+## 8. Rutas incorporadas y política SEO (DOC-08)
+
+«Sí» indica elegibilidad cuando el administrador activa `indexing_enabled`, no una indexación realizada. Los canónicos se construyen con `NEXT_PUBLIC_SITE_URL`; los filtros apuntan a la ruta base sin parámetros. La activación del dominio final y Search Console son pasos manuales pendientes del responsable.
+
+| Ruta | Indexable | Condición o acceso |
+|---|---|---|
+| `/blog/` | Sí | Listado público; actualmente puede mostrar un estado vacío |
+| `/blog/[slug]/` | Sí | Solo artículos `published`; inexistentes o borradores responden 404 al público |
+| `/copa/` | Sí, con eventos | Organizador activo con eventos próximos publicados |
+| `/para-empresas/` | Sí | Beneficios públicos; contratación vinculada a organizador, pago DEMO |
+| `/privacidad/` | Sí | Texto de datos y consentimiento de la demo |
+| `/terminos/` | Sí | Condiciones de uso académico y pagos simulados |
+| `/calendario/[id]/` | No | Descarga pública `.ics` de evento publicado; excluida por `/calendario/` |
+| `/mis-boletos/` | No | Sesión de comprador; solo órdenes propias; `noindex` |
+| `/cuenta/` | No | Sesión y perfil propio; `noindex` |
+| `/registro/` | No | Alta de comprador; `noindex` |
+| `/recuperar/` | No | Recuperación de contraseña; `/recuperar/nueva/` también lleva `noindex` |
+| `/panel/destacar/[id]/` | No | Evento propio y publicado; `noindex` |
+| `/panel/paquete/` | No | Paquetes y seguimientos del organizador; `noindex` |
+| `/panel/eventos/[id]/checkin/` | No | Propietario o admin; validación de QR, sin datos personales; `noindex` |
+| `/panel/eventos/[id]/reporte/` | No | Agregados del propietario o admin; `noindex` |
+| `/panel/eventos/[id]/reporte/exportar/` | No | CSV superior; paquete `active` del propietario o admin; respuesta privada sin caché |
+| `/admin/*` | No | Administración comprobada en servidor; páginas con `noindex` |
+| `/confirmacion/[orderId]/[token]/encuesta/` | No | Token válido de orden confirmada; `noindex` |
+
+`[id]` es notación documental: los directorios de calendario y destacar usan `[eventId]`; check-in y reporte usan `[id]`. `/admin/*` abarca `/admin/`, `/admin/organizadores/`, `/admin/destacados/`, `/admin/ajustes/`, `/admin/contenido/` (blog y categorías) y `/admin/metricas/`.
+
+La lista `privatePaths` de `src/lib/seo/indexing.ts` excluye `/admin/`, `/api/`, `/buscar/`, `/calendario/`, `/carrito/`, `/checkout/`, `/confirmacion/`, `/cuenta/`, `/ingresar/`, `/mis-boletos/`, `/panel/`, `/recuperar/` y `/registro/` de robots y sitemap, incluidos sus descendientes. Las páginas HTML privadas además declaran `robots: { index: false, follow: false }`. `Disallow` evita rastreo, pero no garantiza retirar una URL ya indexada; tampoco sustituye autenticación ni validación del token. El calendario descarga datos públicos del evento, sin datos de compradores.

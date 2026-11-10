@@ -14,7 +14,7 @@ afterEach(async () => {
 });
 
 describe('privilegios de funciones SECURITY DEFINER', () => {
-  it('anon solo puede ejecutar la consulta pública de destacados', async () => {
+  it('anon solo puede ejecutar las funciones públicas de destacados y encuesta', async () => {
     await asRole(db, 'anon');
     const result = await db.query<{ proname: string }>(
       `select p.proname
@@ -25,7 +25,7 @@ describe('privilegios de funciones SECURITY DEFINER', () => {
           and has_function_privilege('anon', p.oid, 'EXECUTE')`,
     );
 
-    expect(result.rows.map((row) => row.proname)).toEqual(['active_featured']);
+    expect(result.rows.map((row) => row.proname)).toEqual(['active_featured', 'submit_survey']);
   });
 
   it('solo el rol de servidor puede crear órdenes pendientes', async () => {

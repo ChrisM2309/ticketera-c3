@@ -45,16 +45,27 @@ La cuenta es opcional: la compra como invitado no cambia (D-37). Historias de la
 | ID | Como | Necesito | Se acepta cuando |
 |---|---|---|---|
 | S-01 | organizador | iniciar sesión | autenticación segura mediante Supabase Auth |
-| S-02 | organizador | proponer un evento | formulario guarda borrador o pendiente, con precio/cupos |
+| S-02 | organizador | proponer un evento | formulario guarda el evento pendiente de revisión, con precio/cupos |
 | S-03 | organizador | ver estado de publicación | lista básica de eventos propios y registros agregados |
 | A-01 | admin | publicar un evento pendiente | aprueba/rechaza; solo aprobados aparecen en catálogo |
 | S-04 | organizador | destacar un evento | selecciona días, revisa el total calculado en servidor y elige un resultado de pago DEMO |
 | S-05 | organizador | contratar un paquete empresarial | ve beneficios configurables, compra con pago DEMO y consulta días/eventos restantes |
 | A-02 | admin | gestionar destacados y seguimientos | crea destacados manuales, revisa solicitudes pagadas y responde seguimientos |
+| S-06 | organizador | registrar entradas por QR o código | solo mis eventos (o admin); orden confirmada; cada boleto se registra una vez, sin datos personales en pantalla |
+| S-07 | organizador | consultar resultados del evento | emitidos, ingresos, subtotal y comisión agregados; no-show después del fin y con emitidos; cantidad y promedio de encuestas |
+| S-08 | organizador con paquete | consultar y exportar el reporte superior | paquete `active` del dueño o admin; emisión diaria UTC y desglose por tipo, CSV sin datos de compradores |
+| A-03 | admin | editar contenido y revisar métricas | blog y textos/FAQ de categorías con borrador/publicado; métricas agregadas solo admin |
+| A-04 | admin | preparar la indexación | interruptor en `/admin/ajustes/`, apagado por defecto; páginas privadas excluidas incluso al encenderlo |
+
+### Encuesta y analítica
+
+El comprador con enlace válido de orden confirmada puede responder una encuesta DEMO una vez por orden: nota 1–5 y comentario opcional, sin pedir nombre ni correo adicionales. La invitación solo se registra en el outbox, dos horas después del fin del evento (o inicio si no hay fin). La apertura actual del formulario usa el inicio del evento; queda pendiente resolver esa diferencia con el objetivo post-evento (D-64).
+
+La analítica propia requiere consentimiento previo tanto en navegador como en servidor; registra eventos con identificador seudónimo y ofrece totales al administrador. No implica analítica comercial avanzada ni resultados de tráfico o conversión ya medidos. Retención, rutas sensibles y cobertura de eventos admitidos requieren revisión (D-66).
 
 ### Simplificaciones B2B
 
-Sin payout, calendario recurrente o facturación electrónica. La publicación de eventos es gratuita; los destacados por día y el paquete empresarial tienen precio configurable y cobro simulado. Los informes exportables quedan fuera de esta fase; el paquete solo registra el beneficio de reporte superior.
+Sin payout, calendario recurrente o facturación electrónica. La publicación de eventos es gratuita; los destacados por día y el paquete empresarial tienen precio configurable y cobro simulado, sin campos de tarjeta. La tarifa diaria y el precio anual quedan por definir por el responsable en `/admin/ajustes/`; los beneficios iniciales son supuestos DEMO configurables. La Fase 6 incorpora el reporte superior con CSV; actualmente el permiso comprueba `status = active`, sin fechas ni `advancedReport` de la instantánea (D-65).
 
 ## 5. Pantallas mínimas de la materia
 
@@ -80,7 +91,7 @@ Sin payout, calendario recurrente o facturación electrónica. La publicación d
 
 - Cobros reales, tarjetas, webhooks externos, transferencias a vendedores, impuestos/facturación legal real.
 - reembolsos, descuentos automáticos, reserva de asientos, niveles VIP especiales.
-- 134 páginas vacías, analítica avanzada y envío masivo de newsletters.
+- 134 páginas vacías, analítica comercial avanzada y envío masivo de newsletters. Sí se incluyen la analítica propia con consentimiento y los reportes agregados del evento.
 
 ## 8. Requisitos no funcionales
 
@@ -95,6 +106,8 @@ Sin payout, calendario recurrente o facturación electrónica. La publicación d
 **Rúbrica oficial:** nombre, modelo, propuesta de valor, buyer personas, dominio/hosting con precios, plataforma recomendada, wireframes de cinco pantallas, investigación, árbol de categorías, flujo, resultados de test, keyword research, estrategia SEO, canales, objetivos SMART, presupuesto publicitario, estrategia orgánica, proyección de visitas/conversiones/ventas/ticket promedio/ROAS, PPT y respaldos; exposición 15–20 min. No afirmar que investigación/entrevistas ya ocurrió si sigue pendiente.
 
 **Guía equipo:** 8–10 eventos, checkout funcional, tres compras de prueba, QR, responsive, capturas competencia y video corto de respaldo. La guía pide sandbox externo; esta implementación solo simula pagos, por decisión informada del usuario. Si el equipo decide exigir el sandbox, es un cambio de alcance.
+
+**Alcance de desarrollo revisado por el responsable:** el cierre conserva verificación técnica, documentos del sitio y capturas del sitio final; la activación tiene una lista manual mínima. Se retiran la conversión de wireframes a fotos, investigación UX, entregables de marketing, diapositivas y ensayo/presentación del trabajo de desarrollo. El equipo prepara sus entregables académicos; esta documentación no acredita su realización ni modifica la rúbrica.
 
 ## 10. Éxito
 

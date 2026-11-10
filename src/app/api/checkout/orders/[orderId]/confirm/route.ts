@@ -8,6 +8,7 @@ import {
   enqueueNotifications,
 } from '@/features/ticketing/notifications';
 import { createTicketId, deriveTicketQrToken, hashTicketQrToken } from '@/features/ticketing/qr';
+import { buildSurveyNotifications } from '@/features/ticketing/survey';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
@@ -135,7 +136,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     // fecha del evento solo se omite el recordatorio; la compra y el boleto no se tocan.
     const eventResult = await client
       .from('events')
-      .select('starts_at')
+      .select('starts_at, ends_at')
       .eq('id', orderResult.data.event_id as string)
       .maybeSingle();
 
@@ -147,6 +148,14 @@ export async function POST(request: Request, { params }: RouteContext) {
           phone,
           eventStartsAt: new Date(eventResult.data.starts_at as string),
           now,
+        }),
+      );
+      rows.push(
+        ...buildSurveyNotifications({
+          orderId: confirmed.result_order_id,
+          email,
+          phone,
+          eventEndsAt: new Date((eventResult.data.ends_at as string | null) ?? (eventResult.data.starts_at as string)),
         }),
       );
     }
