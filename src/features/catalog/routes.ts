@@ -35,6 +35,9 @@ const modalityPhrase: Record<CatalogModality, string> = {
   gratis: 'gratuitos',
 };
 
+/** Segmentos raíz que tienen una ruta pública propia y no deben resolverse como catálogo. */
+export const reservedPublicSegments = ['blog'] as const;
+
 function findBySlug(categories: readonly CatalogCategory[], slug: string): CatalogCategory | null {
   return categories.find((category) => category.slug === slug) ?? null;
 }
@@ -58,6 +61,9 @@ export function resolveCatalogRoute(
   taxonomy: CatalogTaxonomy,
 ): CatalogScope | null {
   const [first, second, third, ...rest] = segments;
+  if (first && reservedPublicSegments.includes(first as (typeof reservedPublicSegments)[number])) {
+    return null;
+  }
   const route = findRoute(segments, taxonomy);
 
   if (!first || rest.length > 0 || !route) {

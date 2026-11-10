@@ -6,6 +6,7 @@ import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
 import { FeaturedBlock } from '@/components/catalog/featured-block';
+import { CategoryIntro } from '@/components/content/category-intro';
 import { EventDetailPage } from '@/features/catalog/event-detail';
 import {
   filterCatalogEvents,
@@ -16,6 +17,7 @@ import {
 } from '@/features/catalog/filters';
 import { CATALOG_EVENT_LIMIT, getCatalogListing, getEventDetail } from '@/features/catalog/queries';
 import { getCategoryFeaturedIds } from '@/features/featured/queries';
+import { getEditorialPage } from '@/features/content/queries';
 import { getSiteSettings } from '@/features/settings/settings';
 import {
   isCatalogRouteIndexable,
@@ -139,6 +141,12 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   const visibleEvents = events.filter((event) => !featuredSet.has(event.id));
   const subcategories = scopeSubcategories(scope, listing.taxonomy);
   const countLabel = events.length === 1 ? '1 evento' : `${events.length} eventos`;
+  const editorialCategoryId = scope.kind === 'event_type' || scope.kind === 'event_type_topic' || scope.kind === 'modality'
+    ? scope.eventType.id
+    : scope.kind === 'topic'
+      ? scope.topic.id
+      : undefined;
+  const editorial = editorialCategoryId ? await getEditorialPage(editorialCategoryId) : null;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 pb-20 pt-10 md:px-6 md:pt-14">
@@ -205,6 +213,8 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
           </p>
         )}
       </section>
+
+      {editorial ? <CategoryIntro introMd={editorial.introMd} faq={editorial.faq} /> : null}
     </div>
   );
 }
