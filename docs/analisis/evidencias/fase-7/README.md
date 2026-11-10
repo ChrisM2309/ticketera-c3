@@ -12,5 +12,7 @@ Capturas generadas el 2026-11-10 desde el build local de cierre, a partir de dat
 - `04-carrito-movil.png` — 115 KB.
 - `05-checkout-desktop.png` — 139 KB.
 - `05-checkout-movil.png` — 115 KB.
+- `06-confirmacion-desktop.png` — confirmación DEMO en 1280 × 900; QR y datos de prueba ocultos.
+- `06-confirmacion-movil.png` — confirmación DEMO en 390 × 844; QR y datos de prueba ocultos.
 
-La confirmación final queda pendiente: la corrida real creó una orden DEMO, pero el entorno remoto rechazó registrar la notificación del boleto por una restricción del outbox. No se conserva un token de confirmación; no se repitió la compra. Consultar `docs/testing/ACCEPTANCE.md` y resolver/aplicar las migraciones F6 autorizadas antes de completar esa captura.
+Las capturas de confirmación se hicieron desde una orden E2E DEMO ya existente tras aplicar las migraciones F6. La ruta respondió HTTP 200 y mostró comprobante, QR y aviso de entrega. No se creó otra orden para estas capturas.

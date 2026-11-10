@@ -68,7 +68,7 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 - [x] Recuperación por enlace: el QR se recalcula desde el token y no se guarda en claro (D-29).
 - [x] Token o identificadores mal formados y órdenes inexistentes responden 404 con el mismo resultado (sin enumeración).
 - [x] Pruebas: recuperación de QR en unitarias; en base, el QR emitido por la RPC se recupera con el token (round-trip en PGlite), los ids quedan persistidos y los ids repetidos se rechazan.
-- [ ] Compra real por HTTP con la página de confirmación: pendiente de aplicar la migración `20261105130000` en producción. Sin ella, la RPC de producción no acepta `p_tickets`.
+- [x] Confirmación real por HTTP: tras aplicar `20261105130000` históricamente y F6 el 2026-11-10, una orden E2E existente responde HTTP 200 con comprobante, QR y entrega simulada; capturas anonimizadas en `docs/analisis/evidencias/fase-7/`.
 
 ### T14 — Autenticación y roles
 
@@ -166,10 +166,10 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 Por decisión del responsable, investigación UX, benchmarking, wireframes, marketing, costos, PPT y video corresponden al equipo y se gestionan fuera del repositorio de desarrollo. No son criterios de cierre de estas fases.
 ## Cierre Fases 6 y 7 (2026-11-10)
 
-- Fase 6: pruebas unitarias y PGlite cubren check-in, reportes y encuesta. Las migraciones `20261113100000_check_in_and_reports.sql`, `20261113106000_advanced_report.sql` y `20261113110000_event_survey.sql` están en el repositorio, sin aplicar a producción.
+- Fase 6: pruebas unitarias y PGlite cubren check-in, reportes y encuesta. Las migraciones `20261113100000_check_in_and_reports.sql`, `20261113106000_advanced_report.sql` y `20261113110000_event_survey.sql` se aplicaron a producción el 2026-11-10 y aparecen registradas en `supabase migration list --linked`.
 - Playwright general: 71 aprobadas, 19 omitidas y 2 fallidas. Las omitidas dependen de sesión/fixtures o de `REAL_PURCHASE=1`. Las dos fallas fueron navegación a `/hackathons/` desde el menú en compra simulada de escritorio y falta del enlace .ics en un evento de pago dinámico; el recorrido de pago móvil y la suite de URLs sí pasaron.
-- Compra real E2E parcial: orden gratuita confirmada `209175c4-5f08-4b4c-a6f3-306d7f1f0628`; la prueba luego falló al leer el aviso de entrega porque el outbox remoto rechazó la plantilla. No registrar este intento como recorrido E2E completo ni repetirlo antes de resolver las migraciones pendientes.
+- Compra real E2E: órdenes gratuitas confirmadas `209175c4-5f08-4b4c-a6f3-306d7f1f0628`, `1869d294-0b5d-46ff-bd3f-a85c1cf86f6f` y `ef87fdf9-ccff-46cd-91a3-a68b49aec391`. Tras aplicar migraciones, la confirmación respondió HTTP 200 con comprobante, QR y aviso de entrega; la captura usa la segunda orden existente. El test Playwright navega a confirmación, pero excedió 30 s al solicitar el `.ics`; las cuatro variantes de compra real no quedaron verificadas de extremo a extremo.
 - Lint, TypeScript y build de producción pasan en el checkout de cierre. Lighthouse/PSI sigue pendiente por cuota disponible en cero y ausencia de runner local.
 - La auditoría SEO pública y sus limitaciones están en `docs/analisis/auditoria-seo.md`. La indexación se dejó apagada por autorización del responsable.
-- El responsable conserva la activación manual mínima en `docs/analisis/activacion.md`.
+- El responsable conserva la activación manual mínima en `docs/analisis/activacion.md`; la indexación permanece apagada.
 - Alcance revisado de Fase 7: auditoría SEO, URLs, rendimiento y capturas del sitio final. No incluye investigación UX, benchmarking, wireframes, marketing, costos, PPT ni video.

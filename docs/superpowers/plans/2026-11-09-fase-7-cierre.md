@@ -56,7 +56,7 @@
 
 ### Tarea 7.3: E2E final y compras de evidencia (CO-09)
 
-**Estado:** parcial. Vitest 656/656; Playwright general 71 aprobadas, 19 omitidas y 2 fallidas (navegación/datos DEMO dinámicos). La compra real creó una orden confirmada pero la prueba falló al verificar el outbox; no se repitió.
+**Estado:** parcial. Vitest 656/656; Playwright general 71 aprobadas, 19 omitidas y 2 fallidas (navegación/datos DEMO dinámicos). Tras aplicar las migraciones, la ruta de confirmación real respondió HTTP 200 con comprobante, QR y entrega; el E2E aún excedió 30 s al pedir el `.ics`.
 
 **Files:**
 - Modify: `docs/testing/ACCEPTANCE.md`

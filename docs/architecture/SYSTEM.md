@@ -127,7 +127,7 @@ Ver `notification_outbox` en `DATA.md` y los escenarios en `../checkout/DEMO_PAY
 
 Vercel conectado al repositorio; variables de entorno Supabase solo donde corresponde. Configurar DNS para el dominio **ya existente** después de conocer el hostname. Usar despliegues preview para validar antes de producción.
 
-Dominio final decidido: `ticketera.c3.com.sv`; demo: `demo.ticketera.c3.com.sv`. `NEXT_PUBLIC_SITE_URL` debe coincidir con el entorno para canónicos y sitemap. La activación de DNS, indexación y Search Console corresponde al responsable. Este documento describe el código versionado; no acredita despliegue ni aplicación remota de migraciones. La Fase 6 requiere `20261113100000_check_in_and_reports.sql`, `20261113106000_advanced_report.sql` y `20261113110000_event_survey.sql`; cualquier aplicación en producción se confirma por separado.
+Dominio final decidido: `ticketera.c3.com.sv`; demo: `demo.ticketera.c3.com.sv`. `NEXT_PUBLIC_SITE_URL` debe coincidir con el entorno para canónicos y sitemap. La activación de DNS, indexación y Search Console corresponde al responsable. Este documento describe el código versionado; no acredita despliegue. Las migraciones de Fase 6 (`20261113100000_check_in_and_reports.sql`, `20261113106000_advanced_report.sql`, `20261113110000_event_survey.sql`) se aplicaron en producción el 2026-11-10; su registro remoto se verificó con el CLI.
 
 ## 9. Plan de pruebas técnicas
 

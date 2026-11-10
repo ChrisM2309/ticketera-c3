@@ -114,5 +114,5 @@
 ## Cierre de la fase
 
 - [x] `npm test` (656/656), `npm run lint`, `npm run typecheck`, `npm run build` pasan. Playwright general: 73 passed, 19 skipped, 0 failed. E2E autenticado de check-in requiere fixtures; compra real parcial creó una orden y falló al verificar el outbox remoto (ver ACCEPTANCE.md).
-- [x] Migraciones `20261113100000`, `20261113106000` y `20261113110000` implementadas y probadas localmente; sin aplicar en producción.
+- [x] Migraciones `20261113100000`, `20261113106000` y `20261113110000` implementadas, probadas localmente y aplicadas a producción el 2026-11-10; presencia remota verificada con `supabase migration list --linked`.
 - [ ] PR de `codex/fase-6-checkin`.
