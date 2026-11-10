@@ -17,7 +17,8 @@ export type SignedInAccount = {
 
 /**
  * Comprueba la sesión y el rol en el servidor antes de renderizar una zona privada.
- * Sin sesión válida redirige a /ingresar/; con otro rol, a su propia zona.
+ * Sin sesión válida redirige a /ingresar/. Los roles son jerárquicos (buyer < organizer < admin):
+ * un rol igual o superior al requerido entra; con un rol insuficiente va a su zona de aterrizaje.
  * El proxy no basta: cada página llama a esta función.
  */
 export async function requireRole(required: AppRole, path: string): Promise<SignedInAccount> {

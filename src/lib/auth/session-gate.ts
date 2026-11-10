@@ -3,7 +3,8 @@ import type { SessionTokens } from './cookies';
 
 /**
  * Comprobación optimista del proxy: solo mira cookies y, si hace falta, renueva el token.
- * No decide permisos: la página vuelve a validar la sesión y el rol en el servidor.
+ * No decide permisos ni jerarquía de roles (buyer < organizer < admin): la página vuelve a validar
+ * la sesión y el rol en el servidor con requireRole.
  */
 
 export type GateInput = {
