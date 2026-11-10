@@ -6,6 +6,7 @@ import { CategoryNav } from '@/components/layout/category-nav';
 import { NavLink } from '@/components/layout/nav-link';
 import { SiteSearch } from '@/components/layout/site-search';
 import { DemoBadge } from '@/components/ui/demo-badge';
+import { Icon } from '@/components/ui/icon';
 import { accountLinks, categoryGroups } from '@/lib/navigation';
 
 export function SiteHeader() {
@@ -34,7 +35,8 @@ export function SiteHeader() {
         {/* Escritorio: publicar a la derecha. En móvil va dentro del menú. */}
         <nav aria-label="Publicar" className="hidden md:ml-auto md:flex md:items-center md:gap-1">
           {accountLinks.map((link) => (
-            <NavLink key={link.href} href={link.href}>
+            <NavLink key={link.href} href={link.href} className="gap-2">
+              {link.icon ? <Icon name={link.icon} /> : null}
               {link.label}
             </NavLink>
           ))}

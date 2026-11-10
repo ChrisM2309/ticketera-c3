@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1120" width="1800" height="1120" role="img">
+  <title>Wireframe 02: Categoría Congresos, móvil y escritorio (baja fidelidad)</title>
+  <style>
+    .marco { fill: none; stroke: currentColor; stroke-width: 2; }
+    .trazo { fill: none; stroke: currentColor; stroke-width: 1; }
+    .caja { fill: currentColor; fill-opacity: 0.12; stroke: currentColor; stroke-width: 1; }
+    .imagen { fill: currentColor; fill-opacity: 0.22; stroke: none; }
+    .h1 { fill: currentColor; font-family: sans-serif; font-size: 24px; font-weight: 700; }
+    .txt { fill: currentColor; font-family: sans-serif; font-size: 14px; }
+    .txt-b { fill: currentColor; font-family: sans-serif; font-size: 15px; font-weight: 700; }
+    .txt-s { fill: currentColor; font-family: sans-serif; font-size: 12px; }
+    .txt-xs { fill: currentColor; font-family: sans-serif; font-size: 11px; }
+    .etiqueta { fill: currentColor; font-family: sans-serif; font-size: 20px; font-weight: 700; }
+    .nota { fill: currentColor; font-family: sans-serif; font-size: 15px; }
+    .centro { text-anchor: middle; }
+    .fin { text-anchor: end; }
+  </style>
+
+  <text class="etiqueta" x="40" y="50">02 · Categoría: Congresos, ruta /congresos/ (WF-01)</text>
+
+  <g id="movil" transform="translate(40 96)" data-ancho="375" data-alto="812">
+    <text class="txt-s" x="0" y="-20">Móvil · 375 × 812</text>
+    <rect class="marco" x="0" y="0" width="375" height="812"/>
+
+    <!-- Cabecera -->
+    <rect class="caja" x="16" y="10" width="120" height="44"/>
+    <text class="txt-s" x="26" y="36">Logo (va al Home)</text>
+    <rect class="caja" x="290" y="10" width="69" height="44"/>
+    <text class="txt centro" x="324.5" y="37">Menú</text>
+
+    <!-- Migas y H1 con la keyword -->
+    <text class="txt-s" x="16" y="78">Eventos › Congresos</text>
+    <text class="h1" x="16" y="108">Congresos de tecnología</text>
+    <text class="txt-s" x="16" y="130">Texto introductorio breve (1–2 líneas)</text>
+
+    <!-- Filtros en hoja y orden -->
+    <rect class="caja" x="16" y="146" width="170" height="44"/>
+    <text class="txt centro" x="101" y="173">Filtros (4)</text>
+    <rect class="caja" x="194" y="146" width="165" height="44"/>
+    <text class="txt centro" x="276.5" y="173">Ordenar por fecha</text>
+
+    <!-- Destacados de la categoría: carrusel recortado -->
+    <defs>
+      <clipPath id="recorte-destacados-movil">
+        <rect x="16" y="228" width="343" height="150"/>
+      </clipPath>
+    </defs>
+    <text class="txt-b" x="16" y="216">Destacados de congresos</text>
+    <g clip-path="url(#recorte-destacados-movil)">
+      <rect class="trazo" x="16" y="228" width="280" height="150"/>
+      <rect class="imagen" x="16" y="228" width="280" height="80"/>
+      <text class="txt-b" x="28" y="332">Título del evento DEMO</text>
+      <text class="txt-s" x="28" y="352">Fecha · ciudad o Virtual · Desde $XX.XX</text>
+
+      <rect class="trazo" x="308" y="228" width="280" height="150"/>
+      <rect class="imagen" x="308" y="228" width="280" height="80"/>
+      <text class="txt-b" x="320" y="332">Título del evento DEMO</text>
+      <text class="txt-s" x="320" y="352">Fecha · ciudad o Virtual · Desde $XX.XX</text>
+    </g>
+    <text class="txt-s" x="16" y="396">Desliza el bloque para ver más destacados</text>
+
+    <!-- Lista de resultados: filas compactas -->
+    <text class="txt-b" x="16" y="420">Resultados · N eventos</text>
+
+    <rect class="trazo" x="16" y="432" width="343" height="96"/>
+    <rect class="imagen" x="24" y="440" width="96" height="80"/>
+    <text class="txt-b" x="132" y="468">Título del evento DEMO</text>
+    <text class="txt-s" x="132" y="490">Fecha · hora · ciudad</text>
+    <text class="txt-s" x="132" y="510">Desde $XX.XX</text>
+
+    <rect class="trazo" x="16" y="540" width="343" height="96"/>
+    <rect class="imagen" x="24" y="548" width="96" height="80"/>
+    <text class="txt-b" x="132" y="576">Título del evento DEMO</text>
+    <text class="txt-s" x="132" y="598">Fecha · hora · Virtual</text>
+    <text class="txt-s" x="132" y="618">Gratis (DEMO)</text>
+
+    <rect class="trazo" x="16" y="648" width="343" height="96"/>
+    <rect class="imagen" x="24" y="656" width="96" height="80"/>
+    <text class="txt-b" x="132" y="684">Título del evento DEMO</text>
+    <text class="txt-s" x="132" y="706">Fecha · hora · ciudad</text>
+    <text class="txt-s" x="132" y="726">Desde $XX.XX</text>
+
+    <rect class="caja" x="16" y="756" width="343" height="44"/>
+    <text class="txt centro" x="187.5" y="783">Ver más eventos</text>
+  </g>
+
+  <g id="escritorio" transform="translate(470 96)" data-ancho="1280" data-alto="800">
+    <text class="txt-s" x="0" y="-20">Escritorio · 1280 × 800</text>
+    <rect class="marco" x="0" y="0" width="1280" height="800"/>
+
+    <!-- Cabecera -->
+    <line class="trazo" x1="0" y1="72" x2="1280" y2="72"/>
+    <rect class="caja" x="24" y="18" width="150" height="36"/>
+    <text class="txt-s" x="36" y="40">Logo (va al Home)</text>
+    <rect class="caja" x="220" y="18" width="640" height="36"/>
+    <text class="txt" x="236" y="41">Buscar eventos o temas</text>
+    <rect class="caja" x="1000" y="18" width="170" height="36"/>
+    <text class="txt centro" x="1085" y="41">Iniciar sesión</text>
+    <rect class="trazo" x="1186" y="22" width="70" height="28"/>
+    <text class="txt-b centro" x="1221" y="41">DEMO</text>
+
+    <!-- Migas, H1 y texto introductorio -->
+    <text class="txt-s" x="24" y="106">Eventos › Congresos</text>
+    <text class="h1" x="24" y="138">Congresos de tecnología</text>
+    <text class="txt" x="24" y="164">Texto introductorio breve (1–2 líneas)</text>
+
+    <!-- Columna de filtros: tema, fecha, precio y ciudad -->
+    <rect class="trazo" x="24" y="186" width="248" height="590"/>
+    <text class="txt-b" x="40" y="216">Filtros</text>
+
+    <text class="txt-b" x="40" y="250">Tema</text>
+    <rect class="caja" x="40" y="262" width="14" height="14"/>
+    <text class="txt" x="62" y="274">Cloud</text>
+    <rect class="caja" x="40" y="294" width="14" height="14"/>
+    <text class="txt" x="62" y="306">Inteligencia artificial</text>
+    <rect class="caja" x="40" y="326" width="14" height="14"/>
+    <text class="txt" x="62" y="338">Programación</text>
+    <rect class="caja" x="40" y="358" width="14" height="14"/>
+    <text class="txt" x="62" y="370">Python</text>
+
+    <text class="txt-b" x="40" y="404">Fecha</text>
+    <rect class="caja" x="40" y="416" width="14" height="14"/>
+    <text class="txt" x="62" y="428">Hoy</text>
+    <rect class="caja" x="40" y="448" width="14" height="14"/>
+    <text class="txt" x="62" y="460">Esta semana</text>
+    <rect class="caja" x="40" y="480" width="14" height="14"/>
+    <text class="txt" x="62" y="492">Este mes</text>
+
+    <text class="txt-b" x="40" y="526">Precio</text>
+    <rect class="caja" x="40" y="538" width="14" height="14"/>
+    <text class="txt" x="62" y="550">Gratis</text>
+    <rect class="caja" x="40" y="570" width="14" height="14"/>
+    <text class="txt" x="62" y="582">De pago</text>
+
+    <text class="txt-b" x="40" y="616">Ciudad</text>
+    <rect class="caja" x="40" y="628" width="14" height="14"/>
+    <text class="txt" x="62" y="640">San Salvador</text>
+    <rect class="caja" x="40" y="660" width="14" height="14"/>
+    <text class="txt" x="62" y="672">San Miguel</text>
+    <rect class="caja" x="40" y="692" width="14" height="14"/>
+    <text class="txt" x="62" y="704">Santa Ana</text>
+
+    <rect class="caja" x="40" y="728" width="216" height="36"/>
+    <text class="txt centro" x="148" y="751">Limpiar filtros</text>
+
+    <!-- Destacados de la categoría -->
+    <text class="txt-b" x="296" y="226">Destacados de congresos</text>
+    <rect class="trazo" x="296" y="240" width="300" height="190"/>
+    <rect class="imagen" x="296" y="240" width="300" height="100"/>
+    <text class="txt-b" x="310" y="368">Título del evento DEMO</text>
+    <text class="txt-s" x="310" y="388">Fecha · hora · ciudad o Virtual</text>
+    <text class="txt-s" x="310" y="408">Desde $XX.XX</text>
+
+    <rect class="trazo" x="626" y="240" width="300" height="190"/>
+    <rect class="imagen" x="626" y="240" width="300" height="100"/>
+    <text class="txt-b" x="640" y="368">Título del evento DEMO</text>
+    <text class="txt-s" x="640" y="388">Fecha · hora · ciudad o Virtual</text>
+    <text class="txt-s" x="640" y="408">Desde $XX.XX</text>
+
+    <rect class="trazo" x="956" y="240" width="300" height="190"/>
+    <rect class="imagen" x="956" y="240" width="300" height="100"/>
+    <text class="txt-b" x="970" y="368">Título del evento DEMO</text>
+    <text class="txt-s" x="970" y="388">Fecha · hora · ciudad o Virtual</text>
+    <text class="txt-s" x="970" y="408">Desde $XX.XX</text>
+
+    <!-- Resultados: filas con precio y botón -->
+    <text class="txt-b" x="296" y="474">Resultados · N eventos</text>
+    <rect class="caja" x="1096" y="454" width="160" height="32"/>
+    <text class="txt centro" x="1176" y="475">Ordenar por fecha</text>
+
+    <rect class="trazo" x="296" y="496" width="960" height="88"/>
+    <rect class="imagen" x="308" y="504" width="104" height="72"/>
+    <text class="txt-b" x="428" y="530">Título del evento DEMO</text>
+    <text class="txt-s" x="428" y="552">Fecha · hora · ciudad o Virtual</text>
+    <text class="txt fin" x="1010" y="530">Desde $XX.XX</text>
+    <rect class="caja" x="1120" y="524" width="120" height="32"/>
+    <text class="txt centro" x="1180" y="545">Ver evento</text>
+
+    <rect class="trazo" x="296" y="592" width="960" height="88"/>
+    <rect class="imagen" x="308" y="600" width="104" height="72"/>
+    <text class="txt-b" x="428" y="626">Título del evento DEMO</text>
+    <text class="txt-s" x="428" y="648">Fecha · hora · Virtual</text>
+    <text class="txt fin" x="1010" y="626">Gratis (DEMO)</text>
+    <rect class="caja" x="1120" y="620" width="120" height="32"/>
+    <text class="txt centro" x="1180" y="641">Ver evento</text>
+
+    <rect class="trazo" x="296" y="688" width="960" height="88"/>
+    <rect class="imagen" x="308" y="696" width="104" height="72"/>
+    <text class="txt-b" x="428" y="722">Título del evento DEMO</text>
+    <text class="txt-s" x="428" y="744">Fecha · hora · ciudad</text>
+    <text class="txt fin" x="1010" y="722">Desde $XX.XX</text>
+    <rect class="caja" x="1120" y="716" width="120" height="32"/>
+    <text class="txt centro" x="1180" y="737">Ver evento</text>
+  </g>
+
+  <g id="notas">
+    <text class="nota" x="40" y="950">Nota: el H1 «Congresos de tecnología» lleva la keyword «congreso» de la ruta /congresos/ (SEO_ROUTES, categoría).</text>
+    <text class="nota" x="40" y="976">Nota: filtros de tema, fecha, precio y ciudad. En móvil se abren en una hoja con el botón «Filtros»; en escritorio, en la columna izquierda.</text>
+    <text class="nota" x="40" y="1002">Nota: bloque de destacados de la categoría antes de la lista. En móvil se desliza dentro de su recuadro, sin desbordar la página.</text>
+    <text class="nota" x="40" y="1028">Nota: temas de la columna izquierda: solo Cloud, Inteligencia artificial, Programación y Python tienen ruta propia (SEO_ROUTES §2).</text>
+    <text class="nota" x="40" y="1054">Nota: Andrea compara agenda y precio en cada fila; Diego filtra «Gratis». En escritorio, «Ver más» se sustituye por paginación fuera del área dibujada.</text>
+    <text class="nota" x="40" y="1080">Nota: texto de marcador. Títulos, fechas, precios y el número de resultados son ejemplos DEMO, no datos reales.</text>
+  </g>
+</svg>

@@ -1,8 +1,11 @@
+import type { IconName } from '@/components/ui/icon';
 import { eventCategories } from '../features/catalog/categories';
 
 export type MenuItem = {
   href: string;
   label: string;
+  /** Icono decorativo junto al texto; el texto del enlace siempre se muestra. */
+  icon?: IconName;
 };
 
 export type CategoryItem = MenuItem & {
@@ -19,7 +22,10 @@ export type CategoryGroup = {
  * Acciones de la cuenta y de la publicación. El logo lleva al Home; el menú no incluye «Inicio».
  * El carrito tiene su propio control en la cabecera (con contador), no aquí.
  */
-export const accountLinks: readonly MenuItem[] = [{ href: '/panel/eventos/nuevo/', label: 'Publicar evento' }];
+export const accountLinks: readonly MenuItem[] = [
+  { href: '/panel/eventos/nuevo/', label: 'Publicar evento', icon: 'calendarPlus' },
+  { href: '/ingresar/', label: 'Ingresar', icon: 'logIn' },
+];
 
 export const categoryLinks: readonly CategoryItem[] = eventCategories.map(({ slug, label }) => ({
   slug,

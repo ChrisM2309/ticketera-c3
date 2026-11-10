@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1120" width="1800" height="1120" role="img">
+  <title>Wireframe 03: Ficha de evento, móvil y escritorio (baja fidelidad)</title>
+  <style>
+    .marco { fill: none; stroke: currentColor; stroke-width: 2; }
+    .trazo { fill: none; stroke: currentColor; stroke-width: 1; }
+    .caja { fill: currentColor; fill-opacity: 0.12; stroke: currentColor; stroke-width: 1; }
+    .imagen { fill: currentColor; fill-opacity: 0.22; stroke: none; }
+    .h1 { fill: currentColor; font-family: sans-serif; font-size: 24px; font-weight: 700; }
+    .txt { fill: currentColor; font-family: sans-serif; font-size: 14px; }
+    .txt-b { fill: currentColor; font-family: sans-serif; font-size: 15px; font-weight: 700; }
+    .txt-s { fill: currentColor; font-family: sans-serif; font-size: 12px; }
+    .txt-xs { fill: currentColor; font-family: sans-serif; font-size: 11px; }
+    .etiqueta { fill: currentColor; font-family: sans-serif; font-size: 20px; font-weight: 700; }
+    .nota { fill: currentColor; font-family: sans-serif; font-size: 15px; }
+    .centro { text-anchor: middle; }
+  </style>
+
+  <text class="etiqueta" x="40" y="50">03 · Evento: ficha de congreso, ruta /congresos/inteligencia-artificial/ (WF-01)</text>
+
+  <g id="movil" transform="translate(40 96)" data-ancho="375" data-alto="812">
+    <text class="txt-s" x="0" y="-20">Móvil · 375 × 812</text>
+    <rect class="marco" x="0" y="0" width="375" height="812"/>
+
+    <!-- Cabecera con volver -->
+    <rect class="caja" x="16" y="10" width="90" height="44"/>
+    <text class="txt centro" x="61" y="37">Volver</text>
+    <rect class="caja" x="290" y="10" width="69" height="44"/>
+    <text class="txt centro" x="324.5" y="37">Menú</text>
+
+    <!-- Migas y portada -->
+    <text class="txt-s" x="16" y="78">Congresos › Inteligencia artificial</text>
+    <rect class="imagen" x="0" y="90" width="375" height="144"/>
+    <text class="txt-s centro" x="187.5" y="166">Imagen del evento (propia o ilustración del tipo)</text>
+
+    <!-- Título y datos clave -->
+    <text class="h1" x="16" y="262">Título del evento DEMO</text>
+    <text class="txt" x="16" y="286">Fecha y hora · Ciudad o Virtual</text>
+    <text class="txt-s" x="16" y="306">Organizador DEMO</text>
+
+    <!-- Caja de compra: visible sin desplazarse -->
+    <rect class="trazo" x="16" y="332" width="343" height="246"/>
+    <text class="txt-b" x="28" y="356">Entradas</text>
+
+    <text class="txt" x="28" y="380">Entrada general</text>
+    <text class="txt-s" x="28" y="398">$XX.XX</text>
+    <rect class="caja" x="236" y="362" width="44" height="44"/>
+    <text class="txt centro" x="258" y="390">-</text>
+    <text class="txt centro" x="302" y="390">0</text>
+    <rect class="caja" x="312" y="362" width="44" height="44"/>
+    <text class="txt centro" x="334" y="390">+</text>
+    <line class="trazo" x1="28" y1="418" x2="347" y2="418"/>
+
+    <text class="txt" x="28" y="444">Entrada anticipada</text>
+    <text class="txt-s" x="28" y="462">$XX.XX</text>
+    <rect class="caja" x="236" y="426" width="44" height="44"/>
+    <text class="txt centro" x="258" y="454">-</text>
+    <text class="txt centro" x="302" y="454">0</text>
+    <rect class="caja" x="312" y="426" width="44" height="44"/>
+    <text class="txt centro" x="334" y="454">+</text>
+
+    <text class="txt-b" x="28" y="498">Total: $XX.XX</text>
+    <text class="txt-s" x="28" y="516">Comisión visible antes de pagar</text>
+    <rect class="caja" x="28" y="524" width="319" height="44"/>
+    <text class="txt-b centro" x="187.5" y="551">Comprar entradas</text>
+
+    <!-- Acciones secundarias -->
+    <rect class="caja" x="16" y="590" width="166" height="44"/>
+    <text class="txt-s centro" x="99" y="616">Agregar al calendario</text>
+    <rect class="caja" x="193" y="590" width="166" height="44"/>
+    <text class="txt centro" x="276" y="616">Compartir</text>
+
+    <!-- Agenda y ponentes -->
+    <text class="txt-b" x="16" y="664">Agenda</text>
+    <text class="txt" x="16" y="686">HH:MM · Sesión DEMO</text>
+    <text class="txt" x="16" y="706">HH:MM · Sesión DEMO</text>
+    <text class="txt" x="16" y="726">HH:MM · Sesión DEMO</text>
+
+    <text class="txt-b" x="16" y="752">Ponentes</text>
+    <rect class="caja" x="16" y="762" width="113" height="40"/>
+    <text class="txt-xs centro" x="72.5" y="786">Ponente DEMO</text>
+    <rect class="caja" x="131" y="762" width="113" height="40"/>
+    <text class="txt-xs centro" x="187.5" y="786">Ponente DEMO</text>
+    <rect class="caja" x="246" y="762" width="113" height="40"/>
+    <text class="txt-xs centro" x="302.5" y="786">Ponente DEMO</text>
+  </g>
+
+  <g id="escritorio" transform="translate(470 96)" data-ancho="1280" data-alto="800">
+    <text class="txt-s" x="0" y="-20">Escritorio · 1280 × 800</text>
+    <rect class="marco" x="0" y="0" width="1280" height="800"/>
+
+    <!-- Cabecera -->
+    <line class="trazo" x1="0" y1="72" x2="1280" y2="72"/>
+    <rect class="caja" x="24" y="18" width="150" height="36"/>
+    <text class="txt-s" x="36" y="40">Logo (va al Home)</text>
+    <rect class="caja" x="220" y="18" width="640" height="36"/>
+    <text class="txt" x="236" y="41">Buscar eventos o temas</text>
+    <rect class="caja" x="1000" y="18" width="170" height="36"/>
+    <text class="txt centro" x="1085" y="41">Iniciar sesión</text>
+    <rect class="trazo" x="1186" y="22" width="70" height="28"/>
+    <text class="txt-b centro" x="1221" y="41">DEMO</text>
+
+    <!-- Columna principal: portada, datos, pestañas, agenda y ponentes -->
+    <text class="txt-s" x="24" y="106">Congresos › Inteligencia artificial</text>
+    <rect class="imagen" x="24" y="120" width="776" height="300"/>
+    <text class="txt centro" x="412" y="276">Imagen del evento (propia o ilustración del tipo)</text>
+    <text class="h1" x="24" y="462">Título del evento DEMO</text>
+    <text class="txt" x="24" y="490">Fecha y hora · Ciudad o Virtual · Organizador DEMO</text>
+
+    <text class="txt-b" x="24" y="518">Descripción · Agenda · Ponentes · Ubicación</text>
+    <line class="trazo" x1="24" y1="530" x2="800" y2="530"/>
+    <text class="txt" x="24" y="556">Texto de descripción breve (2–3 líneas)</text>
+    <text class="txt" x="24" y="576">Texto de descripción breve</text>
+
+    <text class="txt-b" x="24" y="614">Agenda</text>
+    <text class="txt" x="24" y="640">HH:MM · Sesión DEMO</text>
+    <text class="txt" x="24" y="664">HH:MM · Sesión DEMO</text>
+    <text class="txt" x="24" y="688">HH:MM · Sesión DEMO</text>
+
+    <text class="txt-b" x="24" y="724">Ponentes</text>
+    <rect class="caja" x="24" y="736" width="180" height="52"/>
+    <text class="txt centro" x="114" y="767">Ponente DEMO</text>
+    <rect class="caja" x="224" y="736" width="180" height="52"/>
+    <text class="txt centro" x="314" y="767">Ponente DEMO</text>
+    <rect class="caja" x="424" y="736" width="180" height="52"/>
+    <text class="txt centro" x="514" y="767">Ponente DEMO</text>
+    <rect class="caja" x="624" y="736" width="180" height="52"/>
+    <text class="txt centro" x="714" y="767">Ponente DEMO</text>
+
+    <!-- Columna de compra: caja siempre visible, calendario y compartir -->
+    <rect class="trazo" x="840" y="120" width="416" height="340"/>
+    <text class="txt-b" x="856" y="146">Entradas</text>
+    <text class="txt" x="856" y="178">Entrada general</text>
+    <text class="txt-s" x="856" y="196">$XX.XX</text>
+    <rect class="caja" x="1080" y="160" width="44" height="44"/>
+    <text class="txt centro" x="1102" y="188">-</text>
+    <text class="txt centro" x="1146" y="188">0</text>
+    <rect class="caja" x="1168" y="160" width="44" height="44"/>
+    <text class="txt centro" x="1190" y="188">+</text>
+    <line class="trazo" x1="856" y1="220" x2="1240" y2="220"/>
+
+    <text class="txt" x="856" y="254">Entrada anticipada</text>
+    <text class="txt-s" x="856" y="272">$XX.XX</text>
+    <rect class="caja" x="1080" y="236" width="44" height="44"/>
+    <text class="txt centro" x="1102" y="264">-</text>
+    <text class="txt centro" x="1146" y="264">0</text>
+    <rect class="caja" x="1168" y="236" width="44" height="44"/>
+    <text class="txt centro" x="1190" y="264">+</text>
+
+    <text class="txt-b" x="856" y="318">Total: $XX.XX</text>
+    <text class="txt-s" x="856" y="336">Comisión visible antes de pagar</text>
+    <rect class="caja" x="856" y="352" width="384" height="44"/>
+    <text class="txt-b centro" x="1048" y="379">Comprar entradas</text>
+    <text class="txt-s" x="856" y="440">Pago de demostración (DEMO), sin cobro real</text>
+
+    <rect class="caja" x="840" y="476" width="200" height="44"/>
+    <text class="txt centro" x="940" y="503">Agregar al calendario</text>
+    <rect class="caja" x="1056" y="476" width="200" height="44"/>
+    <text class="txt centro" x="1156" y="503">Compartir</text>
+
+    <rect class="trazo" x="840" y="540" width="416" height="110"/>
+    <text class="txt-b" x="856" y="566">Organizador DEMO</text>
+    <text class="txt-s" x="856" y="586">Descripción breve del organizador</text>
+    <rect class="caja" x="856" y="604" width="160" height="32"/>
+    <text class="txt centro" x="936" y="625">Ver organizador</text>
+
+    <rect class="imagen" x="840" y="670" width="416" height="110"/>
+    <text class="txt centro" x="1048" y="734">Mapa o «Virtual»</text>
+  </g>
+
+  <g id="notas">
+    <text class="nota" x="40" y="950">Nota: agenda y ponentes visibles. En móvil, la caja de compra cabe en los primeros 812 px sin desplazarse; cada botón mide al menos 44 px.</text>
+    <text class="nota" x="40" y="976">Nota: «Agregar al calendario» genera un archivo .ics en el servidor (título, fecha y lugar); «Compartir» abre un enlace de WhatsApp sin datos del comprador.</text>
+    <text class="nota" x="40" y="1002">Nota: SEO. Title específico con el nombre del evento, imagen, fecha y lugar; JSON-LD Event solo con datos guardados (SEO_ROUTES, ficha).</text>
+    <text class="nota" x="40" y="1028">Nota: ruta /[categoria]/[tema]/[evento]/, por ejemplo /congresos/inteligencia-artificial/congreso-demo-ia/. La ficha no usa keyword genérica.</text>
+    <text class="nota" x="40" y="1054">Nota: Andrea revisa agenda, ponentes y total antes de comprar. La comisión aparece antes del botón de pago.</text>
+    <text class="nota" x="40" y="1080">Nota: texto de marcador. Títulos, horas, ponentes, organizador y precios son ejemplos DEMO, no datos reales.</text>
+  </g>
+</svg>

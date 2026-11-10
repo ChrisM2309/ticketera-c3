@@ -23,6 +23,9 @@
   --crea: #33beac;
   --conecta: #4f5ba9;
   --crea-texto: #0f766e;
+  /* Trazo de icono de la línea: en claro igual al color base (7.72:1 y 6.17:1 sobre blanco). */
+  --compite-texto: #205298;
+  --conecta-texto: #4f5ba9;
   --exito: #157a52;
   --advertencia: #9a5b00;
   --error: #b83227;
@@ -45,6 +48,9 @@
   --enlace: #b9a8f0;
   --foco: #b9a8f0;
   --crea-texto: #4fd6c4;
+  /* Oscuro: compite y conecta no alcanzan 3:1 sobre navy (2.10 y 2.62); estas variantes dan >= 4.8:1 sobre navy y superficies oscuras. */
+  --compite-texto: #6fa3e8;
+  --conecta-texto: #9aa5ee;
   --exito: #4fd99e;
   --advertencia: #e8b15c;
   --error: #f28b7e;
@@ -69,6 +75,8 @@
   --color-crea: var(--crea);
   --color-conecta: var(--conecta);
   --color-crea-texto: var(--crea-texto);
+  --color-compite-texto: var(--compite-texto);
+  --color-conecta-texto: var(--conecta-texto);
   --color-exito: var(--exito);
   --color-advertencia: var(--advertencia);
   --color-error: var(--error);

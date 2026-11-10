@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { formatUsd } from '@/features/catalog/format';
 import { getAvailableQuantity, getTicketQuantityLimit } from '@/features/catalog/tickets';
 import type { CatalogEventDetail } from '@/features/catalog/types';
@@ -13,25 +14,6 @@ type TicketSelectorProps = Readonly<{
   event: CatalogEventDetail;
   disabled: boolean;
 }>;
-
-const minusPath = 'M5 12h14';
-const plusPath = 'M5 12h14M12 5v14';
-
-function StepperIcon({ path }: Readonly<{ path: string }>) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="size-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-    >
-      <path d={path} />
-    </svg>
-  );
-}
 
 export function TicketSelector({ event, disabled }: TicketSelectorProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -124,7 +106,7 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
                     disabled={isDisabled || quantity === 0}
                     className="flex size-11 cursor-pointer items-center justify-center text-texto transition-colors hover:bg-superficie-sutil disabled:pointer-events-none disabled:opacity-40"
                   >
-                    <StepperIcon path={minusPath} />
+                    <Icon name="minus" size={16} />
                   </button>
                   <input
                     id={`entrada-${ticket.id}`}
@@ -146,7 +128,7 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
                     disabled={isDisabled || quantity >= limit}
                     className="flex size-11 cursor-pointer items-center justify-center text-texto transition-colors hover:bg-superficie-sutil disabled:pointer-events-none disabled:opacity-40"
                   >
-                    <StepperIcon path={plusPath} />
+                    <Icon name="plus" size={16} />
                   </button>
                 </div>
               </div>

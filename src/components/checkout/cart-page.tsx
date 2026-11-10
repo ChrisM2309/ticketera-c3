@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { eventDateParts, formatUsd, modeLabel } from '@/features/catalog/format';
 import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity } from '@/features/catalog/tickets';
@@ -147,6 +148,7 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
                   : 'Elegí un evento y seleccioná tus entradas para verlas aquí.'}
           </p>
           <Link href="/congresos/" className={buttonVariants({ variant: 'compra' })}>
+            <Icon name="search" />
             Explorar eventos
           </Link>
         </section>
@@ -169,11 +171,21 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
                   Volver al evento
                 </Link>
               </div>
-              <p className="font-texto text-sm leading-6 text-texto-suave">
-                {eventDateParts(snapshot.event.startsAt).time} · {modeLabel(snapshot.event.mode)}
-                {snapshot.event.venue ? ` · ${snapshot.event.venue}` : ''}
+              <p className="flex flex-wrap items-center gap-x-4 gap-y-1 font-texto text-sm leading-6 text-texto-suave">
+                <span className="inline-flex items-center gap-2">
+                  <Icon name="clock" size={16} />
+                  {eventDateParts(snapshot.event.startsAt).time}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Icon name={snapshot.event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
+                  {modeLabel(snapshot.event.mode)}
+                  {snapshot.event.venue ? ` · ${snapshot.event.venue}` : ''}
+                </span>
               </p>
-              <p className="font-texto text-sm text-texto-suave">Un evento por orden</p>
+              <p className="inline-flex items-center gap-2 font-texto text-sm text-texto-suave">
+                <Icon name="ticket" size={16} />
+                Un evento por orden
+              </p>
               {usingStoredSnapshot ? (
                 <p role="status" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-texto-suave">
                   Esta selección proviene de tu navegador. Los precios y cupos pueden haber cambiado y se verificarán al continuar.
@@ -226,7 +238,7 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
                             disabled={unavailable || item.quantity === 0}
                             className="flex size-11 cursor-pointer items-center justify-center text-texto hover:bg-superficie-sutil disabled:pointer-events-none disabled:opacity-40"
                           >
-                            −
+                            <Icon name="minus" size={16} />
                           </button>
                           <input
                             id={`cantidad-carrito-${ticket.id}`}
@@ -246,7 +258,7 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
                             disabled={unavailable || item.quantity >= limit}
                             className="flex size-11 cursor-pointer items-center justify-center text-texto hover:bg-superficie-sutil disabled:pointer-events-none disabled:opacity-40"
                           >
-                            +
+                            <Icon name="plus" size={16} />
                           </button>
                         </div>
                         <p id={`ayuda-carrito-${ticket.id}`} className="font-texto text-xs text-texto-suave">
@@ -256,8 +268,9 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
                       <button
                         type="button"
                         onClick={() => updateQuantity(ticket.id, 0)}
-                        className="min-h-11 px-2 font-titulo text-sm font-semibold text-enlace underline-offset-4 hover:underline"
+                        className="inline-flex min-h-11 items-center gap-2 px-2 font-titulo text-sm font-semibold text-enlace underline-offset-4 hover:underline"
                       >
+                        <Icon name="trash" size={16} />
                         Eliminar
                       </button>
                     </div>
@@ -271,6 +284,7 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
             <CartSummary totals={totals} commissionPercent={siteConfig.demoCommissionPercent} />
             <Link href="/checkout/" className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}>
               Continuar al checkout
+              <Icon name="chevronRight" />
             </Link>
             <p className="font-texto text-center text-xs leading-5 text-texto-suave">
               Tus datos y los importes se verificarán en el siguiente paso.

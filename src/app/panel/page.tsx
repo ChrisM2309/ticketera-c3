@@ -8,12 +8,19 @@ import { organizerHomePath } from '@/lib/auth/access';
 import Link from 'next/link';
 
 import { buttonVariants } from '@/components/ui/button';
+import { Icon, type IconName } from '@/components/ui/icon';
+import { statusIcon } from '@/features/catalog/icons';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Panel del organizador DEMO',
   robots: { index: false, follow: false },
 };
+
+/** Icono del estado de un evento; un estado desconocido usa el icono informativo. Siempre va junto al texto. */
+function eventStatusIcon(status: string): IconName {
+  return Object.hasOwn(statusIcon, status) ? statusIcon[status as keyof typeof statusIcon] : 'info';
+}
 
 export default async function PanelPage() {
   // El proxy solo mira cookies; esta comprobación valida la sesión y el rol en el servidor.
@@ -74,11 +81,13 @@ export default async function PanelPage() {
             Modo DEMO. Aquí ves tus organizadores y el estado de sus eventos.
           </p>
           <Link href="/panel/eventos/nuevo/" className={cn(buttonVariants({ variant: 'compra' }), 'w-full sm:w-auto')}>
+            <Icon name="calendarPlus" />
             Publicar evento
           </Link>
         </div>
         <form action={signOutAction}>
           <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            <Icon name="logOut" />
             Cerrar sesión
           </button>
         </form>
@@ -107,9 +116,19 @@ export default async function PanelPage() {
                   {organizerEvents.map((event) => (
                     <li key={event.id} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <span className="font-texto text-base font-medium text-texto">{event.title}</span>
-                      <span className="font-texto text-sm text-texto-suave">
-                        {formatEventStart(event.starts_at)} · {eventStatusLabel(event.status)} ·{' '}
-                        {ticketsIssuedText(ticketsByEvent.get(event.id) ?? 0)}
+                      <span className="flex flex-wrap items-center gap-x-3 gap-y-1 font-texto text-sm text-texto-suave">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Icon name="calendar" size={16} />
+                          {formatEventStart(event.starts_at)}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-pill bg-superficie-sutil px-2.5 py-1 font-medium text-texto">
+                          <Icon name={eventStatusIcon(event.status)} size={16} />
+                          {eventStatusLabel(event.status)}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Icon name="ticket" size={16} />
+                          {ticketsIssuedText(ticketsByEvent.get(event.id) ?? 0)}
+                        </span>
                       </span>
                     </li>
                   ))}

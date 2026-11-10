@@ -9,6 +9,8 @@ import { setFeaturedAction } from '@/features/organizers/featured-actions';
 import { adminHomePath } from '@/lib/auth/access';
 import { requireRole } from '@/lib/auth/require-role';
 import { buttonVariants } from '@/components/ui/button';
+import { Icon, type IconName } from '@/components/ui/icon';
+import { statusIcon } from '@/features/catalog/icons';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -42,6 +44,11 @@ type RecentOrder = {
   created_at: string;
   event: { title: string } | null;
 };
+
+/** Icono del estado de una orden; un estado desconocido usa el icono informativo. Siempre va junto al texto. */
+function orderStatusIcon(status: string): IconName {
+  return Object.hasOwn(statusIcon, status) ? statusIcon[status as keyof typeof statusIcon] : 'info';
+}
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -119,6 +126,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </div>
         <form action={signOutAction}>
           <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            <Icon name="logOut" />
             Cerrar sesión
           </button>
         </form>
@@ -150,9 +158,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 <form action={reviewEventAction} className="flex flex-wrap gap-2">
                   <input type="hidden" name="eventId" value={event.id} />
                   <button type="submit" name="decision" value="approve" className={buttonVariants({ variant: 'compra' })}>
+                    <Icon name="check" />
                     Aprobar
                   </button>
                   <button type="submit" name="decision" value="reject" className={buttonVariants({ variant: 'secundario' })}>
+                    <Icon name="close" />
                     Rechazar
                   </button>
                 </form>
@@ -222,8 +232,19 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 <span className="font-texto text-base font-medium text-texto">
                   {order.event?.title ?? 'Evento'} · Orden {order.id.slice(0, 8)}
                 </span>
-                <span className="font-texto text-sm text-texto-suave">
-                  {orderStatusLabel(order.status)} · {formatUsd(order.total_cents)} · {formatEventStart(order.created_at)}
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1 font-texto text-sm text-texto-suave">
+                  <span className="inline-flex items-center gap-1.5 rounded-pill bg-superficie-sutil px-2.5 py-1 font-medium text-texto">
+                    <Icon name={orderStatusIcon(order.status)} size={16} />
+                    {orderStatusLabel(order.status)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon name="tag" size={16} />
+                    {formatUsd(order.total_cents)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon name="calendar" size={16} />
+                    {formatEventStart(order.created_at)}
+                  </span>
                 </span>
               </li>
             ))}

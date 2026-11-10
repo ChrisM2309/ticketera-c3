@@ -6,6 +6,8 @@ import QRCode from 'qrcode';
 
 import { PrintButton } from '@/components/checkout/print-button';
 import { buttonVariants } from '@/components/ui/button';
+import { Icon, type IconTone } from '@/components/ui/icon';
+import { statusIcon } from '@/features/catalog/icons';
 import { eventDateParts, formatUsd, modeLabel } from '@/features/catalog/format';
 import { loadOrderConfirmation, type OrderConfirmation } from '@/features/ticketing/confirmation';
 import { cn } from '@/lib/utils';
@@ -33,6 +35,15 @@ const statusMessage: Record<OrderConfirmation['status'], string> = {
   failed: 'La orden quedó fallida. No se emitieron boletos ni se descontó cupo.',
   pending: 'La orden aún no tiene boletos. Vuelve a intentar desde el checkout.',
 };
+
+/** Tono del icono de estado: siempre acompaña al título con el texto del estado. */
+const statusTone: Record<OrderConfirmation['status'], IconTone> = {
+  confirmed: 'exito',
+  failed: 'error',
+  pending: 'suave',
+};
+
+const termClass = 'flex items-center gap-2 text-texto-suave';
 
 export default async function ConfirmationPage({ params }: ConfirmationPageProps) {
   const { orderId, token } = await params;
@@ -70,7 +81,8 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14">
       <header className="flex flex-col gap-3">
         <p className="font-texto text-sm text-texto-suave">Compra DEMO: no se cobró dinero ni se pidieron datos de tarjeta.</p>
-        <h1 className="font-titulo text-4xl font-bold leading-tight tracking-tight">
+        <h1 className="flex items-center gap-3 font-titulo text-4xl font-bold leading-tight tracking-tight">
+          <Icon name={statusIcon[confirmation.status]} size={24} tone={statusTone[confirmation.status]} />
           {statusTitle[confirmation.status]}
         </h1>
         <p className="max-w-2xl font-texto text-base leading-7 text-texto-suave">{statusMessage[confirmation.status]}</p>
@@ -82,24 +94,36 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
         </h2>
         <dl className="grid gap-3 font-texto text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-texto-suave">Fecha y hora</dt>
+            <dt className={termClass}>
+              <Icon name="calendar" size={16} />
+              Fecha y hora
+            </dt>
             <dd>
               {date.day} {date.month} · {date.time}
             </dd>
           </div>
           <div>
-            <dt className="text-texto-suave">Modalidad</dt>
+            <dt className={termClass}>
+              <Icon name={confirmation.event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
+              Modalidad
+            </dt>
             <dd>
               {modeLabel(confirmation.event.mode)}
               {confirmation.event.venue ? ` · ${confirmation.event.venue}` : ''}
             </dd>
           </div>
           <div>
-            <dt className="text-texto-suave">Número de orden</dt>
+            <dt className={termClass}>
+              <Icon name="ticket" size={16} />
+              Número de orden
+            </dt>
             <dd className="break-all">{confirmation.orderId}</dd>
           </div>
           <div>
-            <dt className="text-texto-suave">Total DEMO</dt>
+            <dt className={termClass}>
+              <Icon name="tag" size={16} />
+              Total DEMO
+            </dt>
             <dd>{formatUsd(confirmation.totalCents)}</dd>
           </div>
         </dl>
@@ -118,7 +142,8 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
           <ul className="grid gap-5 sm:grid-cols-2">
             {tickets.map((ticket) => (
               <li key={ticket.ticketId} className="flex flex-col gap-4 rounded-lg bg-superficie p-5 shadow-sm">
-                <p className="font-titulo text-sm font-semibold">
+                <p className="flex items-center gap-2 font-titulo text-sm font-semibold">
+                  <Icon name="qr" size={16} />
                   Boleto {ticket.number} · {ticket.typeName}
                 </p>
                 <Image
@@ -133,6 +158,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                   href={`/confirmacion/${confirmation.orderId}/${token}/qr/${ticket.ticketId}/`}
                   className={cn(buttonVariants({ variant: 'secundario' }), 'w-full print:hidden')}
                 >
+                  <Icon name="download" />
                   Descargar QR
                 </a>
               </li>

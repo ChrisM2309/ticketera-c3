@@ -58,6 +58,8 @@ Detalle y orden en el [roadmap](2026-11-09-roadmap-nuevas-areas.md); decisiones 
 | F6 | Nuevas áreas | [Check-in y post-evento](2026-11-09-fase-6-checkin.md) | — | 3, 4 | Pendiente |
 | F7 | Nuevas áreas | [Cierre y entrega](2026-11-09-fase-7-cierre.md) | — | 1 a 6 | Pendiente |
 
+**Bloqueo conocido, ajeno a las tareas de la Fase 1 (registrado en la tarea 1.2, 2026-11-09):** `tests/e2e/navigation.spec.ts:15` («cada grupo es un desplegable y un enlace lleva a su categoría») falla en escritorio: al hacer clic en «Workshops» dentro del desplegable la URL se queda en `/`. Es previo a 1.2: se reprodujo con los cinco componentes de la tarea restaurados a su versión de `03d72cc` (6 casos pasan, 1 falla) y con todos los cambios de 1.2 aplicados (mismo resultado). Causa acotada (2026-11-09, con 1.2 aplicado): es la compilación en frío del servidor de desarrollo, no el desplegable. El caso falla de forma repetible (2 de 2) cuando el archivo corre completo contra un servidor recién arrancado (4 workers compilan a la vez y la navegación a `/workshops/` supera los 5 s de `toHaveURL`); pasa solo (`navigation.spec.ts:15`, 1 passed) y pasa con los 7 casos (`7 passed`) cuando `/workshops/` ya está compilada en un servidor ya levantado. Pendiente: calentar la ruta o subir el timeout de ese caso en una tarea aparte (la prueba queda fuera de los archivos de 1.2), y comprobar el E2E en `master` antes de dar la Fase 1 por cerrada.
+
 ## Área A — Fundamentos y sistema visual
 
 ### T01 · Inicializar proyecto [P0]

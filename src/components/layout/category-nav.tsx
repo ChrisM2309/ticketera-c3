@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
 import { NavLink } from '@/components/layout/nav-link';
+import { Icon } from '@/components/ui/icon';
+import { iconForEventType, toneForEventType } from '@/features/catalog/icons';
 import type { CategoryGroup, MenuItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 
@@ -13,16 +15,16 @@ type CategoryNavProps = Readonly<{
   accountLinks: readonly MenuItem[];
 }>;
 
-function Flecha({ className }: Readonly<{ className?: string }>) {
-  return (
-    <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" className={className}>
-      <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 const disparador =
   'flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-sm px-3 text-sm font-medium text-texto-inverso underline-offset-4 hover:underline focus-visible:outline-3 [&::-webkit-details-marker]:hidden';
+
+/**
+ * Icono del tipo de evento en el menú, con el trazo del tono de su línea. Las variantes `-texto` del tema oscuro
+ * alcanzan 3:1 sobre navy y sobre la superficie oscura del desplegable. Es decorativo: el nombre va siempre al lado.
+ */
+function TypeIcon({ slug }: Readonly<{ slug: string }>) {
+  return <Icon name={iconForEventType(slug)} size={20} tone={toneForEventType(slug)} />;
+}
 
 /**
  * Categorías en cuatro grupos desplegables (D-34).
@@ -83,9 +85,7 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
         onClick={() => setAbierto((valor) => !valor)}
         className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-sm border-2 border-borde-fuerte px-4 font-titulo text-etiqueta font-bold uppercase tracking-etiqueta text-texto-inverso md:hidden"
       >
-        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
+        <Icon name={abierto ? 'close' : 'menu'} />
         Menú
       </button>
 
@@ -95,7 +95,10 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
           <ul className="flex flex-col gap-1">
             {accountLinks.map((link) => (
               <li key={link.href}>
-                <NavLink href={link.href}>{link.label}</NavLink>
+                <NavLink href={link.href} className="gap-2">
+                  {link.icon ? <Icon name={link.icon} /> : null}
+                  {link.label}
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -106,12 +109,13 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
             <details key={grupo.id} className="group rounded-md" open={grupo.items.some((item) => pathname.startsWith(item.href))}>
               <summary className={cn(disparador, 'w-full justify-between px-3 font-titulo text-etiqueta font-bold uppercase tracking-etiqueta')}>
                 {grupo.label}
-                <Flecha className="transition-transform group-open:rotate-180" />
+                <Icon name="chevronDown" size={16} className="transition-transform group-open:rotate-180" />
               </summary>
               <ul className="flex flex-col pb-2">
                 {grupo.items.map((categoria) => (
                   <li key={categoria.slug}>
-                    <NavLink href={categoria.href} active={pathname.startsWith(categoria.href)}>
+                    <NavLink href={categoria.href} active={pathname.startsWith(categoria.href)} className="gap-2">
+                      <TypeIcon slug={categoria.slug} />
                       {categoria.label}
                     </NavLink>
                   </li>
@@ -130,7 +134,7 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
               <details className="group">
                 <summary className={disparador}>
                   {grupo.label}
-                  <Flecha className="transition-transform group-open:rotate-180" />
+                  <Icon name="chevronDown" size={16} className="transition-transform group-open:rotate-180" />
                 </summary>
                 <ul className="absolute left-0 top-full z-30 mt-1 grid w-64 gap-1 rounded-md bg-superficie p-2 text-texto shadow-md">
                   {grupo.items.map((categoria) => {
@@ -141,8 +145,9 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
                         <Link
                           href={categoria.href}
                           aria-current={actual ? 'page' : undefined}
-                          className="flex min-h-11 items-center rounded-sm px-3 font-texto text-sm font-medium text-texto underline-offset-4 hover:bg-superficie-sutil hover:underline aria-[current=page]:bg-superficie-sutil"
+                          className="flex min-h-11 items-center gap-2 rounded-sm px-3 font-texto text-sm font-medium text-texto underline-offset-4 hover:bg-superficie-sutil hover:underline aria-[current=page]:bg-superficie-sutil"
                         >
+                          <TypeIcon slug={categoria.slug} />
                           {categoria.label}
                         </Link>
                       </li>

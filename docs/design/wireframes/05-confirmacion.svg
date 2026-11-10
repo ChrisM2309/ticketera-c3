@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1120" width="1800" height="1120" role="img">
+  <title>Wireframe 05: Confirmación con boleto QR, móvil y escritorio (baja fidelidad)</title>
+  <style>
+    .marco { fill: none; stroke: currentColor; stroke-width: 2; }
+    .trazo { fill: none; stroke: currentColor; stroke-width: 1; }
+    .punteado { fill: none; stroke: currentColor; stroke-width: 1; stroke-dasharray: 6 4; }
+    .caja { fill: currentColor; fill-opacity: 0.12; stroke: currentColor; stroke-width: 1; }
+    .imagen { fill: currentColor; fill-opacity: 0.22; stroke: none; }
+    .h1 { fill: currentColor; font-family: sans-serif; font-size: 24px; font-weight: 700; }
+    .txt { fill: currentColor; font-family: sans-serif; font-size: 14px; }
+    .txt-b { fill: currentColor; font-family: sans-serif; font-size: 15px; font-weight: 700; }
+    .txt-s { fill: currentColor; font-family: sans-serif; font-size: 12px; }
+    .txt-xs { fill: currentColor; font-family: sans-serif; font-size: 11px; }
+    .etiqueta { fill: currentColor; font-family: sans-serif; font-size: 20px; font-weight: 700; }
+    .nota { fill: currentColor; font-family: sans-serif; font-size: 15px; }
+    .centro { text-anchor: middle; }
+  </style>
+
+  <text class="etiqueta" x="40" y="50">05 · Confirmación: boleto con QR, envío simulado, calendario y compartir (WF-01)</text>
+
+  <g id="movil" transform="translate(40 96)" data-ancho="375" data-alto="812">
+    <text class="txt-s" x="0" y="-20">Móvil · 375 × 812</text>
+    <rect class="marco" x="0" y="0" width="375" height="812"/>
+
+    <!-- Cabecera -->
+    <rect class="caja" x="16" y="10" width="90" height="44"/>
+    <text class="txt centro" x="61" y="37">Eventos</text>
+    <rect class="caja" x="120" y="10" width="239" height="44"/>
+    <text class="txt-s centro" x="239.5" y="36">Logo (va al Home)</text>
+
+    <text class="h1" x="16" y="88">Compra confirmada (DEMO)</text>
+
+    <!-- Boleto con QR individual -->
+    <rect class="trazo" x="16" y="104" width="343" height="430"/>
+    <text class="txt-b" x="32" y="132">Título del evento DEMO</text>
+    <text class="txt-s" x="32" y="152">Fecha y hora · Ciudad o Virtual</text>
+    <text class="txt-s" x="32" y="170">Organizador DEMO</text>
+    <line class="punteado" x1="16" y1="186" x2="359" y2="186"/>
+
+    <rect class="trazo" x="88" y="204" width="200" height="200" stroke-width="2"/>
+    <rect class="caja" x="98" y="214" width="50" height="50"/>
+    <rect class="caja" x="242" y="214" width="50" height="50"/>
+    <rect class="caja" x="98" y="330" width="50" height="50"/>
+    <rect class="imagen" x="160" y="260" width="60" height="30"/>
+    <rect class="imagen" x="160" y="310" width="30" height="20"/>
+    <rect class="imagen" x="200" y="330" width="40" height="50"/>
+    <text class="txt-s centro" x="187.5" y="424">Código QR individual (token no predecible)</text>
+
+    <text class="txt-b" x="32" y="458">Entrada general · Boleto 1 de 2</text>
+    <text class="txt-s" x="32" y="478">Orden: código DEMO</text>
+    <text class="txt-s" x="32" y="496">Titular: nombre del comprador</text>
+
+    <!-- Envío simulado por correo y WhatsApp -->
+    <text class="txt-b" x="16" y="562">Te enviamos el boleto (simulado)</text>
+    <rect class="caja" x="16" y="572" width="343" height="44"/>
+    <text class="txt centro" x="187.5" y="599">Enviar por correo (simulado)</text>
+    <rect class="caja" x="16" y="624" width="343" height="44"/>
+    <text class="txt centro" x="187.5" y="651">Enviar por WhatsApp (simulado)</text>
+
+    <!-- Calendario y compartir -->
+    <rect class="caja" x="16" y="680" width="166" height="44"/>
+    <text class="txt-s centro" x="99" y="706">Agregar al calendario</text>
+    <rect class="caja" x="193" y="680" width="166" height="44"/>
+    <text class="txt centro" x="276" y="706">Compartir</text>
+
+    <text class="txt-s" x="16" y="746">Registro de envío simulado: no sale ningún correo real.</text>
+    <rect class="trazo" x="16" y="760" width="343" height="44"/>
+    <text class="txt centro" x="187.5" y="787">Ver mis boletos (requiere cuenta)</text>
+  </g>
+
+  <g id="escritorio" transform="translate(470 96)" data-ancho="1280" data-alto="800">
+    <text class="txt-s" x="0" y="-20">Escritorio · 1280 × 800</text>
+    <rect class="marco" x="0" y="0" width="1280" height="800"/>
+
+    <!-- Cabecera -->
+    <line class="trazo" x1="0" y1="72" x2="1280" y2="72"/>
+    <rect class="caja" x="24" y="18" width="150" height="36"/>
+    <text class="txt-s" x="36" y="40">Logo (va al Home)</text>
+    <rect class="trazo" x="1186" y="22" width="70" height="28"/>
+    <text class="txt-b centro" x="1221" y="41">DEMO</text>
+
+    <text class="h1" x="24" y="112">Compra confirmada (DEMO)</text>
+
+    <!-- Boleto con QR a la izquierda -->
+    <rect class="trazo" x="24" y="130" width="680" height="520"/>
+    <text class="txt-b" x="48" y="170">Título del evento DEMO</text>
+    <text class="txt-s" x="48" y="194">Fecha y hora · Ciudad o Virtual</text>
+    <text class="txt-s" x="48" y="212">Organizador DEMO</text>
+    <text class="txt" x="48" y="260">Tipo: Entrada general · Boleto 1 de 2</text>
+    <text class="txt" x="48" y="284">Orden: código DEMO</text>
+    <text class="txt" x="48" y="308">Titular: nombre del comprador</text>
+    <text class="txt" x="48" y="332">Acceso: presentar el QR en la entrada</text>
+    <rect class="caja" x="48" y="400" width="260" height="44"/>
+    <text class="txt centro" x="178" y="427">Descargar o imprimir boleto</text>
+    <line class="punteado" x1="500" y1="150" x2="500" y2="630"/>
+
+    <rect class="trazo" x="526" y="176" width="160" height="160" stroke-width="2"/>
+    <rect class="caja" x="534" y="184" width="40" height="40"/>
+    <rect class="caja" x="606" y="184" width="40" height="40"/>
+    <rect class="caja" x="534" y="272" width="40" height="40"/>
+    <rect class="imagen" x="578" y="226" width="40" height="24"/>
+    <rect class="imagen" x="578" y="262" width="24" height="24"/>
+    <rect class="imagen" x="614" y="272" width="60" height="40"/>
+    <text class="txt-s centro" x="606" y="362">Código QR individual</text>
+    <text class="txt-s centro" x="606" y="380">Sin datos personales en el QR</text>
+
+    <!-- Panel de envío simulado -->
+    <rect class="trazo" x="740" y="130" width="516" height="250"/>
+    <text class="txt-b" x="760" y="160">Te enviamos el boleto (simulado)</text>
+    <rect class="caja" x="760" y="176" width="476" height="44"/>
+    <text class="txt centro" x="998" y="203">Enviar por correo (simulado)</text>
+    <rect class="caja" x="760" y="232" width="476" height="44"/>
+    <text class="txt centro" x="998" y="259">Enviar por WhatsApp (simulado)</text>
+    <text class="txt-s" x="760" y="300">Registro de envío simulado: no sale ningún correo real.</text>
+    <text class="txt-s" x="760" y="318">Se guarda como registro de salida para la demostración.</text>
+
+    <!-- Calendario y compartir -->
+    <rect class="caja" x="740" y="400" width="248" height="44"/>
+    <text class="txt centro" x="864" y="427">Agregar al calendario</text>
+    <rect class="caja" x="1008" y="400" width="248" height="44"/>
+    <text class="txt centro" x="1132" y="427">Compartir</text>
+
+    <!-- Resumen de la orden -->
+    <rect class="trazo" x="740" y="470" width="516" height="180"/>
+    <text class="txt-b" x="760" y="496">Resumen de la orden</text>
+    <text class="txt" x="760" y="524">Estado: pagada (DEMO)</text>
+    <text class="txt" x="760" y="548">Total pagado: $XX.XX</text>
+    <text class="txt-s" x="760" y="572">Método: pago de demostración, sin datos de tarjeta</text>
+    <rect class="trazo" x="760" y="586" width="476" height="44"/>
+    <text class="txt centro" x="998" y="613">Ver mis boletos (requiere cuenta)</text>
+  </g>
+
+  <g id="notas">
+    <text class="nota" x="40" y="950">Nota: boleto con QR individual. El token es aleatorio y no revela datos personales; el QR no sirve para predecir otros boletos.</text>
+    <text class="nota" x="40" y="976">Nota: envío por correo y WhatsApp simulado; queda un registro de salida «Te enviamos el boleto a…». No sale ningún mensaje real.</text>
+    <text class="nota" x="40" y="1002">Nota: «Agregar al calendario» genera un .ics en el servidor con título, fecha y lugar; «Compartir» abre un enlace de WhatsApp sin datos del comprador.</text>
+    <text class="nota" x="40" y="1028">Nota: la confirmación tiene noindex y se abre con un enlace privado por token, no con el número de orden (SEO_ROUTES, confirmaciones).</text>
+    <text class="nota" x="40" y="1054">Nota: «Descargar o imprimir» entrega el boleto con QR. En móvil, el boleto con sus datos cabe en la primera pantalla.</text>
+    <text class="nota" x="40" y="1080">Nota: textos de marcador. Títulos, nombres, códigos y montos son ejemplos DEMO, no datos reales.</text>
+  </g>
+</svg>
