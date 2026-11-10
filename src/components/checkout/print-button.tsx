@@ -4,7 +4,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
-export function PrintButton() {
+export function PrintButton({ label = 'Imprimir boletos' }: Readonly<{ label?: string }>) {
   return (
     <button
       type="button"
@@ -12,7 +12,7 @@ export function PrintButton() {
       className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full print:hidden')}
     >
       <Icon name="print" />
-      Imprimir boletos
+      {label}
     </button>
   );
 }

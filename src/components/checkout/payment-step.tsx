@@ -3,15 +3,22 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
+import { SimulatedPaymentPanel } from '@/components/payments/simulated-payment-panel';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
+import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
+import type { PaymentDecision } from '@/features/checkout/payment';
+import { receiptStatusLabel } from '@/features/checkout/payment-flow';
+import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
 export type PendingOrder = {
   orderId: string;
   totalCents: number;
   checkoutToken: string;
+  /** Ficha del evento para «Volver al evento» cuando la compra ya no es posible. */
+  eventHref?: string;
 };
 
 export type CheckoutStep = 'datos' | 'pago' | 'boletos';
@@ -70,13 +77,48 @@ export function CheckoutSteps({ current, free = false }: CheckoutStepsProps) {
   );
 }
 
+type CheckoutErrorNoticeProps = Readonly<{
+  view: CheckoutErrorView;
+  eventHref?: string;
+  onRetry?: () => void;
+  retrying?: boolean;
+}>;
+
+/** Fallo de la compra en lenguaje claro, anunciado con role="alert" y con la acción que corresponde. */
+export function CheckoutErrorNotice({ view, eventHref, onRetry, retrying = false }: CheckoutErrorNoticeProps) {
+  return (
+    <div role="alert" className="flex flex-col gap-3 rounded-md bg-superficie-sutil p-4 font-texto">
+      <p className="flex items-start gap-2 text-base font-semibold leading-6 text-error">
+        <Icon name={statusIcon.failed} size={20} tone="error" />
+        {view.title}
+      </p>
+      <p className="text-sm leading-6 text-texto-suave">{view.detail}</p>
+      {view.action === 'retry' && onRetry ? (
+        <button
+          type="button"
+          disabled={retrying}
+          onClick={onRetry}
+          className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full sm:w-auto')}
+        >
+          {retrying ? 'Reintentando…' : 'Reintentar'}
+        </button>
+      ) : null}
+      {view.action === 'back-to-event' ? (
+        <Link href={eventHref ?? '/'} className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full sm:w-auto')}>
+          Volver al evento
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 type PaymentView = { status: 'pending' } | { status: 'confirmed'; ticketCount: number } | { status: 'failed' };
 
 type PaymentStepProps = {
-  order: PendingOrder;
+  order: PendingOrder & { subtotalCents: number; feeCents: number };
 };
 
-const fallbackError = 'No pudimos confirmar la orden. Intentá nuevamente.';
+type ConfirmOutcome = { ok: true } | { ok: false; view: CheckoutErrorView };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -104,21 +146,15 @@ function readError(value: unknown): string | null {
 
 export function PaymentStep({ order }: PaymentStepProps) {
   const [view, setView] = useState<PaymentView>({ status: 'pending' });
-  const [error, setError] = useState<string | null>(null);
+  const [errorView, setErrorView] = useState<CheckoutErrorView | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   // La referencia evita un segundo envío antes de que el botón se deshabilite.
   const inFlight = useRef(false);
+  const lastDecision = useRef<PaymentDecision | null>(null);
   const isFree = order.totalCents === 0;
 
-  async function confirm(decision: 'approved' | 'rejected' | null) {
-    if (inFlight.current) {
-      return;
-    }
-
-    inFlight.current = true;
-    setIsConfirming(true);
-    setError(null);
-
+  /** Pide la confirmación al servidor (misma API y clave de idempotencia para pago y registro gratuito). */
+  async function requestConfirmation(decision: PaymentDecision | null): Promise<ConfirmOutcome> {
     try {
       const response = await fetch(`/api/checkout/orders/${order.orderId}/confirm/`, {
         method: 'POST',
@@ -128,20 +164,76 @@ export function PaymentStep({ order }: PaymentStepProps) {
       const body: unknown = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setError(readError(body) ?? fallbackError);
-        return;
+        return { ok: false, view: checkoutErrorView(readError(body), response.status) };
       }
 
       const result = readResult(body);
 
       if (!result) {
-        setError(fallbackError);
-        return;
+        return { ok: false, view: checkoutErrorView(null, response.status) };
       }
 
       setView(result);
+      return { ok: true };
     } catch {
-      setError('No pudimos confirmar la orden. Revisá tu conexión e intentá nuevamente.');
+      return { ok: false, view: checkoutErrorView(null, 0) };
+    }
+  }
+
+  async function confirmFree() {
+    if (inFlight.current) {
+      return;
+    }
+
+    inFlight.current = true;
+    setIsConfirming(true);
+    setErrorView(null);
+
+    try {
+      const outcome = await requestConfirmation(null);
+
+      if (!outcome.ok) {
+        setErrorView(outcome.view);
+      }
+    } finally {
+      inFlight.current = false;
+      setIsConfirming(false);
+    }
+  }
+
+  async function confirmPayment(decision: PaymentDecision) {
+    lastDecision.current = decision;
+    setErrorView(null);
+
+    const outcome = await requestConfirmation(decision);
+
+    if (outcome.ok) {
+      return { ok: true };
+    }
+
+    setErrorView(outcome.view);
+    // El aviso con su acción lo muestra este paso; el mensaje vacío evita que el panel repita otro.
+    return { ok: false, message: '' };
+  }
+
+  /** «Reintentar» repite la misma confirmación (misma orden y clave de idempotencia): no duplica boletos. */
+  async function retryConfirmation() {
+    const decision = isFree ? null : lastDecision.current;
+
+    if (inFlight.current || (!isFree && !decision)) {
+      return;
+    }
+
+    inFlight.current = true;
+    setIsConfirming(true);
+    setErrorView(null);
+
+    try {
+      const outcome = await requestConfirmation(decision);
+
+      if (!outcome.ok) {
+        setErrorView(outcome.view);
+      }
     } finally {
       inFlight.current = false;
       setIsConfirming(false);
@@ -162,6 +254,11 @@ export function PaymentStep({ order }: PaymentStepProps) {
             : `Emitimos ${view.ticketCount} boletos para esta orden.`}
         </p>
         <p className="font-texto text-sm leading-6 text-texto-suave">Número de orden: {order.orderId}</p>
+        {isFree ? null : (
+          <p className="font-texto text-sm leading-6 text-texto-suave">
+            Pago de demostración: {receiptStatusLabel('approved')}
+          </p>
+        )}
         <Link
           href={`/confirmacion/${order.orderId}/${order.checkoutToken}/`}
           className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
@@ -184,6 +281,9 @@ export function PaymentStep({ order }: PaymentStepProps) {
         <p role="status" className="font-texto text-base leading-7 text-texto-suave">
           La orden quedó fallida. No se emitieron boletos ni se descontó cupo.
         </p>
+        <p className="font-texto text-sm leading-6 text-texto-suave">
+          Pago de demostración: {receiptStatusLabel('rejected')}
+        </p>
         <Link href="/" className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full')}>
           Volver al inicio
         </Link>
@@ -196,52 +296,54 @@ export function PaymentStep({ order }: PaymentStepProps) {
       <CheckoutSteps current="pago" free={isFree} />
       <header className="flex flex-col gap-2">
         <h1 id="payment-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
-          {isFree ? 'Confirmá tu registro' : 'Elegí el resultado del pago'}
+          {isFree ? 'Confirmá tu registro' : 'Pago de demostración'}
         </h1>
-        <p className="font-texto text-base leading-7 text-texto-suave">
-          {isFree
-            ? 'Este evento es gratuito. Confirmá tu registro para emitir tus boletos.'
-            : 'Modo demostración: aquí no se cobrará dinero ni se solicitará información bancaria. Elegí el resultado que quieres simular.'}
-        </p>
+        {isFree ? (
+          <p className="font-texto text-base leading-7 text-texto-suave">
+            Este evento es gratuito. Confirmá tu registro para emitir tus boletos.
+          </p>
+        ) : null}
       </header>
 
-      {error ? (
-        <p role="alert" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-error">
-          {error}
-        </p>
-      ) : null}
-
       {isFree ? (
-        <button
-          type="button"
-          disabled={isConfirming}
-          onClick={() => confirm(null)}
-          className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
-        >
-          <Icon name="check" />
-          {isConfirming ? 'Confirmando…' : 'Confirmar registro gratuito'}
-        </button>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <>
+          {errorView ? (
+            <CheckoutErrorNotice
+              view={errorView}
+              eventHref={order.eventHref}
+              onRetry={retryConfirmation}
+              retrying={isConfirming}
+            />
+          ) : null}
           <button
             type="button"
             disabled={isConfirming}
-            onClick={() => confirm('approved')}
+            onClick={confirmFree}
             className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
           >
             <Icon name="check" />
-            {isConfirming ? 'Confirmando…' : 'Simular pago aprobado'}
+            {isConfirming ? 'Confirmando…' : 'Confirmar registro gratuito'}
           </button>
-          <button
-            type="button"
-            disabled={isConfirming}
-            onClick={() => confirm('rejected')}
-            className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full')}
-          >
-            <Icon name="close" />
-            Simular pago rechazado
-          </button>
-        </div>
+        </>
+      ) : (
+        <>
+          {errorView ? (
+            <CheckoutErrorNotice
+              view={errorView}
+              eventHref={order.eventHref}
+              onRetry={retryConfirmation}
+              retrying={isConfirming}
+            />
+          ) : null}
+          <SimulatedPaymentPanel
+            amountCents={order.totalCents}
+            summary={[
+              { label: 'Subtotal', amountCents: order.subtotalCents },
+              { label: `Comisión DEMO (${siteConfig.demoCommissionPercent} %)`, amountCents: order.feeCents },
+            ]}
+            onDecision={confirmPayment}
+          />
+        </>
       )}
     </section>
   );

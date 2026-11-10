@@ -31,9 +31,9 @@ describe('privilegios de funciones SECURITY DEFINER', () => {
   it('solo el rol de servidor puede crear órdenes pendientes', async () => {
     await asRole(db, 'anon');
     const result = await db.query<{ anon: boolean; authenticated: boolean; service: boolean }>(
-      `select has_function_privilege('anon', 'public.create_pending_order(uuid, jsonb, text, text, text, integer)', 'EXECUTE') as anon,
-              has_function_privilege('authenticated', 'public.create_pending_order(uuid, jsonb, text, text, text, integer)', 'EXECUTE') as authenticated,
-              has_function_privilege('service_role', 'public.create_pending_order(uuid, jsonb, text, text, text, integer)', 'EXECUTE') as service`,
+      `select has_function_privilege('anon', 'public.create_pending_order(uuid, jsonb, text, text, text, integer, uuid, text)', 'EXECUTE') as anon,
+              has_function_privilege('authenticated', 'public.create_pending_order(uuid, jsonb, text, text, text, integer, uuid, text)', 'EXECUTE') as authenticated,
+              has_function_privilege('service_role', 'public.create_pending_order(uuid, jsonb, text, text, text, integer, uuid, text)', 'EXECUTE') as service`,
     );
 
     expect(result.rows[0]).toEqual({ anon: false, authenticated: false, service: true });

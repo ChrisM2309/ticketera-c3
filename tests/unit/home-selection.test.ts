@@ -16,6 +16,7 @@ function event(id: string, free = false): CatalogEvent {
     topic: null,
     location: null,
     organizer: null,
+    speakers: [],
     ticketTypes: [{ priceCents: free ? 0 : 1000, isActive: true }],
   };
 }

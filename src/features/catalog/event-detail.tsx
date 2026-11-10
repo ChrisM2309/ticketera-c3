@@ -3,15 +3,19 @@ import Link from 'next/link';
 
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { EventCard } from '@/components/catalog/event-card';
+import { MobileBuyBar } from '@/components/catalog/mobile-buy-bar';
+import { ShareButton } from '@/components/catalog/share-button';
+import { SpeakersList } from '@/components/catalog/speakers-list';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
-import { modeLabel, priceLabel } from '@/features/catalog/format';
+import { modeLabel, priceFromLabel } from '@/features/catalog/format';
 import { coverImagePath, isIllustrativeCover, publicImagePath } from '@/features/catalog/images';
 import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity, hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import type { CatalogEvent, CatalogEventDetail } from '@/features/catalog/types';
 import { siteConfig } from '@/lib/site-config';
+import { cn } from '@/lib/utils';
 
 type EventDetailPageProps = Readonly<{
   event: CatalogEventDetail;
@@ -56,7 +60,38 @@ function eventTimeLabel(event: CatalogEventDetail): string {
     : `${time} · termina ${dateFormatter.format(end)}`;
 }
 
+/** Precio corto de las entradas con cupo: el mínimo de pago, o «Gratis» si todas son gratuitas. */
+function buyBarLabel(event: CatalogEventDetail): string {
+  const prices = event.ticketTypes
+    .filter((ticket) => ticket.isActive && getAvailableQuantity(ticket) > 0)
+    .map((ticket) => ticket.priceCents);
+
+  if (prices.length === 0) {
+    return '';
+  }
+
+  const paid = prices.filter((price) => price > 0);
+
+  return priceFromLabel(paid.length > 0 ? Math.min(...paid) : 0, prices.includes(0));
+}
+
+/** En móvil cada dato va en una fila (término a la izquierda, valor a la derecha) para ganar altura. */
+const detailItemClass = 'flex items-start justify-between gap-4 sm:block';
+const detailValueClass =
+  'text-right font-texto text-sm leading-6 text-texto-suave sm:mt-1 sm:text-left';
 const detailTermClass = 'flex items-center gap-2 font-titulo text-sm font-semibold text-texto';
+
+/** URL pública absoluta de la ficha; es la que se comparte y la que declara el JSON-LD. */
+function eventUrl(event: CatalogEventDetail): string {
+  return new URL(
+    eventPath({
+      slug: event.slug,
+      eventTypeSlug: event.eventType.slug,
+      topicSlug: event.topic?.slug ?? null,
+    }),
+    siteConfig.siteUrl,
+  ).toString();
+}
 
 function structuredEvent(event: CatalogEventDetail) {
   const imagePath = publicImagePath(event.imagePath);
@@ -67,14 +102,7 @@ function structuredEvent(event: CatalogEventDetail) {
     name: event.title,
     description: event.description,
     startDate: event.startsAt,
-    url: new URL(
-      eventPath({
-        slug: event.slug,
-        eventTypeSlug: event.eventType.slug,
-        topicSlug: event.topic?.slug ?? null,
-      }),
-      siteConfig.siteUrl,
-    ).toString(),
+    url: eventUrl(event),
     eventAttendanceMode:
       event.mode === 'virtual'
         ? 'https://schema.org/OnlineEventAttendanceMode'
@@ -121,6 +149,7 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
   const past = isEventPast(event);
   const soldOut = !hasAvailableTickets(event);
   const canPurchase = !past && !soldOut;
+  const showSoldOut = soldOut && !past && event.status === 'published';
   const breadcrumbs = [
     { label: 'Ticketera C3', href: '/' },
     { label: event.eventType.name, href: `/${event.eventType.slug}/` },
@@ -131,12 +160,13 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14">
-      <Breadcrumbs items={breadcrumbs} />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 pb-28 pt-3 md:gap-8 md:px-6 md:pb-20 md:pt-14">
+      <Breadcrumbs items={breadcrumbs} compactOnMobile />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start">
-        <article className="flex min-w-0 flex-col gap-8">
-          <div className="relative aspect-[16/8] overflow-hidden rounded-lg bg-navy shadow-sm">
+      {/* En móvil el orden es resumen, entradas, descripción, agenda y ponentes; en escritorio, dos columnas. */}
+      <div className="grid gap-3 md:gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-3 lg:col-start-1 lg:row-start-1 lg:gap-8">
+          <div className="relative aspect-video max-h-20 overflow-hidden rounded-lg bg-navy shadow-sm md:max-h-none md:aspect-[16/8]">
             <Image
               src={coverImagePath(event)}
               alt={`Portada de ${event.title}`}
@@ -153,77 +183,77 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
             ) : null}
           </div>
 
-          <header className="flex flex-col gap-4">
-            <h1 className="font-titulo text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+          <header className="flex flex-col gap-2 md:gap-4">
+            <h1 className="font-titulo text-2xl font-bold leading-tight tracking-tight md:text-5xl">
               {event.title}
             </h1>
-            <p className="font-texto text-sm font-medium text-texto-suave">{event.eventType.name}</p>
+            <p className="hidden font-texto text-sm font-medium text-texto-suave md:block">{event.eventType.name}</p>
             {past ? (
               <p className="inline-flex w-fit rounded-full bg-superficie-sutil px-3 py-1 font-titulo text-sm font-semibold text-texto-suave">
                 Evento finalizado
               </p>
             ) : null}
-            {canPurchase ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 lg:hidden">
-                <p className="flex items-center gap-2 font-titulo text-lg font-bold text-texto">
-                  <Icon name="tag" />
-                  {priceLabel(event.ticketTypes)}
-                </p>
-                <Link href="#entradas" className={buttonVariants({ variant: 'secundario' })}>
-                  Elegir entradas
-                </Link>
-              </div>
+            {showSoldOut ? (
+              <p className="inline-flex w-fit rounded-full bg-superficie-sutil px-3 py-1 font-titulo text-sm font-semibold text-texto-suave">
+                Agotado
+              </p>
             ) : null}
           </header>
 
-          <dl className="grid gap-4 rounded-lg bg-superficie p-5 shadow-sm sm:grid-cols-2">
-            <div>
+          <dl className="grid gap-1.5 rounded-lg bg-superficie p-3 shadow-sm sm:grid-cols-2 sm:gap-4 sm:p-5">
+            <div className={detailItemClass}>
               <dt className={detailTermClass}>
                 <Icon name="calendar" size={16} />
                 Fecha
               </dt>
-              <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">{eventDayLabel(event)}</dd>
+              <dd className={detailValueClass}>{eventDayLabel(event)}</dd>
             </div>
-            <div>
+            <div className={detailItemClass}>
               <dt className={detailTermClass}>
                 <Icon name="clock" size={16} />
                 Hora
               </dt>
-              <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">{eventTimeLabel(event)}</dd>
+              <dd className={detailValueClass}>{eventTimeLabel(event)}</dd>
             </div>
-            <div>
+            <div className={detailItemClass}>
               <dt className={detailTermClass}>
                 <Icon name={event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
                 Modalidad
               </dt>
-              <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">
+              <dd className={detailValueClass}>
                 {modeLabel(event.mode)}
                 {event.location ? ` · ${event.location.name}` : ''}
                 {event.venue ? ` · ${event.venue}` : ''}
               </dd>
             </div>
             {event.organizer ? (
-              <div>
+              <div className={detailItemClass}>
                 <dt className={detailTermClass}>
                   <Icon name="building" size={16} />
                   Organiza
                 </dt>
-                <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">{event.organizer.name}</dd>
+                <dd className={detailValueClass}>{event.organizer.name}</dd>
               </div>
             ) : null}
-            <div>
+            <div className="hidden sm:block">
               <dt className={detailTermClass}>
                 <Icon name="ticket" size={16} />
                 Entradas
               </dt>
-              <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">
+              <dd className={detailValueClass}>
                 {event.ticketTypes.filter((ticket) => ticket.isActive).length > 0
                   ? `${event.ticketTypes.filter((ticket) => ticket.isActive).length} tipos disponibles`
                   : 'Sin entradas disponibles'}
               </dd>
             </div>
           </dl>
+        </div>
 
+        <aside className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-6">
+          <TicketSelector event={event} disabled={!canPurchase} />
+        </aside>
+
+        <div className="flex min-w-0 flex-col gap-8 lg:col-start-1 lg:row-start-2">
           <section aria-labelledby="descripcion" className="flex flex-col gap-3">
             <h2 id="descripcion" className="font-titulo text-2xl font-bold">
               Sobre el evento
@@ -231,6 +261,18 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
             <p className="max-w-3xl whitespace-pre-line font-texto text-base leading-7 text-texto-suave">
               {event.description}
             </p>
+            {past ? null : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <a
+                  href={`/calendario/${event.id}/`}
+                  className={cn(buttonVariants({ variant: 'secundario' }), 'w-fit')}
+                >
+                  <Icon name="calendarPlus" />
+                  Agregar al calendario
+                </a>
+                <ShareButton title={event.title} startsAt={event.startsAt} eventUrl={eventUrl(event)} />
+              </div>
+            )}
           </section>
 
           {event.agenda ? (
@@ -243,11 +285,9 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
               </p>
             </section>
           ) : null}
-        </article>
 
-        <aside className="lg:sticky lg:top-6">
-          <TicketSelector event={event} disabled={!canPurchase} />
-        </aside>
+          <SpeakersList speakers={event.speakers} />
+        </div>
       </div>
 
       {related.length > 0 ? (
@@ -267,6 +307,8 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
           </div>
         </section>
       ) : null}
+
+      <MobileBuyBar label={buyBarLabel(event)} available={canPurchase} anchorId="entradas" />
 
       {!siteConfig.isDemo ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(event) }} />

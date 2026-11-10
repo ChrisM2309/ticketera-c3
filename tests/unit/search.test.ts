@@ -19,6 +19,7 @@ function event(overrides: Partial<CatalogEvent> & Pick<CatalogEvent, 'id' | 'tit
     topic: null,
     location: null,
     organizer: null,
+    speakers: [],
     ticketTypes: [],
     ...overrides,
   };

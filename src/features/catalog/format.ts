@@ -51,6 +51,23 @@ export function priceLabel(ticketTypes: readonly CatalogTicketType[]): string {
   return `Desde ${formatUsd(Math.min(...prices))}`;
 }
 
+/**
+ * Precio corto para la barra de compra móvil. `minPriceCents` es el precio más bajo de las entradas
+ * con cupo (`null` si no hay) y `hasFree` indica que alguna de ellas es gratuita.
+ * Solo gratuitas: 'Gratis'; con alguna de pago: 'Desde $18' o 'Desde $10.50' (sin decimales cuando son cero).
+ */
+export function priceFromLabel(minPriceCents: number | null, hasFree: boolean): string {
+  if (minPriceCents === null) {
+    return '';
+  }
+
+  if (minPriceCents === 0 && hasFree) {
+    return 'Gratis';
+  }
+
+  return `Desde ${formatUsd(minPriceCents)}`;
+}
+
 export function modeLabel(mode: EventMode): string {
   return mode === 'virtual' ? 'En línea' : 'Presencial';
 }

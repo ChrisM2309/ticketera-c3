@@ -58,8 +58,8 @@ async function createPendingOrder(
   await asRole(db, 'service_role');
 
   const result = await db.query<{ order_id: string }>(
-    `select order_id from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6)`,
-    [event, JSON.stringify(items), 'Comprador DEMO', 'comprador@example.test', publicTokenHash, 5],
+    `select order_id from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6, $7)`,
+    [event, JSON.stringify(items), 'Comprador DEMO', 'comprador@example.test', publicTokenHash, 5, randomUUID()],
   );
 
   return { orderId: result.rows[0].order_id, publicTokenHash };

@@ -1,6 +1,9 @@
 import 'server-only';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
+import { eventPath } from '@/features/catalog/paths';
+import { buildReceipt, type Receipt } from '@/features/checkout/payment-flow';
+import { siteConfig } from '@/lib/site-config';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 import { recoverTicketQrs, type RecoveredTicket } from './qr';
@@ -14,14 +17,23 @@ export type OrderConfirmation = {
   feeCents: number;
   totalCents: number;
   buyerName: string;
+  /** Comprobante del pago de demostración (o del registro gratuito) de la orden. */
+  receipt: Receipt;
   event: {
+    id: string;
     title: string;
     startsAt: string;
     mode: 'presencial' | 'virtual';
     venue: string | null;
+    /** URL pública de la ficha del evento (la que se comparte; nunca la de la orden). Nula si no se puede resolver. */
+    url: string | null;
   };
   tickets: ConfirmationTicket[];
+  /** Envíos simulados del boleto, con el destino ya enmascarado. */
+  deliveries: ConfirmationDelivery[];
 };
+
+export type ConfirmationDelivery = { channel: 'email' | 'whatsapp'; destinationMasked: string };
 
 export type ConfirmationResult =
   | { status: 'ok'; confirmation: OrderConfirmation }
@@ -47,7 +59,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
 
   const orderResult = await client
     .from('orders')
-    .select('id, event_id, status, subtotal_cents, fee_cents, total_cents, buyer_name')
+    .select('id, event_id, status, subtotal_cents, fee_cents, total_cents, buyer_name, confirmed_at')
     .eq('id', orderId)
     .eq('public_token_hash', hashCheckoutToken(checkoutToken))
     .maybeSingle();
@@ -68,11 +80,16 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     fee_cents: number;
     total_cents: number;
     buyer_name: string;
+    confirmed_at: string | null;
   };
 
   const eventResult = await client
     .from('events')
-    .select('title, starts_at, mode, venue')
+    .select(
+      `title, slug, starts_at, mode, venue,
+       event_type:categories!events_event_type_fk(slug),
+       topic:categories!events_topic_fk(slug)`,
+    )
     .eq('id', order.event_id)
     .maybeSingle();
 
@@ -80,12 +97,29 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     return { status: 'unavailable' };
   }
 
-  const event = eventResult.data as {
+  const event = eventResult.data as unknown as {
     title: string;
+    slug: string;
     starts_at: string;
     mode: OrderConfirmation['event']['mode'];
     venue: string | null;
+    event_type: { slug: string } | null;
+    topic: { slug: string } | null;
   };
+
+  const paymentResult = await client
+    .from('payments')
+    .select('id, status')
+    .eq('order_id', order.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (paymentResult.error) {
+    return { status: 'unavailable' };
+  }
+
+  const payment = paymentResult.data as { id: string; status: string } | null;
 
   let tickets: ConfirmationTicket[] = [];
 
@@ -111,6 +145,26 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     );
   }
 
+  // El outbox se lee solo después de validar el token del enlace (la orden se buscó por su hash).
+  // Es información secundaria: si falla, la página muestra los boletos sin la lista de envíos.
+  let deliveries: ConfirmationDelivery[] = [];
+
+  if (order.status === 'confirmed') {
+    const outboxResult = await client
+      .from('notification_outbox')
+      .select('channel, destination_masked')
+      .eq('order_id', order.id)
+      .eq('template', 'ticket')
+      .eq('status', 'simulated')
+      .order('channel', { ascending: true });
+
+    if (!outboxResult.error) {
+      deliveries = ((outboxResult.data ?? []) as { channel: ConfirmationDelivery['channel']; destination_masked: string }[]).map(
+        (row) => ({ channel: row.channel, destinationMasked: row.destination_masked }),
+      );
+    }
+  }
+
   return {
     status: 'ok',
     confirmation: {
@@ -120,13 +174,32 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
       feeCents: order.fee_cents,
       totalCents: order.total_cents,
       buyerName: order.buyer_name,
+      receipt: buildReceipt({
+        order: {
+          id: order.id,
+          status: order.status,
+          subtotalCents: order.subtotal_cents,
+          feeCents: order.fee_cents,
+          totalCents: order.total_cents,
+          confirmedAt: order.confirmed_at,
+        },
+        payment,
+      }),
       event: {
+        id: order.event_id,
         title: event.title,
         startsAt: event.starts_at,
         mode: event.mode,
         venue: event.venue,
+        url: event.event_type
+          ? new URL(
+              eventPath({ slug: event.slug, eventTypeSlug: event.event_type.slug, topicSlug: event.topic?.slug ?? null }),
+              siteConfig.siteUrl,
+            ).toString()
+          : null,
       },
       tickets,
+      deliveries,
     },
   };
 }

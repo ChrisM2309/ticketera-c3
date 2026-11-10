@@ -13,6 +13,7 @@ import type {
   CatalogTaxonomy,
   EventMode,
   EventStatus,
+  Speaker,
 } from './types';
 
 type RouteRow = { path: string; kind: CatalogRouteKind; is_indexable: boolean };
@@ -30,6 +31,7 @@ type EventRow = {
   topic: { slug: string } | null;
   location: { slug: string; name: string } | null;
   organizer: { name: string } | null;
+  speakers: Speaker[] | null;
   ticket_types: { price_cents: number; is_active: boolean }[];
 };
 
@@ -50,6 +52,7 @@ type EventDetailRow = {
   topic: { slug: string; name: string } | null;
   location: { slug: string; name: string } | null;
   organizer: { name: string } | null;
+  speakers: Speaker[] | null;
   ticket_types: {
     id: string;
     name: string;
@@ -87,6 +90,7 @@ const eventSelect = `
   topic:categories!events_topic_fk(slug),
   location:categories!events_location_fk(slug, name),
   organizer:organizers(name),
+  speakers,
   ticket_types(price_cents, is_active)
 `;
 
@@ -96,6 +100,7 @@ const eventDetailSelect = `
   topic:categories!events_topic_fk(slug, name),
   location:categories!events_location_fk(slug, name),
   organizer:organizers(name),
+  speakers,
   ticket_types(id, name, price_cents, quantity_total, quantity_sold, max_per_order, is_active)
 `;
 
@@ -140,6 +145,7 @@ function mapEvent(row: EventRow): CatalogEvent | null {
     topic: row.topic,
     location: row.location,
     organizer: row.organizer,
+    speakers: row.speakers ?? [],
     ticketTypes: row.ticket_types.map((ticket) => ({
       priceCents: ticket.price_cents,
       isActive: ticket.is_active,
@@ -168,6 +174,7 @@ function mapEventDetail(row: EventDetailRow): CatalogEventDetail | null {
     topic: row.topic,
     location: row.location,
     organizer: row.organizer,
+    speakers: row.speakers ?? [],
     ticketTypes: row.ticket_types.map((ticket) => ({
       id: ticket.id,
       name: ticket.name,

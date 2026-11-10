@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
 import { paymentIdempotencyKey, paymentOutcomeFor, parseConfirmRequest } from '@/features/checkout/payment';
+import {
+  buildReminderNotifications,
+  buildTicketNotifications,
+  enqueueNotifications,
+} from '@/features/ticketing/notifications';
 import { createTicketId, deriveTicketQrToken, hashTicketQrToken } from '@/features/ticketing/qr';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
@@ -55,7 +60,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   // recibe el mismo error que una orden inexistente.
   const orderResult = await client
     .from('orders')
-    .select('total_cents')
+    .select('total_cents, buyer_email, buyer_phone, event_id')
     .eq('id', orderId)
     .eq('public_token_hash', publicTokenHash)
     .maybeSingle();
@@ -112,6 +117,41 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   if (!confirmed) {
     return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
+  }
+
+  // El boleto «se envía» solo cuando esta llamada confirmó la orden: un reintento ya procesado y un
+  // pago rechazado no generan notificaciones. Un fallo del outbox no revierte la compra.
+  if (
+    (outcome === 'free' || outcome === 'demo_approved') &&
+    confirmed.result_status === 'confirmed' &&
+    !confirmed.result_already_processed
+  ) {
+    const email = orderResult.data.buyer_email as string;
+    const phone = (orderResult.data.buyer_phone as string | null) ?? null;
+    const now = new Date();
+    const rows = buildTicketNotifications({ orderId: confirmed.result_order_id, email, phone, now });
+
+    // El recordatorio de 24 h viaja en la misma llamada que el boleto. Si no se puede leer la
+    // fecha del evento solo se omite el recordatorio; la compra y el boleto no se tocan.
+    const eventResult = await client
+      .from('events')
+      .select('starts_at')
+      .eq('id', orderResult.data.event_id as string)
+      .maybeSingle();
+
+    if (eventResult.data?.starts_at) {
+      rows.push(
+        ...buildReminderNotifications({
+          orderId: confirmed.result_order_id,
+          email,
+          phone,
+          eventStartsAt: new Date(eventResult.data.starts_at as string),
+          now,
+        }),
+      );
+    }
+
+    await enqueueNotifications(rows);
   }
 
   return NextResponse.json({

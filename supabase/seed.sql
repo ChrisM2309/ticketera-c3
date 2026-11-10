@@ -780,3 +780,34 @@ on conflict (event_id, name) do nothing;
 update public.events
 set organizer_id = (select id from public.organizers where slug = 'copa')
 where slug in ('competencia-demo-ia', 'hackathon-demo-ia', 'hackathon-demo-datos-abiertos');
+
+-- Ponentes DEMO (CO-02): cinco eventos con nombres claramente ficticios.
+-- Idempotente: es un update por clave natural (slug).
+update public.events set speakers = '[
+  {"name": "Ponente DEMO 1", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 2", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 3", "role": "Rol de ejemplo (DEMO)"}
+]'::jsonb where slug = 'congreso-demo-ia';
+
+update public.events set speakers = '[
+  {"name": "Ponente DEMO 1", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 2", "role": "Rol de ejemplo (DEMO)"}
+]'::jsonb where slug = 'hackathon-demo-en-linea';
+
+update public.events set speakers = '[
+  {"name": "Ponente DEMO 1", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 2", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 3", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 4", "role": "Rol de ejemplo (DEMO)"}
+]'::jsonb where slug = 'bootcamp-demo-cloud';
+
+update public.events set speakers = '[
+  {"name": "Ponente DEMO 1", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 2", "role": "Rol de ejemplo (DEMO)"}
+]'::jsonb where slug = 'conferencia-demo-programacion';
+
+update public.events set speakers = '[
+  {"name": "Ponente DEMO 1", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 2", "role": "Rol de ejemplo (DEMO)"},
+  {"name": "Ponente DEMO 3", "role": "Rol de ejemplo (DEMO)"}
+]'::jsonb where slug = 'congreso-demo-ciberseguridad';

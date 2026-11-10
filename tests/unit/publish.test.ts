@@ -25,6 +25,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     imageUrl: '',
     startsAt: '2027-09-01T18:00',
     endsAt: '',
+    speakers: [],
     tickets: [
       { name: 'General', price: '10', quantity: '50', maxPerOrder: '4' },
       { name: '', price: '', quantity: '', maxPerOrder: '' },
@@ -91,6 +92,7 @@ describe('parsePublishInput', () => {
         imageUrl: null,
         startsAt: '2027-09-02T00:00:00.000Z',
         endsAt: null,
+        speakers: [],
         ticketTypes: [{ name: 'General', priceCents: 1000, quantityTotal: 50, maxPerOrder: 4 }],
       },
     });
@@ -196,6 +198,62 @@ describe('parsePublishInput', () => {
   });
 });
 
+describe('ponentes', () => {
+  it('ignora filas de ponente vacías', () => {
+    const result = parsePublishInput(
+      validInput({
+        speakers: [
+          { name: 'Ponente DEMO 1', role: 'Rol de ejemplo (DEMO)' },
+          { name: '', role: '' },
+          { name: '  ', role: '  ' },
+          { name: 'Ponente DEMO 2', role: '' },
+        ],
+      }),
+      now,
+    );
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.data.speakers).toEqual([
+        { name: 'Ponente DEMO 1', role: 'Rol de ejemplo (DEMO)' },
+        { name: 'Ponente DEMO 2', role: '' },
+      ]);
+    }
+  });
+
+  it('rechaza un nombre de más de 80 caracteres', () => {
+    const result = parsePublishInput(validInput({ speakers: [{ name: 'a'.repeat(81), role: '' }] }), now);
+
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.fieldErrors.speakers).toMatch(/80 caracteres/);
+    }
+  });
+
+  it('rechaza un rol de más de 120 caracteres y un rol sin nombre', () => {
+    const longRole = parsePublishInput(
+      validInput({ speakers: [{ name: 'Ponente DEMO 1', role: 'r'.repeat(121) }] }),
+      now,
+    );
+    expect(longRole.valid).toBe(false);
+
+    const noName = parsePublishInput(validInput({ speakers: [{ name: '', role: 'Rol de ejemplo (DEMO)' }] }), now);
+    expect(noName.valid).toBe(false);
+    if (!noName.valid) {
+      expect(noName.fieldErrors.speakers).toBeDefined();
+    }
+  });
+
+  it('sin filas de ponente el evento queda con lista vacía', () => {
+    const result = parsePublishInput(validInput({ speakers: undefined }), now);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.data.speakers).toEqual([]);
+    }
+  });
+});
+
 describe('readPublishForm', () => {
   it('reúne las filas de entradas del formulario en una lista', () => {
     const formData = new FormData();
@@ -211,6 +269,23 @@ describe('readPublishForm', () => {
     expect(input.tickets).toHaveLength(4);
     expect(input.tickets).toEqual(
       expect.arrayContaining([{ name: 'General', price: '10', quantity: '50', maxPerOrder: '4' }]),
+    );
+  });
+
+  it('reúne las filas de ponentes speakerName1..6 y speakerRole1..6', () => {
+    const formData = new FormData();
+    formData.set('speakerName1', 'Ponente DEMO 1');
+    formData.set('speakerRole1', 'Rol de ejemplo (DEMO)');
+    formData.set('speakerName6', 'Ponente DEMO 6');
+
+    const input = readPublishForm(formData);
+
+    expect(input.speakers).toHaveLength(6);
+    expect(input.speakers).toEqual(
+      expect.arrayContaining([
+        { name: 'Ponente DEMO 1', role: 'Rol de ejemplo (DEMO)' },
+        { name: 'Ponente DEMO 6', role: null },
+      ]),
     );
   });
 });
