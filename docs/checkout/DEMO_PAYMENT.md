@@ -24,10 +24,46 @@ Interfaz `PaymentProvider` con `createPaymentAttempt(order)`, `confirmDemoPaymen
 
 Los controles representan un resultado de pago ficticio y **no** deben usar campos que aparenten capturar tarjetas reales. Guardar en DB el resultado del pago de prueba y los importes.
 
+## Pasos del checkout y del panel de pago simulado (Fase 2)
+
+El indicador de la compra tiene tres pasos: **Tus datos → Pago (o Confirmación, si es gratuito) → Boletos**.
+
+1. **Tus datos** (`/checkout/`): nombre, correo y teléfono opcional para WhatsApp (8 dígitos de El Salvador; se guarda como `+503XXXXXXXX`). El botón principal lleva el monto: «Pagar $X · pago de demostración» o «Confirmar registro gratuito». Al enviarlo se crea la orden `pending` con precios, comisión y cupo calculados en servidor.
+2. **Pago simulado** (solo si el total es mayor que cero), en el componente `SimulatedPaymentPanel`. Muestra siempre el aviso exacto de modo demostración y mueve el foco al título de cada paso:
+   - **Resumen:** subtotal, «Comisión DEMO (5 %)» y «Total a pagar (simulado)». Botón «Continuar con el pago simulado».
+   - **Resultado de la simulación:** dos opciones, «Simular pago aprobado» y «Simular pago rechazado». Sin elegir una, el panel pide que se elija y no envía nada; «Volver al resumen» regresa sin perder la orden. Botón «Confirmar pago simulado».
+   - **Procesando** y **Resultado registrado:** se muestran mientras el servidor confirma. Un segundo clic no repite el envío.
+   - No hay campos de tarjeta, vencimiento, CVV ni datos bancarios en ningún paso.
+3. **Registro gratuito:** no hay panel; un solo botón «Confirmar registro gratuito» confirma sin pasarela.
+4. **Resultado** en la misma pantalla: «Orden confirmada» (con el número de orden, «Pago de demostración: Aprobado (simulado)» en pagos y el enlace «Ver mis boletos») o «Pago rechazado» («Pago de demostración: Rechazado (simulado)», sin enlace a boletos).
+
+**Reintento sin duplicar:** el navegador genera un `request_id` por sesión de compra (se guarda en `sessionStorage` y cambia si cambia la selección). Repetir el envío con el mismo `request_id` devuelve la misma orden y el mismo token; «Reintentar» repite la misma confirmación, que es idempotente (sin boletos duplicados ni doble consumo de cupo).
+
+**Errores recuperables:** sin cupo o evento no disponible muestran «Volver al evento»; un fallo de red o del servidor muestra «Reintentar». Nunca se muestra el texto crudo del servidor.
+
+## Comprobante, envío simulado y post-compra
+
+La página privada `/confirmacion/[orderId]/[token]/` (con `noindex`) reúne:
+
+- **Boletos** con su QR y descarga SVG por boleto; impresión.
+- **Comprobante simulado:** número de orden, método «Pago de demostración», estado («Aprobado (simulado)», «Rechazado (simulado)» o «Gratuito (sin pago)»), referencia de pago y fecha de confirmación cuando existen, subtotal, comisión DEMO y total. Se puede imprimir y declara que no corresponde a un cobro real.
+- **Envío del boleto (simulado):** «Boleto enviado a a***@dominio · Simulado» y, si el comprador dio teléfono, «Boleto enviado por WhatsApp a +503 ****-1234 · Simulado». No se envía ningún mensaje real; son los registros de la tabla `notification_outbox`.
+- **Agregar al calendario:** enlace a `/calendario/[eventId]/`, que descarga un `.ics` del evento publicado (también está en la ficha).
+- **Compartir por WhatsApp:** abre `https://wa.me/?text=…` con título, fecha y URL pública de la ficha del evento; nunca incluye el enlace privado de la confirmación.
+
+### Outbox de notificaciones simuladas
+
+- Al confirmar una orden (gratuita o con pago aprobado) la ruta de confirmación encola, una sola vez, el boleto por correo y, si hay teléfono, por WhatsApp. Un reintento sobre una orden ya procesada o un pago rechazado no encola nada.
+- También encola el recordatorio `reminder_24h` con `scheduled_for` igual al inicio del evento menos 24 horas; si ese instante ya pasó, no se crea. Nada lo envía: en la demostración solo queda registrado.
+- Cada fila guarda únicamente el destino **enmascarado**, nunca el correo ni el teléfono completos, y la restricción `unique (order_id, channel, template)` evita duplicados.
+- Solo `service_role` puede leer y escribir la tabla; el navegador no tiene acceso. Un fallo del outbox nunca revierte la compra.
+
 ## Comisión
 
 El modelo académico habla de comisión por venta, sin cifra definitiva. Configuración demo sugerida: `DEMO_COMMISSION_PERCENT=5`, sujeta a aprobación del equipo. Declarar siempre el supuesto y exhibir monto antes del botón final. Nunca atribuir 5% a una política real de C3.
 
 ## Forma de comprobarlo
+
+Pruebas automatizadas: `npx playwright test tests/e2e/purchase-flow.spec.ts --project=chromium` recorre gratis, aprobado y rechazado en 1280 px y 375 px con la API de órdenes simulada (sin escrituras). `REAL_PURCHASE=1 npx playwright test tests/e2e/purchase-flow-real.spec.ts --project=chromium` crea órdenes reales de demostración (correo `e2e-real-*@example.test`), comprueba comprobante, envío simulado, `.ics` y WhatsApp en la confirmación, y anota los ids de orden; solo se ejecuta con confirmación del responsable.
 
 Adjuntar al reporte de la materia tres evidencias (idealmente video + capturas + IDs de orden de DEMO) y un video completo móvil: evento gratis confirmado, pago aprobado y pago rechazado. Si profesor exige sandbox real, agregar como tarea P1 con credenciales externas y revalidar flujos.
