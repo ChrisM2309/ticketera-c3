@@ -5,10 +5,10 @@ import { FeaturedTable } from '@/components/admin/featured-table';
 import { answerPackageFollowupAction } from '@/features/packages/actions';
 import { formatEventStart } from '@/features/organizers/panel';
 import {
-  adminFeaturedPath,
   createManualFeaturedAction,
 } from '@/features/featured/actions';
 import { parseFeaturedFilters, type FeaturedRow } from '@/features/featured/admin';
+import { adminFeaturedPath } from '@/features/featured/paths';
 import { adminHomePath } from '@/lib/auth/access';
 import { requireRole } from '@/lib/auth/require-role';
 import { buttonVariants } from '@/components/ui/button';

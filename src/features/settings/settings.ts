@@ -73,7 +73,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
   const { data, error } = await client.from('site_settings').select('key, value');
   if (error) {
-    throw error;
+    // La migración de Fase 4 puede estar pendiente en un preview o en el entorno remoto.
+    // En ese caso las pantallas públicas conservan el estado DEMO «por definir».
+    return emptySiteSettings;
   }
 
   const settings = new Map((data ?? []).map((row) => [row.key, row.value]));
