@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   decideAccess,
-  homePathFor,
+  destinationAfterSignIn,
+  landingPathForRole,
   parseLoginInput,
   readSessionError,
   requiredRoleForPath,
@@ -13,6 +14,15 @@ import { gateSession } from '../../src/lib/auth/session-gate';
 import type { SessionTokens } from '../../src/lib/auth/cookies';
 
 describe('zonas privadas', () => {
+  it('asigna el rol mínimo de las zonas del comprador', () => {
+    expect(requiredRoleForPath('/mis-boletos/')).toBe('buyer');
+    expect(requiredRoleForPath('/mis-boletos')).toBe('buyer');
+    expect(requiredRoleForPath('/mis-boletos/abc/')).toBe('buyer');
+    expect(requiredRoleForPath('/cuenta/')).toBe('buyer');
+    expect(requiredRoleForPath('/cuenta/datos/')).toBe('buyer');
+    expect(requiredRoleForPath('/cuentas/')).toBeNull();
+  });
+
   it('asigna un único rol a cada zona', () => {
     expect(requiredRoleForPath('/panel/')).toBe('organizer');
     expect(requiredRoleForPath('/panel')).toBe('organizer');
@@ -48,11 +58,28 @@ describe('decisión de acceso', () => {
     });
   });
 
-  it('envía al administrador fuera de /panel/ a su zona', () => {
-    expect(decideAccess({ required: 'organizer', hasSession: true, role: 'admin' })).toEqual({
+  it('el administrador también entra a /panel/', () => {
+    expect(decideAccess({ required: 'organizer', hasSession: true, role: 'admin' })).toEqual({ action: 'allow' });
+  });
+
+  it('comprador no entra a /panel/ ni /admin/', () => {
+    expect(decideAccess({ required: 'organizer', hasSession: true, role: 'buyer' })).toEqual({
       action: 'redirect',
-      to: '/admin/',
+      to: '/mis-boletos/',
     });
+    expect(decideAccess({ required: 'admin', hasSession: true, role: 'buyer' })).toEqual({
+      action: 'redirect',
+      to: '/mis-boletos/',
+    });
+  });
+
+  it('comprador entra a /mis-boletos/', () => {
+    expect(decideAccess({ required: 'buyer', hasSession: true, role: 'buyer' })).toEqual({ action: 'allow' });
+  });
+
+  it('organizador y administrador entran a /mis-boletos/ y /cuenta/', () => {
+    expect(decideAccess({ required: 'buyer', hasSession: true, role: 'organizer' })).toEqual({ action: 'allow' });
+    expect(decideAccess({ required: 'buyer', hasSession: true, role: 'admin' })).toEqual({ action: 'allow' });
   });
 
   it('no concede acceso sin perfil o con un rol desconocido', () => {
@@ -66,9 +93,28 @@ describe('decisión de acceso', () => {
     });
   });
 
-  it('indica el destino por defecto de cada rol', () => {
-    expect(homePathFor('organizer')).toBe('/panel/');
-    expect(homePathFor('admin')).toBe('/admin/');
+  it('landingPathForRole por rol', () => {
+    expect(landingPathForRole('buyer')).toBe('/mis-boletos/');
+    expect(landingPathForRole('organizer')).toBe('/panel/');
+    expect(landingPathForRole('admin')).toBe('/admin/');
+  });
+});
+
+describe('destino tras ingresar', () => {
+  it('respeta una ruta pública o de una zona que el rol puede ver', () => {
+    expect(destinationAfterSignIn('buyer', '/checkout/')).toBe('/checkout/');
+    expect(destinationAfterSignIn('buyer', '/cuenta/')).toBe('/cuenta/');
+    expect(destinationAfterSignIn('admin', '/panel/')).toBe('/panel/');
+  });
+
+  it('usa la zona del rol si la ruta pedida le queda fuera o falta', () => {
+    expect(destinationAfterSignIn('buyer', '/admin/')).toBe('/mis-boletos/');
+    expect(destinationAfterSignIn('organizer', '/admin/')).toBe('/panel/');
+    expect(destinationAfterSignIn('admin', null)).toBe('/admin/');
+  });
+
+  it('descarta destinos externos', () => {
+    expect(destinationAfterSignIn('buyer', '//evil.com')).toBe('/mis-boletos/');
   });
 });
 

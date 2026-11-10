@@ -4,12 +4,9 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import {
-  type AppRole,
-  homePathFor,
+  destinationAfterSignIn,
   isAppRole,
   parseLoginInput,
-  requiredRoleForPath,
-  safeNextPath,
   sessionErrorMessages,
   signInPath,
   signInUrl,
@@ -34,7 +31,6 @@ import {
 import { siteConfig } from '@/lib/site-config';
 
 import {
-  buyerLandingPath,
   recoverNewPasswordPath,
   resetRequestedMessage,
   validateNewPassword,
@@ -50,11 +46,6 @@ export type SignInState = {
 
 const unavailableMessage = 'El acceso no está disponible en este momento. Intentá más tarde.';
 const invalidCredentialsMessage = 'Correo o contraseña incorrectos.';
-
-/** Destino tras ingresar: la ruta pedida si el rol puede verla; si no, la zona de su rol. */
-function destinationFor(role: AppRole, requestedPath: string): string {
-  return requiredRoleForPath(requestedPath) === role ? requestedPath : homePathFor(role);
-}
 
 export async function signInAction(_previous: SignInState, formData: FormData): Promise<SignInState> {
   const rawEmail = formData.get('email');
@@ -101,9 +92,7 @@ export async function signInAction(_previous: SignInState, formData: FormData): 
     jar.set(cookie.name, cookie.value, cookie.options);
   }
 
-  const requested = safeNextPath(formData.get('next'), '');
-
-  redirect(destinationFor(role, requested));
+  redirect(destinationAfterSignIn(role, formData.get('next')));
 }
 
 export async function signOutAction(): Promise<void> {
@@ -167,7 +156,8 @@ export async function registerAction(_previous: RegisterState, formData: FormDat
     jar.set(cookie.name, cookie.value, cookie.options);
   }
 
-  redirect(safeNextPath(formData.get('next'), buyerLandingPath));
+  // Una cuenta nueva es de comprador: una ruta de otra zona cae en /mis-boletos/.
+  redirect(destinationAfterSignIn('buyer', formData.get('next')));
 }
 
 export type RequestResetState = {
