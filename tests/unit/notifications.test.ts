@@ -8,6 +8,7 @@ import {
   maskPhone,
   type OutboxRow,
 } from '../../src/features/ticketing/notifications';
+import { buildSurveyNotifications } from '../../src/features/ticketing/survey';
 
 const upsert = vi.fn();
 
@@ -103,6 +104,23 @@ describe('buildReminderNotifications', () => {
     const eventStartsAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
     expect(buildReminderNotifications({ orderId, email, phone: null, eventStartsAt, now })).toEqual([]);
+  });
+});
+
+describe('buildSurveyNotifications', () => {
+  test('programa correo y WhatsApp dos horas después del fin del evento', () => {
+    const eventEndsAt = new Date('2027-09-02T20:00:00.000Z');
+    const rows = buildSurveyNotifications({ orderId, email: 'ana@gmail.com', phone: '+50312345678', eventEndsAt });
+    expect(rows.map((row) => row.template)).toEqual(['survey', 'survey']);
+    expect(rows.every((row) => row.scheduledFor.getTime() === eventEndsAt.getTime() + 2 * 60 * 60 * 1000)).toBe(true);
+  });
+
+  test('solo crea la notificación por correo si no hay teléfono', () => {
+    const eventEndsAt = new Date('2027-09-02T20:00:00.000Z');
+    const rows = buildSurveyNotifications({ orderId, email: 'ana@gmail.com', phone: null, eventEndsAt });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].channel).toBe('email');
+    expect(rows[0].destinationMasked).toBe('a***@gmail.com');
   });
 });
 

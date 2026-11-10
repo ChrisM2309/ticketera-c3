@@ -161,6 +161,12 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                 eventUrl={confirmation.event.url}
               />
             ) : null}
+            <Link
+              href={`/confirmacion/${confirmation.orderId}/${token}/encuesta/`}
+              className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-fit print:hidden')}
+            >
+              Encuesta del evento
+            </Link>
           </div>
         ) : null}
       </section>
