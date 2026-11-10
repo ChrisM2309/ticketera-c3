@@ -124,14 +124,14 @@ export type IconTone =
   | 'error'
   | 'inverso';
 
-/** Clases de token por tono. `crea` usa `crea-texto` (contraste AA); el turquesa puro no es texto sobre fondo claro. */
+/** Clases de token por tono. Las tres líneas usan su variante `-texto`, que se redefine en el tema oscuro (D-58); el turquesa puro no es texto sobre fondo claro. */
 const toneClass: Record<IconTone, string> = {
   texto: 'text-texto',
   suave: 'text-texto-suave',
   accion: 'text-accion',
-  compite: 'text-compite',
+  compite: 'text-compite-texto',
   crea: 'text-crea-texto',
-  conecta: 'text-conecta',
+  conecta: 'text-conecta-texto',
   exito: 'text-exito',
   advertencia: 'text-advertencia',
   error: 'text-error',

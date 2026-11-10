@@ -7,7 +7,7 @@ import type { CatalogCategory } from '@/features/catalog/types';
 import { cn } from '@/lib/utils';
 
 /** Fondo de la línea con el color de texto que contrasta (blanco sobre compite y conecta, navy sobre crea). */
-export const lineTile: Record<CatalogLine, string> = {
+const lineTile: Record<CatalogLine, string> = {
   compite: 'bg-compite text-texto-inverso',
   crea: 'bg-crea text-navy',
   conecta: 'bg-conecta text-texto-inverso',

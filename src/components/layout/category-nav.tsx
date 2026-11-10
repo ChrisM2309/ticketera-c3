@@ -4,11 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
-import { lineTile } from '@/components/catalog/category-tile';
 import { NavLink } from '@/components/layout/nav-link';
 import { Icon } from '@/components/ui/icon';
-import { iconForEventType } from '@/features/catalog/icons';
-import { lineForEventType } from '@/features/catalog/lines';
+import { iconForEventType, toneForEventType } from '@/features/catalog/icons';
 import type { CategoryGroup, MenuItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 
@@ -21,16 +19,11 @@ const disparador =
   'flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-sm px-3 text-sm font-medium text-texto-inverso underline-offset-4 hover:underline focus-visible:outline-3 [&::-webkit-details-marker]:hidden';
 
 /**
- * Icono del tipo de evento en el menú, que se dibuja sobre navy: compite y conecta no alcanzan 3:1 como trazo
- * sobre navy, así que el icono va sobre una pastilla del color de su línea (blanco sobre compite y conecta, navy sobre crea).
- * Es decorativo: el nombre del tipo va siempre al lado.
+ * Icono del tipo de evento en el menú, con el trazo del tono de su línea. Las variantes `-texto` del tema oscuro
+ * alcanzan 3:1 sobre navy y sobre la superficie oscura del desplegable. Es decorativo: el nombre va siempre al lado.
  */
 function TypeIcon({ slug }: Readonly<{ slug: string }>) {
-  return (
-    <span className={cn('inline-flex size-7 shrink-0 items-center justify-center rounded-sm', lineTile[lineForEventType(slug)])}>
-      <Icon name={iconForEventType(slug)} size={16} />
-    </span>
-  );
+  return <Icon name={iconForEventType(slug)} size={20} tone={toneForEventType(slug)} />;
 }
 
 /**

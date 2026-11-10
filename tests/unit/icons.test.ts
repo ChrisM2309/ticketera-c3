@@ -59,6 +59,16 @@ describe('iconos', () => {
     expect(html).not.toMatch(/text-crea(?!-)/);
   });
 
+  test('los tonos compite y conecta usan su variante de texto, que se redefine en el tema oscuro', () => {
+    const compite = renderToStaticMarkup(createElement(Icon, { name: 'trophy', tone: 'compite' }));
+    const conecta = renderToStaticMarkup(createElement(Icon, { name: 'handshake', tone: 'conecta' }));
+
+    expect(compite).toContain('text-compite-texto');
+    expect(compite).not.toMatch(/text-compite(?!-)/);
+    expect(conecta).toContain('text-conecta-texto');
+    expect(conecta).not.toMatch(/text-conecta(?!-)/);
+  });
+
   test('el tamaño por defecto es 20 y se puede cambiar', () => {
     expect(renderToStaticMarkup(createElement(Icon, { name: 'check' }))).toContain('width="20"');
     expect(renderToStaticMarkup(createElement(Icon, { name: 'check', size: 24 }))).toContain('width="24"');

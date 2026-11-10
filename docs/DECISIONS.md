@@ -59,6 +59,7 @@
 | D-55 | Imágenes (DP-19): mantener stock con créditos e imágenes propias; seguir buscando más y hacer varias. | Decisión del responsable | IM-01 (buscar stock con licencia), IM-02 (ilustraciones propias, varias), IM-03 (fotos y capturas finales). |
 | D-56 | Destacados (DP-20): solo «destacado», con un lado administrativo que gestione los destacados pagados y los manuales. En cada categoría (p. ej., `/congresos/`) salen los destacados de esa categoría. | Decisión del responsable | BM-08 (panel único de destacados) y BM-09 (bloque por categoría). En la portada se elimina la distinción entre destacado «editorial» y «pagado». |
 | D-57 | Temas (DP-21): los 4 de la presentación con ruta propia; el resto como filtro o subtema. | Decisión del responsable | TX-07 aplicado: cloud, inteligencia artificial, programación y python con ruta propia. |
+| D-58 | Tonos de icono sobre navy (revisión de DI-03): se añaden los tokens `compite-texto` y `conecta-texto` (claro: igual al color base; oscuro: `#6fa3e8` y `#9aa5ee`, mínimo 4.8:1 sobre navy y superficies oscuras) y los iconos de las tres líneas se dibujan como trazo con su tono, también en el menú. Se descarta la pastilla de color en el menú. | Decisión técnica de revisión (pendiente de confirmar por el responsable) | DI-03 cumple 3:1 sobre superficie y sobre navy. `Icon` usa `text-compite-texto` y `text-conecta-texto`. La tarjeta de categoría mantiene el fondo de línea con icono heredado. |
 
 ## Pendientes que no bloquean inicio
 

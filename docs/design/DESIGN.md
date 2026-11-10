@@ -33,6 +33,7 @@ Apariencia técnica, limpia y profesional, basada en el manual C3. Es un **proto
 | `crea` | `#33beac` | — | línea Crea (turquesa); solo relleno de tarjetas y mosaicos de línea |
 | `crea-texto` | `#0f766e` | `#4fd6c4` | turquesa legible como texto |
 | `conecta` | `#4f5ba9` | — | línea Conecta (morado) |
+| `compite-texto` / `conecta-texto` | `#205298` / `#4f5ba9` | `#6fa3e8` / `#9aa5ee` | trazo de icono de la línea; en oscuro alcanzan 3:1 sobre navy (D-58) |
 | `exito` / `advertencia` / `error` | `#157a52` / `#9a5b00` / `#b83227` | `#4fd99e` / `#e8b15c` / `#f28b7e` | estados |
 | `oro` / `plata` / `bronce` | `#c99700` / `#8b97a6` / `#a56a39` | `#e8c24d` / `#b9c4d2` / `#c98a57` | medallas (no usar en la plataforma de compra) |
 
