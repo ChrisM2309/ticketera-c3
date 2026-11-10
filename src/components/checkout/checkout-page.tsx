@@ -291,19 +291,22 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-6 md:px-6 md:pt-14">
-      <section className="flex min-w-0 flex-col gap-4 md:gap-6" aria-labelledby="checkout-title">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-2 md:px-6 md:pt-14">
+      <section className="flex min-w-0 flex-col gap-3 md:gap-6" aria-labelledby="checkout-title">
         <CheckoutSteps current="datos" free={provisionalTotals.totalCents === 0} />
         <header className="flex flex-col gap-2 md:gap-3">
-          <h1 id="checkout-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight md:text-4xl">
+          <h1 id="checkout-title" className="font-titulo text-2xl font-bold leading-tight tracking-tight md:text-4xl">
             Finalizá tu compra
           </h1>
           <p className="max-w-2xl font-texto text-sm leading-6 text-texto-suave md:text-base md:leading-7">
-            Completá tus datos para crear la orden. Este es un pago de demostración: no se cobrará dinero ni se pedirán datos de tarjeta.
+            <span className="md:hidden">Pago de demostración: no se cobra dinero ni se piden datos de tarjeta.</span>
+            <span className="hidden md:inline">
+              Completá tus datos para crear la orden. Este es un pago de demostración: no se cobrará dinero ni se pedirán datos de tarjeta.
+            </span>
           </p>
         </header>
 
-        <form onSubmit={submitOrder} className="flex flex-col gap-4 rounded-lg bg-superficie p-4 shadow-sm md:gap-5 md:p-6" noValidate>
+        <form onSubmit={submitOrder} className="flex flex-col gap-3 rounded-lg bg-superficie p-3 shadow-sm md:gap-5 md:p-6" noValidate>
           <div className="flex flex-col gap-2">
             <label htmlFor="buyer-name" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
               <Icon name="user" size={16} />
@@ -375,7 +378,10 @@ export function CheckoutPage() {
               className={fieldClass}
             />
             <p id="buyer-phone-hint" className="font-texto text-xs leading-5 text-texto-suave">
-              Número de El Salvador de 8 dígitos. Solo lo guardamos con tu orden de demostración.
+              <span className="md:hidden">8 dígitos de El Salvador, solo para tu orden DEMO.</span>
+              <span className="hidden md:inline">
+                Número de El Salvador de 8 dígitos. Solo lo guardamos con tu orden de demostración.
+              </span>
             </p>
             {fieldErrors.buyerPhone ? (
               <p id="buyer-phone-error" role="alert" className="font-texto text-sm text-error">

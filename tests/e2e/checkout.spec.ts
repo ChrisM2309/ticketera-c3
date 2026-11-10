@@ -52,6 +52,7 @@ test('checkout de invitado envía solo selección y muestra los importes verific
   await page.route('**/api/checkout/orders', async (route) => {
     expect(route.request().postDataJSON()).toEqual({
       eventId: 'event-ia',
+      requestId: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
       items: [
         { ticketTypeId: 'general', quantity: 2 },
         { ticketTypeId: 'premium', quantity: 1 },

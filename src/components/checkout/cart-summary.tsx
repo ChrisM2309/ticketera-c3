@@ -23,7 +23,7 @@ export function CartSummary({
       aria-labelledby="resumen-carrito"
       className={cn(
         'flex flex-col rounded-lg',
-        compact ? 'gap-2 bg-superficie-sutil p-4' : 'gap-4 bg-superficie p-5 shadow-sm',
+        compact ? 'gap-2 bg-superficie-sutil p-3 md:p-4' : 'gap-4 bg-superficie p-5 shadow-sm',
       )}
     >
       <h2 id="resumen-carrito" className={cn('font-titulo font-bold', compact ? 'text-base' : 'text-xl')}>
