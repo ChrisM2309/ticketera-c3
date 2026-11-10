@@ -1,0 +1,322 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2200 1560" width="2200" height="1560" role="img">
+  <title>Wireframe 06: Flujo móvil de 4 clics hasta el boleto y cinco estados (baja fidelidad)</title>
+  <style>
+    .marco { fill: none; stroke: currentColor; stroke-width: 2; }
+    .trazo { fill: none; stroke: currentColor; stroke-width: 1; }
+    .caja { fill: currentColor; fill-opacity: 0.12; stroke: currentColor; stroke-width: 1; }
+    .imagen { fill: currentColor; fill-opacity: 0.22; stroke: none; }
+    .punto { fill: currentColor; stroke: none; }
+    .flecha { fill: none; stroke: currentColor; stroke-width: 2; }
+    .punta { fill: currentColor; stroke: none; }
+    .clic { fill: none; stroke: currentColor; stroke-width: 2; }
+    .h1 { fill: currentColor; font-family: sans-serif; font-size: 24px; font-weight: 700; }
+    .txt { fill: currentColor; font-family: sans-serif; font-size: 14px; }
+    .txt-b { fill: currentColor; font-family: sans-serif; font-size: 15px; font-weight: 700; }
+    .txt-s { fill: currentColor; font-family: sans-serif; font-size: 12px; }
+    .txt-xs { fill: currentColor; font-family: sans-serif; font-size: 11px; }
+    .etiqueta { fill: currentColor; font-family: sans-serif; font-size: 20px; font-weight: 700; }
+    .nota { fill: currentColor; font-family: sans-serif; font-size: 15px; }
+    .numero { fill: currentColor; font-family: sans-serif; font-size: 14px; font-weight: 700; text-anchor: middle; }
+    .centro { text-anchor: middle; }
+    .fin { text-anchor: end; }
+  </style>
+
+  <text class="etiqueta" x="40" y="50">06 · Flujo móvil: 4 clics hasta el boleto y cinco estados (WF-02)</text>
+  <text class="nota" x="40" y="84">Home → Categoría → Evento → Carrito y pago → Confirmación. Los círculos numerados marcan cada clic.</text>
+
+  <!-- Fila superior: cinco pantallas de 375 × 812 px a escala 1:1 -->
+  <g id="secuencia">
+    <g transform="translate(40 120)">
+      <rect class="marco" x="0" y="0" width="375" height="812"/>
+      <text class="txt-b" x="16" y="28">1 · Home</text>
+      <rect class="trazo" x="16" y="40" width="343" height="44"/>
+      <text class="txt-s" x="28" y="67">Logo (va al Home)</text>
+      <rect class="caja" x="268" y="48" width="80" height="28"/>
+      <text class="txt-xs centro" x="308" y="66">DEMO</text>
+      <rect class="caja" x="16" y="96" width="343" height="44"/>
+      <text class="txt-s" x="28" y="123">Buscar eventos o categorías</text>
+      <rect class="trazo" x="16" y="156" width="107" height="56"/>
+      <text class="txt-s centro" x="69.5" y="190">Categoría</text>
+      <rect class="trazo" x="134" y="156" width="107" height="56"/>
+      <text class="txt-s centro" x="187.5" y="190">Categoría</text>
+      <rect class="trazo" x="252" y="156" width="107" height="56"/>
+      <text class="txt-s centro" x="305.5" y="190">Categoría</text>
+      <rect class="trazo" x="16" y="222" width="107" height="56"/>
+      <text class="txt-s centro" x="69.5" y="256">Categoría</text>
+      <rect class="trazo" x="134" y="222" width="107" height="56"/>
+      <text class="txt-s centro" x="187.5" y="256">Categoría</text>
+      <rect class="trazo" x="252" y="222" width="107" height="56"/>
+      <text class="txt-s centro" x="305.5" y="256">Categoría</text>
+      <text class="txt-xs" x="16" y="298">Las 12 categorías, en cuadrícula (6 visibles)</text>
+      <rect class="trazo" x="16" y="324" width="107" height="36"/>
+      <text class="txt-s centro" x="69.5" y="346">Gratis</text>
+      <rect class="trazo" x="134" y="324" width="107" height="36"/>
+      <text class="txt-s centro" x="187.5" y="346">Esta semana</text>
+      <rect class="trazo" x="252" y="324" width="107" height="36"/>
+      <text class="txt-s centro" x="305.5" y="346">Ciudad</text>
+      <text class="txt-b" x="16" y="392">Próximos eventos</text>
+      <rect class="trazo" x="16" y="404" width="343" height="120"/>
+      <rect class="imagen" x="24" y="412" width="96" height="104"/>
+      <text class="txt-b" x="132" y="436">Título del evento DEMO</text>
+      <text class="txt-s" x="132" y="458">Fecha y hora DEMO</text>
+      <text class="txt-s" x="132" y="478">Lugar DEMO</text>
+      <text class="txt-b" x="132" y="506">Desde $XX.XX</text>
+      <rect class="trazo" x="16" y="536" width="343" height="120"/>
+      <rect class="imagen" x="24" y="544" width="96" height="104"/>
+      <text class="txt-b" x="132" y="568">Título del evento DEMO</text>
+      <text class="txt-s" x="132" y="590">Fecha y hora DEMO</text>
+      <text class="txt-s" x="132" y="610">Lugar DEMO</text>
+      <text class="txt-b" x="132" y="638">Desde $XX.XX</text>
+      <rect class="trazo" x="16" y="680" width="343" height="44"/>
+      <text class="txt-s centro" x="187.5" y="707">Menú: Iniciar sesión</text>
+    </g>
+
+    <g transform="translate(475 120)">
+      <rect class="marco" x="0" y="0" width="375" height="812"/>
+      <text class="txt-b" x="16" y="28">2 · Categoría</text>
+      <rect class="trazo" x="16" y="40" width="343" height="44"/>
+      <text class="txt-s" x="28" y="67">Volver · Logo (va al Home)</text>
+      <text class="h1" x="16" y="116">Congresos de tecnología</text>
+      <text class="txt-s" x="16" y="140">Texto introductorio de 1 a 2 líneas</text>
+      <rect class="caja" x="16" y="156" width="343" height="44"/>
+      <text class="txt-b centro" x="187.5" y="183">Filtros (abre una hoja)</text>
+      <text class="txt-b" x="16" y="226">Destacados de congresos</text>
+      <rect class="trazo" x="16" y="238" width="343" height="80"/>
+      <rect class="imagen" x="24" y="246" width="64" height="64"/>
+      <text class="txt-s" x="100" y="272">Evento destacado DEMO</text>
+      <text class="txt-xs" x="100" y="292">Fecha y ciudad DEMO</text>
+      <text class="txt-b" x="16" y="342">Eventos</text>
+      <rect class="trazo" x="16" y="354" width="343" height="96"/>
+      <rect class="imagen" x="24" y="362" width="64" height="80"/>
+      <text class="txt-s" x="100" y="380">Título del evento DEMO</text>
+      <text class="txt-xs" x="100" y="400">Fecha y hora DEMO</text>
+      <text class="txt-xs" x="100" y="418">Lugar DEMO</text>
+      <text class="txt-b" x="100" y="440">Desde $XX.XX</text>
+      <rect class="trazo" x="16" y="458" width="343" height="96"/>
+      <rect class="imagen" x="24" y="466" width="64" height="80"/>
+      <text class="txt-s" x="100" y="484">Título del evento DEMO</text>
+      <text class="txt-xs" x="100" y="504">Fecha y hora DEMO</text>
+      <text class="txt-xs" x="100" y="522">Lugar DEMO</text>
+      <text class="txt-b" x="100" y="544">Desde $XX.XX</text>
+      <rect class="trazo" x="16" y="562" width="343" height="96"/>
+      <rect class="imagen" x="24" y="570" width="64" height="80"/>
+      <text class="txt-s" x="100" y="588">Título del evento DEMO</text>
+      <text class="txt-xs" x="100" y="608">Fecha y hora DEMO</text>
+      <text class="txt-xs" x="100" y="626">Lugar DEMO</text>
+      <text class="txt-b" x="100" y="648">Desde $XX.XX</text>
+      <rect class="trazo" x="16" y="676" width="343" height="44"/>
+      <text class="txt-s centro" x="187.5" y="703">Ver más eventos</text>
+    </g>
+
+    <g transform="translate(910 120)">
+      <rect class="marco" x="0" y="0" width="375" height="812"/>
+      <text class="txt-b" x="16" y="28">3 · Evento</text>
+      <rect class="trazo" x="16" y="40" width="343" height="44"/>
+      <text class="txt-s" x="28" y="67">Volver · Logo (va al Home)</text>
+      <rect class="imagen" x="16" y="96" width="343" height="150"/>
+      <text class="txt-s centro" x="187.5" y="176">Portada del evento</text>
+      <text class="h1" x="16" y="276">Título del evento DEMO</text>
+      <text class="txt" x="16" y="300">Fecha · hora · lugar DEMO</text>
+      <text class="txt-s" x="16" y="322">Organizador DEMO</text>
+      <rect class="trazo" x="16" y="336" width="343" height="180"/>
+      <text class="txt-b" x="28" y="362">Entradas</text>
+      <rect class="trazo" x="28" y="374" width="319" height="52"/>
+      <text class="txt" x="40" y="398">Entrada general</text>
+      <text class="txt-b fin" x="347" y="398">$XX.XX</text>
+      <text class="txt-s" x="40" y="416">Cupo disponible</text>
+      <rect class="caja" x="28" y="440" width="319" height="44"/>
+      <text class="txt-b centro" x="187.5" y="467">Comprar entradas</text>
+      <text class="txt-s" x="28" y="506">Total y comisión se muestran en el carrito.</text>
+      <text class="txt-b" x="16" y="548">Agenda</text>
+      <rect class="trazo" x="16" y="560" width="343" height="60"/>
+      <text class="txt-s" x="28" y="584">10:00 · Bloque de charla DEMO</text>
+      <text class="txt-s" x="28" y="606">11:00 · Bloque de charla DEMO</text>
+      <text class="txt-b" x="16" y="644">Ponentes</text>
+      <rect class="trazo" x="16" y="656" width="343" height="52"/>
+      <text class="txt-s" x="28" y="686">Ponente DEMO · Cargo DEMO</text>
+      <rect class="trazo" x="16" y="724" width="166" height="44"/>
+      <text class="txt-s centro" x="99" y="751">Agregar al calendario</text>
+      <rect class="trazo" x="193" y="724" width="166" height="44"/>
+      <text class="txt-s centro" x="276" y="751">Compartir</text>
+    </g>
+
+    <g transform="translate(1345 120)">
+      <rect class="marco" x="0" y="0" width="375" height="812"/>
+      <text class="txt-b" x="16" y="28">4 · Carrito y pago</text>
+      <rect class="trazo" x="16" y="40" width="343" height="44"/>
+      <text class="txt-s" x="28" y="67">Volver · Logo (va al Home)</text>
+      <text class="h1" x="16" y="116">Carrito y pago</text>
+      <rect class="trazo" x="16" y="130" width="343" height="88"/>
+      <rect class="imagen" x="24" y="138" width="56" height="72"/>
+      <text class="txt-b" x="92" y="162">Título del evento DEMO</text>
+      <text class="txt-s" x="92" y="182">Entrada general × 2</text>
+      <text class="txt" x="92" y="204">$XX.XX</text>
+      <rect class="trazo" x="268" y="176" width="80" height="36"/>
+      <text class="txt-s centro" x="308" y="198">Quitar</text>
+      <text class="txt-b" x="16" y="244">Cuenta (opcional)</text>
+      <rect class="trazo" x="16" y="256" width="343" height="44"/>
+      <circle class="trazo" cx="38" cy="278" r="9"/>
+      <circle class="punto" cx="38" cy="278" r="4"/>
+      <text class="txt-b" x="58" y="283">Continuar como invitado</text>
+      <rect class="trazo" x="16" y="308" width="343" height="44"/>
+      <circle class="trazo" cx="38" cy="330" r="9"/>
+      <text class="txt" x="58" y="335">Iniciar sesión (opcional)</text>
+      <text class="txt-s" x="16" y="374">Correo para el boleto</text>
+      <rect class="caja" x="16" y="382" width="343" height="40"/>
+      <text class="txt" x="28" y="407">Correo electrónico</text>
+      <rect class="trazo" x="16" y="436" width="343" height="112"/>
+      <text class="txt" x="28" y="458">Subtotal</text>
+      <text class="txt fin" x="347" y="458">$XX.XX</text>
+      <text class="txt" x="28" y="480">Comisión de servicio</text>
+      <text class="txt fin" x="347" y="480">$X.XX</text>
+      <line class="trazo" x1="28" y1="490" x2="347" y2="490"/>
+      <text class="txt-b" x="28" y="512">Total</text>
+      <text class="txt-b fin" x="347" y="512">$XX.XX</text>
+      <text class="txt-s" x="28" y="534">Sin cargos después de pagar</text>
+      <text class="txt-b" x="16" y="572">Pago de demostración (DEMO)</text>
+      <rect class="trazo" x="16" y="580" width="343" height="44"/>
+      <circle class="trazo" cx="38" cy="602" r="9"/>
+      <circle class="punto" cx="38" cy="602" r="4"/>
+      <text class="txt" x="58" y="607">Resultado aprobado</text>
+      <rect class="trazo" x="16" y="632" width="343" height="44"/>
+      <circle class="trazo" cx="38" cy="654" r="9"/>
+      <text class="txt" x="58" y="659">Resultado rechazado</text>
+      <rect class="caja" x="16" y="692" width="343" height="52"/>
+      <text class="txt-b centro" x="187.5" y="723">Pagar $XX.XX (DEMO)</text>
+      <text class="txt-s" x="16" y="770">Pago simulado: no se piden datos de tarjeta</text>
+    </g>
+
+    <g transform="translate(1780 120)">
+      <rect class="marco" x="0" y="0" width="375" height="812"/>
+      <text class="txt-b" x="16" y="28">5 · Confirmación</text>
+      <rect class="trazo" x="16" y="40" width="343" height="44"/>
+      <text class="txt-s" x="28" y="67">Logo (va al Home)</text>
+      <text class="h1" x="16" y="116">Orden pagada (DEMO)</text>
+      <rect class="trazo" x="16" y="130" width="343" height="240"/>
+      <text class="txt-b" x="28" y="156">Boleto 1 de 2</text>
+      <rect class="caja" x="28" y="170" width="160" height="160"/>
+      <text class="txt-s centro" x="108" y="255">Código QR</text>
+      <text class="txt-s" x="204" y="192">Entrada general</text>
+      <text class="txt-s" x="204" y="214">Número de boleto DEMO</text>
+      <text class="txt-s" x="204" y="236">Código de orden DEMO</text>
+      <rect class="caja" x="16" y="384" width="166" height="44"/>
+      <text class="txt-s centro" x="99" y="411">Descargar</text>
+      <rect class="caja" x="193" y="384" width="166" height="44"/>
+      <text class="txt-s centro" x="276" y="411">Imprimir</text>
+      <rect class="trazo" x="16" y="468" width="343" height="64"/>
+      <text class="txt-s" x="28" y="492">Te enviamos el boleto a tu correo (simulado)</text>
+      <text class="txt-s" x="28" y="514">y a tu WhatsApp (simulado): no sale ningún mensaje real</text>
+      <rect class="trazo" x="16" y="548" width="166" height="44"/>
+      <text class="txt-s centro" x="99" y="575">Agregar al calendario</text>
+      <rect class="trazo" x="193" y="548" width="166" height="44"/>
+      <text class="txt-s centro" x="276" y="575">Compartir</text>
+      <rect class="trazo" x="16" y="612" width="343" height="44"/>
+      <text class="txt-s centro" x="187.5" y="639">Volver al Home</text>
+      <text class="txt-s" x="16" y="690">El QR no muestra datos personales.</text>
+    </g>
+
+    <!-- Flechas entre pantallas con el número del clic (1 a 4) -->
+    <line class="flecha" x1="421" y1="526" x2="461" y2="526"/>
+    <polygon class="punta" points="469,526 461,521 461,531"/>
+    <circle class="clic" cx="445" cy="490" r="14"/>
+    <text class="numero" x="445" y="495">1</text>
+
+    <line class="flecha" x1="856" y1="526" x2="896" y2="526"/>
+    <polygon class="punta" points="904,526 896,521 896,531"/>
+    <circle class="clic" cx="880" cy="490" r="14"/>
+    <text class="numero" x="880" y="495">2</text>
+
+    <line class="flecha" x1="1291" y1="526" x2="1331" y2="526"/>
+    <polygon class="punta" points="1339,526 1331,521 1331,531"/>
+    <circle class="clic" cx="1315" cy="490" r="14"/>
+    <text class="numero" x="1315" y="495">3</text>
+
+    <line class="flecha" x1="1726" y1="526" x2="1766" y2="526"/>
+    <polygon class="punta" points="1774,526 1766,521 1766,531"/>
+    <circle class="clic" cx="1750" cy="490" r="14"/>
+    <text class="numero" x="1750" y="495">4</text>
+  </g>
+
+  <!-- Fila inferior: los cinco estados, cada uno en su pantalla de 375 × 360 px -->
+  <g id="estados">
+    <text class="etiqueta" x="40" y="1000">Estados de la compra</text>
+
+    <g transform="translate(40 1020)">
+      <rect class="marco" x="0" y="0" width="375" height="360"/>
+      <text class="txt-b" x="16" y="30">Estado: vacío</text>
+      <line class="trazo" x1="16" y1="44" x2="359" y2="44"/>
+      <rect class="caja" x="16" y="60" width="343" height="120"/>
+      <text class="txt centro" x="187.5" y="118">Sin eventos en esta categoría</text>
+      <text class="txt-s centro" x="187.5" y="142">Todavía no hay eventos publicados aquí</text>
+      <rect class="trazo" x="16" y="200" width="343" height="44"/>
+      <text class="txt-b centro" x="187.5" y="227">Ver todas las categorías</text>
+      <text class="txt-s" x="16" y="280">Sin mensaje de error: la pantalla explica qué hacer.</text>
+      <text class="txt-s" x="16" y="300">El logo, el buscador y el menú siguen visibles.</text>
+    </g>
+
+    <g transform="translate(475 1020)">
+      <rect class="marco" x="0" y="0" width="375" height="360"/>
+      <text class="txt-b" x="16" y="30">Estado: agotado</text>
+      <line class="trazo" x1="16" y1="44" x2="359" y2="44"/>
+      <rect class="trazo" x="16" y="60" width="343" height="80"/>
+      <text class="txt-b" x="28" y="88">Entrada general</text>
+      <text class="txt-b fin" x="347" y="88">$XX.XX</text>
+      <text class="txt-s" x="28" y="110">Cupo completo</text>
+      <rect class="caja" x="16" y="160" width="343" height="44"/>
+      <text class="txt-b centro" x="187.5" y="187">Agotado</text>
+      <text class="txt-s" x="16" y="240">Sin cupo: la entrada no se puede agregar al carrito.</text>
+      <text class="txt-s" x="16" y="260">Otras entradas del mismo evento siguen visibles.</text>
+    </g>
+
+    <g transform="translate(910 1020)">
+      <rect class="marco" x="0" y="0" width="375" height="360"/>
+      <text class="txt-b" x="16" y="30">Estado: error</text>
+      <line class="trazo" x1="16" y1="44" x2="359" y2="44"/>
+      <rect class="trazo" x="16" y="60" width="343" height="110"/>
+      <text class="txt-b" x="28" y="90">No pudimos cargar los eventos</text>
+      <text class="txt-s" x="28" y="114">Revisa tu conexión e inténtalo de nuevo.</text>
+      <text class="txt-s" x="28" y="134">No se muestran precios ni cupos sin confirmar.</text>
+      <rect class="caja" x="16" y="190" width="343" height="44"/>
+      <text class="txt-b centro" x="187.5" y="217">Reintentar</text>
+      <text class="txt-s" x="16" y="260">Mensaje claro, sin códigos técnicos ni datos personales.</text>
+    </g>
+
+    <g transform="translate(1345 1020)">
+      <rect class="marco" x="0" y="0" width="375" height="360"/>
+      <text class="txt-b" x="16" y="30">Estado: pago rechazado</text>
+      <line class="trazo" x1="16" y1="44" x2="359" y2="44"/>
+      <rect class="trazo" x="16" y="60" width="343" height="60"/>
+      <text class="txt-b" x="28" y="86">Total: $XX.XX</text>
+      <text class="txt-s" x="28" y="106">Pago de demostración (DEMO)</text>
+      <rect class="trazo" x="16" y="134" width="343" height="86"/>
+      <text class="txt-b" x="28" y="160">Pago rechazado (DEMO)</text>
+      <text class="txt-s" x="28" y="182">No se emitieron boletos.</text>
+      <text class="txt-s" x="28" y="202">No se consumió inventario.</text>
+      <rect class="caja" x="16" y="240" width="343" height="44"/>
+      <text class="txt-b centro" x="187.5" y="267">Elegir otro resultado</text>
+      <text class="txt-s" x="16" y="316">El carrito se conserva para reintentar.</text>
+    </g>
+
+    <g transform="translate(1780 1020)">
+      <rect class="marco" x="0" y="0" width="375" height="360"/>
+      <text class="txt-b" x="16" y="30">Estado: gratis</text>
+      <line class="trazo" x1="16" y1="44" x2="359" y2="44"/>
+      <rect class="trazo" x="16" y="60" width="343" height="70"/>
+      <text class="txt-b" x="28" y="88">Entrada general gratis</text>
+      <text class="txt-b fin" x="347" y="88">$0.00</text>
+      <text class="txt-s" x="28" y="110">Sin pasarela de pago ni datos de tarjeta</text>
+      <rect class="caja" x="16" y="150" width="343" height="52"/>
+      <text class="txt-b centro" x="187.5" y="181">Confirmar entrada gratis</text>
+      <text class="txt-s" x="16" y="236">La confirmación emite los boletos QR en la misma acción.</text>
+      <text class="txt-s" x="16" y="256">El cupo se valida en el servidor.</text>
+    </g>
+  </g>
+
+  <g id="notas">
+    <text class="nota" x="40" y="1420">Nota: 4 clics hasta el boleto: 1 categoría, 2 evento, 3 «Comprar entradas», 4 pagar (DEMO) o confirmar gratis.</text>
+    <text class="nota" x="40" y="1446">Nota: cada estado es una pantalla propia. El error y el pago rechazado no emiten boletos ni consumen inventario.</text>
+    <text class="nota" x="40" y="1472">Nota: pago de demostración sin datos de tarjeta; el botón y el resumen llevan la etiqueta DEMO. Precios y cupos se validan en servidor.</text>
+    <text class="nota" x="40" y="1498">Nota: escala 1:1 (375 × 812 px). Los botones miden 44 px de alto y el texto cabe sin desplazamiento horizontal.</text>
+    <text class="nota" x="40" y="1524">Nota: textos de marcador, sin datos reales. Los montos aparecen como $XX.XX y los títulos como DEMO.</text>
+  </g>
+</svg>

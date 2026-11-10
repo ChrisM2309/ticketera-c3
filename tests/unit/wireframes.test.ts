@@ -4,6 +4,8 @@ import { describe, expect, test } from 'vitest';
 
 const carpeta = join(process.cwd(), 'docs', 'design', 'wireframes');
 const pantallas = ['01-home.svg', '02-categoria.svg', '03-evento.svg', '04-carrito-pago.svg', '05-confirmacion.svg'];
+const flujoMovil = '06-flujo-movil.svg';
+const estados = ['vacío', 'agotado', 'error', 'pago rechazado', 'gratis'];
 
 function leer(archivo: string): string {
   return readFileSync(join(carpeta, archivo), 'utf8');
@@ -141,11 +143,41 @@ describe('wireframes de las cinco pantallas (WF-01)', () => {
   });
 });
 
+describe('flujo móvil con estados (WF-02)', () => {
+  test('el flujo móvil muestra los estados vacío, agotado, error, pago rechazado y gratis', () => {
+    const svg = leer(flujoMovil);
+
+    for (const estado of estados) {
+      expect(
+        textos(svg).some((texto) => texto.startsWith('Estado:') && texto.includes(estado)),
+        estado,
+      ).toBe(true);
+    }
+  });
+
+  test('el flujo es XML bien formado, de baja fidelidad y recorre las cinco pantallas en 4 clics', () => {
+    const svg = leer(flujoMovil);
+
+    expect(svg).toMatch(/^<svg[\s>]/);
+    expect(esXmlBienFormado(svg)).toBe(true);
+    expect(svg).toMatch(/<title>[^<]+<\/title>/);
+    expect(svg).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    expect(svg).not.toMatch(/\s(fill|stroke|color)="(?!none"|currentColor"|transparent")/);
+    expect(svg).not.toMatch(/Gradient/);
+    expect(svg).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+    expect(svg).not.toContain('�');
+    for (const pantalla of ['Home', 'Categoría', 'Evento', 'Carrito y pago', 'Confirmación']) {
+      expect(muestra(svg, pantalla), pantalla).toBe(true);
+    }
+    expect(muestra(svg, '4 clics hasta el boleto')).toBe(true);
+  });
+});
+
 describe('README de wireframes', () => {
   test('el README enlaza cada wireframe', () => {
     const readme = readFileSync(join(carpeta, 'README.md'), 'utf8');
 
-    for (const archivo of pantallas) {
+    for (const archivo of [...pantallas, flujoMovil]) {
       expect(readme, archivo).toContain(`](${archivo})`);
     }
   });

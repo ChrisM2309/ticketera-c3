@@ -7,6 +7,7 @@ Wireframes de baja fidelidad del flujo de compra: Home, categoría, evento, carr
 - Cada SVG tiene dos tablas de dibujo: `movil` (375 × 812) y `escritorio` (1280 × 800).
 - Son cajas grises, texto de marcador y anotaciones que empiezan con «Nota:». No llevan colores de marca: la baja fidelidad se lee en grises y el color no clasifica nada aquí.
 - Todos los datos son ejemplos DEMO: títulos, fechas, horas, ponentes, precios y códigos no son reales. Los montos aparecen como `$XX.XX`.
+- `06-flujo-movil.svg` no usa tablas de dibujo: muestra cinco pantallas de 375 × 812 px a escala 1:1 en una fila, con flechas numeradas, y los cinco estados en la fila inferior.
 - Se abren en cualquier navegador o visor de SVG. El fondo es transparente.
 
 ## Índice
@@ -18,6 +19,7 @@ Wireframes de baja fidelidad del flujo de compra: Home, categoría, evento, carr
 | [03-evento.svg](03-evento.svg) | Ficha de evento (ejemplo) | `/congresos/inteligencia-artificial/congreso-demo-ia/` | Andrea | Ninguna genérica: el title usa el nombre del evento |
 | [04-carrito-pago.svg](04-carrito-pago.svg) | Carrito y pago | `/carrito/`, `/checkout/` | Diego y Andrea | Ninguna: `noindex` |
 | [05-confirmacion.svg](05-confirmacion.svg) | Confirmación con boleto | Enlace privado con token | Diego | Ninguna: `noindex` |
+| [06-flujo-movil.svg](06-flujo-movil.svg) | Flujo móvil de 4 clics con cinco estados | Recorrido de Home a boleto (sin ruta propia) | Diego y Andrea | Ninguna: recorrido de uso |
 
 Personas del material del equipo (PRD y análisis): **Diego**, universitario tech (19–22), busca entradas gratis o económicas y quiere compartir la invitación; **Andrea**, profesional junior (24–30), necesita agenda detallada y precios claros. Sus porcentajes y frenos siguen pendientes de validar con entrevistas; no se presentan como investigación concluida.
 
@@ -61,8 +63,16 @@ Personas del material del equipo (PRD y análisis): **Diego**, universitario tec
 - **Acciones:** agregar al calendario y compartir, con las mismas reglas de la ficha de evento.
 - **SEO:** sin palabra clave. La confirmación lleva `noindex` y se abre con un enlace privado por token, no con el número de orden.
 
+## 6. Flujo móvil con estados (`06-flujo-movil.svg`)
+
+- **Persona:** Diego y Andrea, desde el móvil.
+- **Qué muestra:** cinco pantallas en una fila (Home, categoría, evento, carrito y pago, confirmación) unidas por flechas numeradas: «4 clics hasta el boleto». En la fila inferior, los cinco estados: vacío, agotado, error, pago rechazado y gratis.
+- **Estados:** vacío explica qué hacer sin mostrar error; agotado impide agregar la entrada al carrito; error ofrece «Reintentar» sin mostrar datos a medias; pago rechazado no emite boletos ni consume inventario y conserva el carrito; gratis confirma sin pasarela ni datos de tarjeta.
+- **Clics:** se cuentan desde el Home, como pide el plan de la Fase 1. El plan de la Fase 2 habla de «4 clics desde la categoría»; esa medición queda para la verificación de esa fase.
+- **SEO:** sin palabra clave propia. El recorrido reutiliza las rutas de las secciones 1 a 5, y las rutas privadas siguen con `noindex`.
+
 ## Pendientes y límites
 
-- Este documento cubre WF-01. El flujo móvil con estados (WF-02) y las pantallas nuevas (WF-03) van en tareas siguientes. WF-05 documentará por pantalla el buyer persona, la keyword, la competencia y el hallazgo de usabilidad.
+- Este documento cubre WF-01 y WF-02. Las pantallas nuevas (WF-03) van en tareas siguientes. WF-05 documentará por pantalla el buyer persona, la keyword, la competencia y el hallazgo de usabilidad.
 - Las capturas de «Del wireframe al sitio» (WF-04) se toman al final, cuando todo esté terminado (D-54, DP-18).
 - Los volúmenes de búsqueda del Excel no se incluyen aquí. Son valores del equipo y no tienen vigencia garantizada.
