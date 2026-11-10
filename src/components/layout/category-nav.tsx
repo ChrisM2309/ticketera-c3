@@ -85,7 +85,7 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
         onClick={() => setAbierto((valor) => !valor)}
         className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-sm border-2 border-borde-fuerte px-4 font-titulo text-etiqueta font-bold uppercase tracking-etiqueta text-texto-inverso md:hidden"
       >
-        <Icon name="menu" />
+        <Icon name={abierto ? 'close' : 'menu'} />
         Menú
       </button>
 
@@ -95,7 +95,10 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
           <ul className="flex flex-col gap-1">
             {accountLinks.map((link) => (
               <li key={link.href}>
-                <NavLink href={link.href}>{link.label}</NavLink>
+                <NavLink href={link.href} className="gap-2">
+                  {link.icon ? <Icon name={link.icon} /> : null}
+                  {link.label}
+                </NavLink>
               </li>
             ))}
           </ul>

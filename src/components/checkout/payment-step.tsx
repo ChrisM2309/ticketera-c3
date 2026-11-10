@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { statusIcon } from '@/features/catalog/icons';
 import { cn } from '@/lib/utils';
 
 export type PendingOrder = {
@@ -11,6 +13,62 @@ export type PendingOrder = {
   totalCents: number;
   checkoutToken: string;
 };
+
+export type CheckoutStep = 'datos' | 'pago' | 'boletos';
+
+const stepOrder: readonly CheckoutStep[] = ['datos', 'pago', 'boletos'];
+
+type CheckoutStepsProps = Readonly<{
+  current: CheckoutStep;
+  /** En una compra gratuita no hay pago: el segundo paso es la confirmación del registro. */
+  free?: boolean;
+}>;
+
+/**
+ * Pasos de la compra. Los completados llevan un check junto a su nombre; el paso actual se anuncia con
+ * aria-current y los pendientes muestran su número. En `boletos` la orden ya está confirmada: todo queda completo.
+ */
+export function CheckoutSteps({ current, free = false }: CheckoutStepsProps) {
+  const labels: Record<CheckoutStep, string> = {
+    datos: 'Tus datos',
+    pago: free ? 'Confirmación' : 'Pago',
+    boletos: 'Boletos',
+  };
+  const currentIndex = stepOrder.indexOf(current);
+
+  return (
+    <ol aria-label="Pasos de la compra" className="flex flex-wrap items-center gap-x-5 gap-y-2 font-texto text-sm">
+      {stepOrder.map((step, index) => {
+        const done = index < currentIndex || current === 'boletos';
+        const active = step === current && !done;
+
+        return (
+          <li
+            key={step}
+            aria-current={active ? 'step' : undefined}
+            className={cn('inline-flex items-center gap-2', active ? 'font-bold text-texto' : 'font-medium text-texto-suave')}
+          >
+            {done ? (
+              <Icon name="check" size={24} tone="exito" />
+            ) : (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'inline-flex size-6 items-center justify-center rounded-full border text-xs',
+                  active ? 'border-accion text-accion' : 'border-borde-fuerte',
+                )}
+              >
+                {index + 1}
+              </span>
+            )}
+            {labels[step]}
+            {done ? <span className="sr-only"> (completado)</span> : null}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 type PaymentView = { status: 'pending' } | { status: 'confirmed'; ticketCount: number } | { status: 'failed' };
 
@@ -93,7 +151,9 @@ export function PaymentStep({ order }: PaymentStepProps) {
   if (view.status === 'confirmed') {
     return (
       <section aria-labelledby="payment-title" className="flex flex-col gap-4 rounded-lg bg-superficie p-6 shadow-sm">
-        <h1 id="payment-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
+        <CheckoutSteps current="boletos" free={isFree} />
+        <h1 id="payment-title" className="flex items-center gap-3 font-titulo text-3xl font-bold leading-tight tracking-tight">
+          <Icon name={statusIcon.confirmed} size={24} tone="exito" />
           Orden confirmada
         </h1>
         <p role="status" className="font-texto text-base leading-7 text-texto-suave">
@@ -106,6 +166,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
           href={`/confirmacion/${order.orderId}/${order.checkoutToken}/`}
           className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
         >
+          <Icon name="ticket" />
           Ver mis boletos
         </Link>
       </section>
@@ -115,7 +176,9 @@ export function PaymentStep({ order }: PaymentStepProps) {
   if (view.status === 'failed') {
     return (
       <section aria-labelledby="payment-title" className="flex flex-col gap-4 rounded-lg bg-superficie p-6 shadow-sm">
-        <h1 id="payment-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
+        <CheckoutSteps current="pago" free={isFree} />
+        <h1 id="payment-title" className="flex items-center gap-3 font-titulo text-3xl font-bold leading-tight tracking-tight">
+          <Icon name={statusIcon.failed} size={24} tone="error" />
           Pago rechazado
         </h1>
         <p role="status" className="font-texto text-base leading-7 text-texto-suave">
@@ -130,6 +193,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
 
   return (
     <section aria-labelledby="payment-title" className="flex flex-col gap-5 rounded-lg bg-superficie p-6 shadow-sm">
+      <CheckoutSteps current="pago" free={isFree} />
       <header className="flex flex-col gap-2">
         <h1 id="payment-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
           {isFree ? 'Confirmá tu registro' : 'Elegí el resultado del pago'}
@@ -154,6 +218,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
           onClick={() => confirm(null)}
           className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
         >
+          <Icon name="check" />
           {isConfirming ? 'Confirmando…' : 'Confirmar registro gratuito'}
         </button>
       ) : (
@@ -164,6 +229,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
             onClick={() => confirm('approved')}
             className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
           >
+            <Icon name="check" />
             {isConfirming ? 'Confirmando…' : 'Simular pago aprobado'}
           </button>
           <button
@@ -172,6 +238,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
             onClick={() => confirm('rejected')}
             className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full')}
           >
+            <Icon name="close" />
             Simular pago rechazado
           </button>
         </div>

@@ -61,6 +61,7 @@ export function EventCard({ event, featured = false }: EventCardProps) {
             featured ? 'md:w-44' : 'w-24',
           )}
         >
+          <Icon name="calendar" size={16} />
           <span
             className={cn(
               'font-titulo font-extrabold leading-none',
@@ -70,7 +71,10 @@ export function EventCard({ event, featured = false }: EventCardProps) {
             {date.day}
           </span>
           <span className="font-texto text-sm font-medium">{date.month}</span>
-          <span className="font-texto text-xs font-medium">{date.time}</span>
+          <span className="inline-flex items-center gap-1 font-texto text-xs font-medium">
+            <Icon name="clock" size={16} />
+            {date.time}
+          </span>
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
@@ -79,15 +83,26 @@ export function EventCard({ event, featured = false }: EventCardProps) {
               {event.title}
             </Link>
           </h3>
-          <div className="font-texto text-sm text-texto-suave">
+          <div className="flex flex-col gap-1 font-texto text-sm text-texto-suave">
             <p className="flex items-center gap-2">
               <Icon name={iconForEventType(event.eventType.slug)} size={16} tone={toneForEventType(event.eventType.slug)} />
               <span>{event.eventType.name}</span>
             </p>
-            <p>{modeLabel(event.mode)}{event.location ? `, ${event.location.name}` : ''}</p>
-            {event.organizer ? <p>{event.organizer.name}</p> : null}
+            <p className="flex items-center gap-2">
+              <Icon name={event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
+              <span>{modeLabel(event.mode)}{event.location ? `, ${event.location.name}` : ''}</span>
+            </p>
+            {event.organizer ? (
+              <p className="flex items-center gap-2">
+                <Icon name="building" size={16} />
+                <span>{event.organizer.name}</span>
+              </p>
+            ) : null}
           </div>
-          <p className="mt-auto pt-2 font-titulo text-lg font-bold">{priceLabel(event.ticketTypes)}</p>
+          <p className="mt-auto flex items-center gap-2 pt-2 font-titulo text-lg font-bold">
+            <Icon name="tag" size={20} />
+            {priceLabel(event.ticketTypes)}
+          </p>
         </div>
       </div>
     </article>

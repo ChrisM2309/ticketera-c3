@@ -5,6 +5,7 @@ import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { EventCard } from '@/components/catalog/event-card';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
 import { buttonVariants } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { modeLabel, priceLabel } from '@/features/catalog/format';
 import { coverImagePath, isIllustrativeCover, publicImagePath } from '@/features/catalog/images';
 import { eventPath } from '@/features/catalog/paths';
@@ -23,12 +24,39 @@ const dateFormatter = new Intl.DateTimeFormat('es-SV', {
   timeZone: 'America/El_Salvador',
 });
 
-function eventDateLabel(event: CatalogEventDetail): string {
-  const date = new Date(event.startsAt);
-  const end = event.endsAt ? ` · termina ${dateFormatter.format(new Date(event.endsAt))}` : '';
+const dayFormatter = new Intl.DateTimeFormat('es-SV', {
+  dateStyle: 'full',
+  timeZone: 'America/El_Salvador',
+});
 
-  return `${dateFormatter.format(date)}${end}`;
+const timeFormatter = new Intl.DateTimeFormat('es-SV', {
+  timeStyle: 'short',
+  timeZone: 'America/El_Salvador',
+});
+
+/** Día del evento, sin la hora (la hora tiene su propio dato con su icono). */
+function eventDayLabel(event: CatalogEventDetail): string {
+  return dayFormatter.format(new Date(event.startsAt));
 }
+
+/** Hora de inicio; si hay fin, la hora de fin el mismo día o la fecha completa de término si es otro día. */
+function eventTimeLabel(event: CatalogEventDetail): string {
+  const start = new Date(event.startsAt);
+  const time = timeFormatter.format(start);
+
+  if (!event.endsAt) {
+    return time;
+  }
+
+  const end = new Date(event.endsAt);
+  const sameDay = dayFormatter.format(start) === dayFormatter.format(end);
+
+  return sameDay
+    ? `${time} a ${timeFormatter.format(end)}`
+    : `${time} · termina ${dateFormatter.format(end)}`;
+}
+
+const detailTermClass = 'flex items-center gap-2 font-titulo text-sm font-semibold text-texto';
 
 function structuredEvent(event: CatalogEventDetail) {
   const imagePath = publicImagePath(event.imagePath);
@@ -137,7 +165,10 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
             ) : null}
             {canPurchase ? (
               <div className="flex flex-wrap items-center justify-between gap-3 lg:hidden">
-                <p className="font-titulo text-lg font-bold text-texto">{priceLabel(event.ticketTypes)}</p>
+                <p className="flex items-center gap-2 font-titulo text-lg font-bold text-texto">
+                  <Icon name="tag" />
+                  {priceLabel(event.ticketTypes)}
+                </p>
                 <Link href="#entradas" className={buttonVariants({ variant: 'secundario' })}>
                   Elegir entradas
                 </Link>
@@ -147,11 +178,24 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
 
           <dl className="grid gap-4 rounded-lg bg-superficie p-5 shadow-sm sm:grid-cols-2">
             <div>
-              <dt className="font-titulo text-sm font-semibold text-texto">Fecha y horario</dt>
-              <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">{eventDateLabel(event)}</dd>
+              <dt className={detailTermClass}>
+                <Icon name="calendar" size={16} />
+                Fecha
+              </dt>
+              <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">{eventDayLabel(event)}</dd>
             </div>
             <div>
-              <dt className="font-titulo text-sm font-semibold text-texto">Modalidad</dt>
+              <dt className={detailTermClass}>
+                <Icon name="clock" size={16} />
+                Hora
+              </dt>
+              <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">{eventTimeLabel(event)}</dd>
+            </div>
+            <div>
+              <dt className={detailTermClass}>
+                <Icon name={event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
+                Modalidad
+              </dt>
               <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">
                 {modeLabel(event.mode)}
                 {event.location ? ` · ${event.location.name}` : ''}
@@ -160,12 +204,18 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
             </div>
             {event.organizer ? (
               <div>
-                <dt className="font-titulo text-sm font-semibold text-texto">Organiza</dt>
+                <dt className={detailTermClass}>
+                  <Icon name="building" size={16} />
+                  Organiza
+                </dt>
                 <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">{event.organizer.name}</dd>
               </div>
             ) : null}
             <div>
-              <dt className="font-titulo text-sm font-semibold text-texto">Entradas</dt>
+              <dt className={detailTermClass}>
+                <Icon name="ticket" size={16} />
+                Entradas
+              </dt>
               <dd className="mt-1 font-texto text-sm leading-6 text-texto-suave">
                 {event.ticketTypes.filter((ticket) => ticket.isActive).length > 0
                   ? `${event.ticketTypes.filter((ticket) => ticket.isActive).length} tipos disponibles`

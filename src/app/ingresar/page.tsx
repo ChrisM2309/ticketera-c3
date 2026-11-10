@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { LoginForm } from '@/components/auth/login-form';
+import { Icon } from '@/components/ui/icon';
 import { readSessionError, sessionErrorMessages, safeNextPath } from '@/lib/auth/access';
 
 export const metadata: Metadata = {
@@ -25,7 +26,8 @@ export default async function IngresarPage({ searchParams }: IngresarPageProps) 
   return (
     <section aria-labelledby="ingresar-title" className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12 sm:px-6">
       <header className="flex flex-col gap-3">
-        <h1 id="ingresar-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
+        <h1 id="ingresar-title" className="flex items-center gap-3 font-titulo text-3xl font-bold leading-tight tracking-tight">
+          <Icon name="logIn" size={24} />
           Ingresar
         </h1>
         <p className="font-texto text-base leading-7 text-texto-suave">

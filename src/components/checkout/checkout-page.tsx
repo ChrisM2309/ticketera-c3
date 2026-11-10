@@ -5,6 +5,7 @@ import { FormEvent, useState, useSyncExternalStore } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { fieldClass } from '@/components/ui/field';
+import { Icon } from '@/components/ui/icon';
 import {
   CART_STORAGE_KEY,
   calculateCartTotals,
@@ -15,7 +16,7 @@ import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
 import { CartSummary } from './cart-summary';
-import { PaymentStep, type PendingOrder } from './payment-step';
+import { CheckoutSteps, PaymentStep, type PendingOrder } from './payment-step';
 
 type FieldErrors = {
   buyerName?: string;
@@ -208,6 +209,7 @@ export function CheckoutPage() {
           </p>
         </header>
         <Link href="/carrito/" className={buttonVariants({ variant: 'compra', size: 'lg' })}>
+          <Icon name="cart" />
           Volver al carrito
         </Link>
       </div>
@@ -217,6 +219,7 @@ export function CheckoutPage() {
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start">
       <section className="flex min-w-0 flex-col gap-6" aria-labelledby="checkout-title">
+        <CheckoutSteps current="datos" free={provisionalTotals.totalCents === 0} />
         <header className="flex flex-col gap-3">
           <h1 id="checkout-title" className="font-titulo text-4xl font-bold leading-tight tracking-tight">
             Finalizá tu compra
@@ -228,7 +231,8 @@ export function CheckoutPage() {
 
         <form onSubmit={submitOrder} className="flex flex-col gap-5 rounded-lg bg-superficie p-6 shadow-sm" noValidate>
           <div className="flex flex-col gap-2">
-            <label htmlFor="buyer-name" className="font-titulo text-sm font-semibold">
+            <label htmlFor="buyer-name" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
+              <Icon name="user" size={16} />
               Nombre completo
             </label>
             <input
@@ -253,7 +257,8 @@ export function CheckoutPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="buyer-email" className="font-titulo text-sm font-semibold">
+            <label htmlFor="buyer-email" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
+              <Icon name="mail" size={16} />
               Correo electrónico
             </label>
             <input
