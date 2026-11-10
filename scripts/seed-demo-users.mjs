@@ -4,10 +4,13 @@
  *   comprador@demo.c3  (rol organizer por defecto; compra como invitado)
  *   admin@demo.c3      (rol admin)
  *   empresa@demo.c3    (rol organizer; ya es dueña de «Organizador DEMO Uno»)
+ *   cliente@demo.c3    (rol buyer; cuenta compradora para probar /mis-boletos/ y /cuenta/)
  *
  * Seguridad:
  * - Sin --apply no escribe nada: solo lee el estado actual.
  * - Las contraseñas se piden por teclado, sin mostrarse, y no se guardan ni se imprimen.
+ *   La cuenta compradora lee la suya de la variable de entorno DEMO_BUYER_PASSWORD (la misma que usa el E2E
+ *   de cuenta); si no está definida, esa cuenta se omite y las demás se procesan igual.
  * - La clave de servicio sale de .env.local (nunca se imprime).
  * - La URL debe ser https, salvo localhost para Supabase local.
  * - Tras escribir, entra con cada cuenta para comprobar la contraseña (sin imprimir tokens).
@@ -28,6 +31,7 @@ const accounts = [
   { email: 'comprador@demo.c3', role: 'organizer', displayName: 'Comprador DEMO' },
   { email: 'admin@demo.c3', role: 'admin', displayName: 'Administración DEMO' },
   { email: 'empresa@demo.c3', role: 'organizer', displayName: 'Empresa DEMO' },
+  { email: 'cliente@demo.c3', role: 'buyer', displayName: 'Cliente DEMO', passwordEnv: 'DEMO_BUYER_PASSWORD' },
 ];
 
 const localHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
@@ -90,6 +94,23 @@ async function readPasswords() {
   const passwords = {};
 
   for (const account of accounts) {
+    // Las cuentas con `passwordEnv` leen la contraseña del entorno y nunca la piden ni la imprimen.
+    if (account.passwordEnv) {
+      const fromEnv = process.env[account.passwordEnv] ?? '';
+
+      if (fromEnv === '') {
+        console.log(`Se omite ${account.email}: define ${account.passwordEnv} para crearla.`);
+        continue;
+      }
+
+      if (fromEnv.length < minPasswordLength) {
+        fail(`La variable ${account.passwordEnv} tiene menos de ${minPasswordLength} caracteres. No se escribió nada.`);
+      }
+
+      passwords[account.email] = fromEnv;
+      continue;
+    }
+
     const value = await readPassword(`Contraseña para ${account.email} (mínimo ${minPasswordLength} caracteres): `);
 
     if (value.length < minPasswordLength) {
@@ -224,6 +245,10 @@ async function main() {
   const passwords = await readPasswords();
 
   for (const account of accounts) {
+    if (!(account.email in passwords)) {
+      continue;
+    }
+
     const existing = byEmail.get(account.email);
     const userId = await createOrUpdateAuthUser(context, account, passwords[account.email], existing);
     await upsertProfile(context, account, userId);
@@ -233,6 +258,10 @@ async function main() {
   console.log('\nComprobación de inicio de sesión:');
   let allOk = true;
   for (const account of accounts) {
+    if (!(account.email in passwords)) {
+      continue;
+    }
+
     const ok = await checkSignIn(context, account.email, passwords[account.email]);
     allOk = allOk && ok;
     console.log(`  ${account.email}: ${ok ? 'entra' : 'NO entra'}`);
