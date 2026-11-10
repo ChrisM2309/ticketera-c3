@@ -323,12 +323,68 @@ test('un error del servidor se anuncia y el comprador puede reintentar', async (
   });
 
   await simulatePayment(page, 'aprobado');
-  await expect(page.getByRole('alert').filter({ hasText: 'No pudimos confirmar la orden.' })).toBeVisible();
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'No pudimos completar la compra. Intenta de nuevo' }),
+  ).toBeVisible();
 
   // El panel vuelve al paso de resultado con la elección intacta para reintentar.
   await expect(page.getByRole('radio', { name: /^Simular pago aprobado/ })).toBeChecked();
   await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
   await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
+});
+
+test('un error 503 muestra Reintentar y el reintento funciona', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4725);
+  const decisions: unknown[] = [];
+  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
+    decisions.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: decisions.length === 1 ? 503 : 200,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        decisions.length === 1
+          ? { error: 'El checkout DEMO no está configurado todavía. Intentá más tarde.' }
+          : { orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] },
+      ),
+    });
+  });
+
+  await simulatePayment(page, 'aprobado');
+
+  const alert = page.getByRole('alert').filter({ hasText: 'No pudimos completar la compra. Intenta de nuevo' });
+  await expect(alert).toBeVisible();
+  // El mensaje técnico del servidor nunca llega al comprador.
+  await expect(page.getByText('no está configurado todavía')).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: /^Simular pago aprobado/ })).toBeChecked();
+
+  await alert.getByRole('button', { name: 'Reintentar' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
+  expect(decisions).toEqual([
+    { checkoutToken, decision: 'approved' },
+    { checkoutToken, decision: 'approved' },
+  ]);
+});
+
+test('sin cupo al confirmar ofrece volver al evento y no reintentar', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4725);
+  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
+    await route.fulfill({
+      status: 400,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'La cantidad supera los cupos disponibles.' }),
+    });
+  });
+
+  await simulatePayment(page, 'aprobado');
+
+  const alert = page.getByRole('alert').filter({ hasText: 'Ya no hay entradas disponibles' });
+  await expect(alert).toBeVisible();
+  await expect(alert.getByRole('button', { name: 'Reintentar' })).toHaveCount(0);
+  await expect(alert.getByRole('link', { name: 'Volver al evento' })).toHaveAttribute(
+    'href',
+    '/congresos/inteligencia-artificial/congreso-demo-ia/',
+  );
 });
 
 test.describe('móvil de 375 px', () => {

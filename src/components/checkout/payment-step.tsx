@@ -7,6 +7,7 @@ import { SimulatedPaymentPanel } from '@/components/payments/simulated-payment-p
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
+import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
 import type { PaymentDecision } from '@/features/checkout/payment';
 import { receiptStatusLabel } from '@/features/checkout/payment-flow';
 import { siteConfig } from '@/lib/site-config';
@@ -16,6 +17,8 @@ export type PendingOrder = {
   orderId: string;
   totalCents: number;
   checkoutToken: string;
+  /** Ficha del evento para «Volver al evento» cuando la compra ya no es posible. */
+  eventHref?: string;
 };
 
 export type CheckoutStep = 'datos' | 'pago' | 'boletos';
@@ -74,15 +77,48 @@ export function CheckoutSteps({ current, free = false }: CheckoutStepsProps) {
   );
 }
 
+type CheckoutErrorNoticeProps = Readonly<{
+  view: CheckoutErrorView;
+  eventHref?: string;
+  onRetry?: () => void;
+  retrying?: boolean;
+}>;
+
+/** Fallo de la compra en lenguaje claro, anunciado con role="alert" y con la acción que corresponde. */
+export function CheckoutErrorNotice({ view, eventHref, onRetry, retrying = false }: CheckoutErrorNoticeProps) {
+  return (
+    <div role="alert" className="flex flex-col gap-3 rounded-md bg-superficie-sutil p-4 font-texto">
+      <p className="flex items-start gap-2 text-base font-semibold leading-6 text-error">
+        <Icon name={statusIcon.failed} size={20} tone="error" />
+        {view.title}
+      </p>
+      <p className="text-sm leading-6 text-texto-suave">{view.detail}</p>
+      {view.action === 'retry' && onRetry ? (
+        <button
+          type="button"
+          disabled={retrying}
+          onClick={onRetry}
+          className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full sm:w-auto')}
+        >
+          {retrying ? 'Reintentando…' : 'Reintentar'}
+        </button>
+      ) : null}
+      {view.action === 'back-to-event' ? (
+        <Link href={eventHref ?? '/'} className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full sm:w-auto')}>
+          Volver al evento
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 type PaymentView = { status: 'pending' } | { status: 'confirmed'; ticketCount: number } | { status: 'failed' };
 
 type PaymentStepProps = {
   order: PendingOrder & { subtotalCents: number; feeCents: number };
 };
 
-type ConfirmOutcome = { ok: true } | { ok: false; message: string };
-
-const fallbackError = 'No pudimos confirmar la orden. Intentá nuevamente.';
+type ConfirmOutcome = { ok: true } | { ok: false; view: CheckoutErrorView };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -110,10 +146,11 @@ function readError(value: unknown): string | null {
 
 export function PaymentStep({ order }: PaymentStepProps) {
   const [view, setView] = useState<PaymentView>({ status: 'pending' });
-  const [error, setError] = useState<string | null>(null);
+  const [errorView, setErrorView] = useState<CheckoutErrorView | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   // La referencia evita un segundo envío antes de que el botón se deshabilite.
   const inFlight = useRef(false);
+  const lastDecision = useRef<PaymentDecision | null>(null);
   const isFree = order.totalCents === 0;
 
   /** Pide la confirmación al servidor (misma API y clave de idempotencia para pago y registro gratuito). */
@@ -127,19 +164,19 @@ export function PaymentStep({ order }: PaymentStepProps) {
       const body: unknown = await response.json().catch(() => null);
 
       if (!response.ok) {
-        return { ok: false, message: readError(body) ?? fallbackError };
+        return { ok: false, view: checkoutErrorView(readError(body), response.status) };
       }
 
       const result = readResult(body);
 
       if (!result) {
-        return { ok: false, message: fallbackError };
+        return { ok: false, view: checkoutErrorView(null, response.status) };
       }
 
       setView(result);
       return { ok: true };
     } catch {
-      return { ok: false, message: 'No pudimos confirmar la orden. Revisá tu conexión e intentá nuevamente.' };
+      return { ok: false, view: checkoutErrorView(null, 0) };
     }
   }
 
@@ -150,13 +187,13 @@ export function PaymentStep({ order }: PaymentStepProps) {
 
     inFlight.current = true;
     setIsConfirming(true);
-    setError(null);
+    setErrorView(null);
 
     try {
       const outcome = await requestConfirmation(null);
 
       if (!outcome.ok) {
-        setError(outcome.message);
+        setErrorView(outcome.view);
       }
     } finally {
       inFlight.current = false;
@@ -165,9 +202,42 @@ export function PaymentStep({ order }: PaymentStepProps) {
   }
 
   async function confirmPayment(decision: PaymentDecision) {
+    lastDecision.current = decision;
+    setErrorView(null);
+
     const outcome = await requestConfirmation(decision);
 
-    return outcome.ok ? { ok: true } : { ok: false, message: outcome.message };
+    if (outcome.ok) {
+      return { ok: true };
+    }
+
+    setErrorView(outcome.view);
+    // El aviso con su acción lo muestra este paso; el mensaje vacío evita que el panel repita otro.
+    return { ok: false, message: '' };
+  }
+
+  /** «Reintentar» repite la misma confirmación (misma orden y clave de idempotencia): no duplica boletos. */
+  async function retryConfirmation() {
+    const decision = isFree ? null : lastDecision.current;
+
+    if (inFlight.current || (!isFree && !decision)) {
+      return;
+    }
+
+    inFlight.current = true;
+    setIsConfirming(true);
+    setErrorView(null);
+
+    try {
+      const outcome = await requestConfirmation(decision);
+
+      if (!outcome.ok) {
+        setErrorView(outcome.view);
+      }
+    } finally {
+      inFlight.current = false;
+      setIsConfirming(false);
+    }
   }
 
   if (view.status === 'confirmed') {
@@ -237,10 +307,13 @@ export function PaymentStep({ order }: PaymentStepProps) {
 
       {isFree ? (
         <>
-          {error ? (
-            <p role="alert" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-error">
-              {error}
-            </p>
+          {errorView ? (
+            <CheckoutErrorNotice
+              view={errorView}
+              eventHref={order.eventHref}
+              onRetry={retryConfirmation}
+              retrying={isConfirming}
+            />
           ) : null}
           <button
             type="button"
@@ -253,14 +326,24 @@ export function PaymentStep({ order }: PaymentStepProps) {
           </button>
         </>
       ) : (
-        <SimulatedPaymentPanel
-          amountCents={order.totalCents}
-          summary={[
-            { label: 'Subtotal', amountCents: order.subtotalCents },
-            { label: `Comisión DEMO (${siteConfig.demoCommissionPercent} %)`, amountCents: order.feeCents },
-          ]}
-          onDecision={confirmPayment}
-        />
+        <>
+          {errorView ? (
+            <CheckoutErrorNotice
+              view={errorView}
+              eventHref={order.eventHref}
+              onRetry={retryConfirmation}
+              retrying={isConfirming}
+            />
+          ) : null}
+          <SimulatedPaymentPanel
+            amountCents={order.totalCents}
+            summary={[
+              { label: 'Subtotal', amountCents: order.subtotalCents },
+              { label: `Comisión DEMO (${siteConfig.demoCommissionPercent} %)`, amountCents: order.feeCents },
+            ]}
+            onDecision={confirmPayment}
+          />
+        </>
       )}
     </section>
   );

@@ -6,18 +6,20 @@ import { FormEvent, useState, useSyncExternalStore } from 'react';
 import { buttonVariants } from '@/components/ui/button';
 import { fieldClass } from '@/components/ui/field';
 import { Icon } from '@/components/ui/icon';
+import { eventPath } from '@/features/catalog/paths';
 import {
   CART_STORAGE_KEY,
   calculateCartTotals,
   parseCartSnapshot,
 } from '@/features/checkout/cart';
+import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
 import { submitLabel } from '@/features/checkout/labels';
 import { CHECKOUT_REQUEST_STORAGE_KEY, CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
 import { CartSummary } from './cart-summary';
-import { CheckoutSteps, PaymentStep, type PendingOrder } from './payment-step';
+import { CheckoutErrorNotice, CheckoutSteps, PaymentStep, type PendingOrder } from './payment-step';
 
 type FieldErrors = {
   buyerName?: string;
@@ -121,7 +123,11 @@ function readFieldErrors(value: unknown): FieldErrors | null {
     };
   }
 
-  return typeof value.error === 'string' ? { form: value.error } : null;
+  return null;
+}
+
+function readApiError(value: unknown): string | null {
+  return isRecord(value) && typeof value.error === 'string' ? value.error : null;
 }
 
 function validateBuyer(name: string, email: string, phone: string): FieldErrors {
@@ -155,14 +161,27 @@ export function CheckoutPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
+  const [orderError, setOrderError] = useState<CheckoutErrorView | null>(null);
 
   const provisionalTotals = snapshot
     ? calculateCartTotals(snapshot.event, snapshot.items, siteConfig.demoCommissionPercent)
     : null;
 
-  async function submitOrder(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const eventHref = snapshot
+    ? eventPath({
+        slug: snapshot.event.slug,
+        eventTypeSlug: snapshot.event.eventType.slug,
+        topicSlug: snapshot.event.topic?.slug ?? null,
+      })
+    : undefined;
 
+  function submitOrder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void createOrder();
+  }
+
+  /** Crea la orden; «Reintentar» la vuelve a llamar con el mismo request id, así no se duplica. */
+  async function createOrder() {
     if (!snapshot || isSubmitting) {
       return;
     }
@@ -176,6 +195,7 @@ export function CheckoutPage() {
 
     setIsSubmitting(true);
     setFieldErrors({});
+    setOrderError(null);
 
     try {
       const requestId = getCheckoutRequestId(JSON.stringify([snapshot.event.id, snapshot.items]));
@@ -196,14 +216,21 @@ export function CheckoutPage() {
       const body: unknown = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setFieldErrors(readFieldErrors(body) ?? { form: 'No pudimos crear la orden. Intentá nuevamente.' });
+        const invalidFields = readFieldErrors(body);
+
+        if (invalidFields) {
+          setFieldErrors(invalidFields);
+        } else {
+          setOrderError(checkoutErrorView(readApiError(body), response.status));
+        }
+
         return;
       }
 
       const order = readCreatedOrder(body);
 
       if (!order) {
-        setFieldErrors({ form: 'No pudimos crear la orden. Intentá nuevamente.' });
+        setOrderError(checkoutErrorView(null, response.status));
         return;
       }
 
@@ -218,9 +245,9 @@ export function CheckoutPage() {
         // La orden existe aunque el navegador no permita almacenamiento temporal.
       }
 
-      setCreatedOrder(order);
+      setCreatedOrder({ ...order, eventHref });
     } catch {
-      setFieldErrors({ form: 'No pudimos crear la orden. Revisá tu conexión e intentá nuevamente.' });
+      setOrderError(checkoutErrorView(null, 0));
     } finally {
       setIsSubmitting(false);
     }
@@ -361,6 +388,10 @@ export function CheckoutPage() {
             <p role="alert" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-error">
               {fieldErrors.form}
             </p>
+          ) : null}
+
+          {orderError ? (
+            <CheckoutErrorNotice view={orderError} eventHref={eventHref} onRetry={createOrder} retrying={isSubmitting} />
           ) : null}
 
           <CartSummary totals={provisionalTotals} commissionPercent={siteConfig.demoCommissionPercent} compact />
