@@ -38,6 +38,7 @@ function event(id: string, overrides: Partial<CatalogEvent> = {}): CatalogEvent 
     topic: { slug: 'cloud' },
     location: { slug: 'san-salvador', name: 'San Salvador' },
     organizer: null,
+    speakers: [],
     ticketTypes: [{ priceCents: 0, isActive: true }],
     ...overrides,
   };
@@ -93,7 +94,11 @@ describe('reglas de robots', () => {
       rules: { userAgent: '*', allow: '/', disallow: privatePaths },
       sitemap: 'https://ticketera.example/sitemap.xml',
     });
-    expect(privatePaths).toEqual(expect.arrayContaining(['/carrito/', '/checkout/', '/mis-boletos/']));
+    expect(privatePaths).toEqual(expect.arrayContaining(['/calendario/', '/carrito/', '/checkout/', '/mis-boletos/']));
+  });
+
+  it('privatePaths incluye registro, recuperar y cuenta', () => {
+    expect(privatePaths).toEqual(expect.arrayContaining(['/registro/', '/recuperar/', '/cuenta/']));
   });
 
   it('privatePaths no lista rutas inexistentes', () => {

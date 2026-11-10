@@ -3,7 +3,13 @@
 import { useActionState, useState, type ChangeEvent } from 'react';
 
 import { publishEventAction, type PublishState } from '@/features/organizers/actions';
-import { maxTicketTypes, type PublishFieldErrors } from '@/features/organizers/publish';
+import {
+  maxSpeakerNameLength,
+  maxSpeakerRoleLength,
+  maxTicketTypes,
+  speakerFormRows,
+  type PublishFieldErrors,
+} from '@/features/organizers/publish';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { fieldClass } from '@/components/ui/field';
@@ -248,6 +254,52 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
           />
           <FieldError id="imageUrl-error" message={errors.imageUrl} />
         </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-5">
+        <legend className="font-titulo text-xl font-bold">Ponentes (opcional)</legend>
+        <p className="font-texto text-sm leading-6 text-texto-suave">
+          Hasta {speakerFormRows} ponentes con su nombre y, si quieres, su cargo o rol. Deja vacía una fila que no uses.
+        </p>
+        <FieldError id="speakers-error" message={errors.speakers} />
+
+        {Array.from({ length: speakerFormRows }, (_, index) => (
+          <div
+            key={index}
+            className="grid min-w-0 gap-3 rounded-md border border-borde p-4 sm:grid-cols-[repeat(2,minmax(0,1fr))] [&>*]:min-w-0"
+          >
+            <div className="flex flex-col gap-2">
+              <label htmlFor={`speakerName${index + 1}`} className={labelClass}>
+                Nombre del ponente {index + 1}
+              </label>
+              <input
+                id={`speakerName${index + 1}`}
+                name={`speakerName${index + 1}`}
+                type="text"
+                maxLength={maxSpeakerNameLength}
+                value={valueOf(`speakerName${index + 1}`)}
+                onChange={onChange}
+                aria-invalid={Boolean(errors.speakers)}
+                aria-describedby={errors.speakers ? 'speakers-error' : undefined}
+                className={inputClass}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor={`speakerRole${index + 1}`} className={labelClass}>
+                Cargo o rol del ponente {index + 1}
+              </label>
+              <input
+                id={`speakerRole${index + 1}`}
+                name={`speakerRole${index + 1}`}
+                type="text"
+                maxLength={maxSpeakerRoleLength}
+                value={valueOf(`speakerRole${index + 1}`)}
+                onChange={onChange}
+                className={inputClass}
+              />
+            </div>
+          </div>
+        ))}
       </fieldset>
 
       <fieldset className="flex flex-col gap-5">

@@ -30,6 +30,16 @@ Estas personas y sus porcentajes son material del equipo, con varios valores aú
 | B-07 | asistente | obtener boleto | confirmación protegida, QR individual y descarga/impresión |
 | B-08 | visitante | usar el móvil | flujo usable desde viewport de celular, sin horizontal scroll |
 
+### Cuenta de comprador (opcional)
+
+La cuenta es opcional: la compra como invitado no cambia (D-37). Historias de la Fase 3 (CP-03, CP-04 y CP-08 del análisis):
+
+| ID | Como | Necesito | Se acepta cuando |
+|---|---|---|---|
+| C-01 | comprador | crear una cuenta y recuperar mi contraseña | registro e inicio de sesión con Supabase Auth; «Olvidé mi contraseña» responde igual exista o no el correo; el perfil siempre es `buyer` |
+| C-02 | comprador con cuenta | ver mis boletos y mis compras | «Mis boletos» lista solo mis órdenes, con su QR y su estado; sin sesión redirige a `/ingresar/` |
+| C-03 | comprador | pagar con mis datos precargados y reclamar compras de invitado | el checkout precarga nombre y correo; una orden de invitado solo se liga si su correo coincide con el de la cuenta y tengo su enlace de confirmación |
+
 ## 4. Historias de usuario P1
 
 | ID | Como | Necesito | Se acepta cuando |
@@ -66,7 +76,7 @@ Sin cobro del organizador, informes exportables, payout, calendario recurrente o
 ## 7. Alcance deliberadamente excluido
 
 - Cobros reales, tarjetas, webhooks externos, transferencias a vendedores, impuestos/facturación legal real.
-- reembolsos, autenticación de comprador, descuentos automáticos, reserva de asientos, niveles VIP especiales.
+- reembolsos, descuentos automáticos, reserva de asientos, niveles VIP especiales.
 - 134 páginas vacías, analítica avanzada y envío masivo de newsletters.
 
 ## 8. Requisitos no funcionales

@@ -7,6 +7,7 @@ const expectedTables = [
   'categories',
   'event_featured',
   'events',
+  'notification_outbox',
   'order_items',
   'orders',
   'organizers',

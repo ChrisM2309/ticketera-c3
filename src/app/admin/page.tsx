@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { formatUsd } from '@/features/catalog/format';
 import { signOutAction } from '@/features/auth/actions';
@@ -6,6 +7,7 @@ import { formatEventStart, pendingReviewText } from '@/features/organizers/panel
 import { orderStatusLabel, reviewResultMessage } from '@/features/organizers/review';
 import { reviewEventAction } from '@/features/organizers/review-actions';
 import { setFeaturedAction } from '@/features/organizers/featured-actions';
+import { adminOrganizersPath } from '@/features/organizers/link-form';
 import { adminHomePath } from '@/lib/auth/access';
 import { requireRole } from '@/lib/auth/require-role';
 import { buttonVariants } from '@/components/ui/button';
@@ -124,12 +126,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </h1>
           <p className="font-texto text-base leading-7 text-texto-suave">Modo DEMO. Zona exclusiva del administrador.</p>
         </div>
-        <form action={signOutAction}>
-          <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            <Icon name="logOut" />
-            Cerrar sesión
-          </button>
-        </form>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link href={adminOrganizersPath} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            <Icon name="users" />
+            Organizadores
+          </Link>
+          <form action={signOutAction}>
+            <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+              <Icon name="logOut" />
+              Cerrar sesión
+            </button>
+          </form>
+        </div>
       </header>
 
       {message ? (

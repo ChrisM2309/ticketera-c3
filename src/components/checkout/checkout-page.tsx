@@ -6,28 +6,66 @@ import { FormEvent, useState, useSyncExternalStore } from 'react';
 import { buttonVariants } from '@/components/ui/button';
 import { fieldClass } from '@/components/ui/field';
 import { Icon } from '@/components/ui/icon';
+import { eventPath } from '@/features/catalog/paths';
 import {
   CART_STORAGE_KEY,
   calculateCartTotals,
   parseCartSnapshot,
 } from '@/features/checkout/cart';
-import { CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
+import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
+import { accountNotice, submitLabel } from '@/features/checkout/labels';
+import { CHECKOUT_REQUEST_STORAGE_KEY, CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
+import { AccountPrompt } from './account-prompt';
 import { CartSummary } from './cart-summary';
-import { CheckoutSteps, PaymentStep, type PendingOrder } from './payment-step';
+import { CheckoutErrorNotice, CheckoutSteps, PaymentStep, type PendingOrder } from './payment-step';
 
 type FieldErrors = {
   buyerName?: string;
   buyerEmail?: string;
+  buyerPhone?: string;
   form?: string;
 };
+
+/** Cuenta con sesión, leída en el servidor desde las cookies; sirve solo para precargar el formulario. */
+export type CheckoutAccount = { name: string; email: string };
 
 type CreatedOrder = PendingOrder & {
   subtotalCents: number;
   feeCents: number;
 };
+
+/**
+ * Un request id por sesión de checkout y selección de entradas. Se reutiliza en los reintentos para que el
+ * servidor devuelva la misma orden en lugar de duplicarla; cambia si cambian el evento o las entradas.
+ */
+function getCheckoutRequestId(fingerprint: string): string {
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_REQUEST_STORAGE_KEY) ?? 'null') as unknown;
+
+    if (
+      isRecord(stored) &&
+      stored.fingerprint === fingerprint &&
+      typeof stored.requestId === 'string'
+    ) {
+      return stored.requestId;
+    }
+  } catch {
+    // Sin almacenamiento o con contenido ilegible se genera un request id nuevo.
+  }
+
+  const requestId = crypto.randomUUID();
+
+  try {
+    window.sessionStorage.setItem(CHECKOUT_REQUEST_STORAGE_KEY, JSON.stringify({ fingerprint, requestId }));
+  } catch {
+    // El reintento dentro de esta misma carga también debería reutilizarlo; sin almacenamiento no es posible.
+  }
+
+  return requestId;
+}
 
 function subscribeToCartStorage(onChange: () => void) {
   window.addEventListener('storage', onChange);
@@ -80,16 +118,23 @@ function readFieldErrors(value: unknown): FieldErrors | null {
     return {
       buyerName: typeof fromApi.buyerName === 'string' ? fromApi.buyerName : undefined,
       buyerEmail: typeof fromApi.buyerEmail === 'string' ? fromApi.buyerEmail : undefined,
+      buyerPhone: typeof fromApi.buyerPhone === 'string' ? fromApi.buyerPhone : undefined,
       form: typeof fromApi.items === 'string' || typeof fromApi.eventId === 'string'
         ? 'Las entradas cambiaron. Volvé al carrito para revisarlas.'
-        : undefined,
+        : typeof fromApi.requestId === 'string'
+          ? 'No pudimos validar la solicitud de compra. Recargá la página e intentá nuevamente.'
+          : undefined,
     };
   }
 
-  return typeof value.error === 'string' ? { form: value.error } : null;
+  return null;
 }
 
-function validateBuyer(name: string, email: string): FieldErrors {
+function readApiError(value: unknown): string | null {
+  return isRecord(value) && typeof value.error === 'string' ? value.error : null;
+}
+
+function validateBuyer(name: string, email: string, phone: string): FieldErrors {
   const errors: FieldErrors = {};
 
   if (name.trim().length < 2 || name.trim().length > 120) {
@@ -100,34 +145,56 @@ function validateBuyer(name: string, email: string): FieldErrors {
     errors.buyerEmail = 'Ingresá un correo electrónico válido.';
   }
 
+  if (phone.trim() && !/^(?:\+?503)?[0-9]{8}$/.test(phone.trim().replace(/[\s-]/g, ''))) {
+    errors.buyerPhone = 'Ingresá un teléfono de El Salvador de 8 dígitos.';
+  }
+
   return errors;
 }
 
-export function CheckoutPage() {
+export function CheckoutPage({ account = null }: { account?: CheckoutAccount | null }) {
   const storedValue = useSyncExternalStore(
     subscribeToCartStorage,
     getCartStorageSnapshot,
     getServerCartStorageSnapshot,
   );
   const snapshot = parseCartSnapshot(storedValue);
-  const [buyerName, setBuyerName] = useState('');
-  const [buyerEmail, setBuyerEmail] = useState('');
+  const [buyerName, setBuyerName] = useState(account?.name ?? '');
+  const [typedEmail, setTypedEmail] = useState('');
+  // Con sesión se compra con la cuenta (correo fijo) salvo que el comprador elija seguir como invitado.
+  const [asGuest, setAsGuest] = useState(false);
+  const usingAccount = account !== null && !asGuest;
+  const buyerEmail = usingAccount ? account.email : typedEmail;
+  const [buyerPhone, setBuyerPhone] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
+  const [orderError, setOrderError] = useState<CheckoutErrorView | null>(null);
 
   const provisionalTotals = snapshot
     ? calculateCartTotals(snapshot.event, snapshot.items, siteConfig.demoCommissionPercent)
     : null;
 
-  async function submitOrder(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const eventHref = snapshot
+    ? eventPath({
+        slug: snapshot.event.slug,
+        eventTypeSlug: snapshot.event.eventType.slug,
+        topicSlug: snapshot.event.topic?.slug ?? null,
+      })
+    : undefined;
 
+  function submitOrder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void createOrder();
+  }
+
+  /** Crea la orden; «Reintentar» la vuelve a llamar con el mismo request id, así no se duplica. */
+  async function createOrder() {
     if (!snapshot || isSubmitting) {
       return;
     }
 
-    const clientErrors = validateBuyer(buyerName, buyerEmail);
+    const clientErrors = validateBuyer(buyerName, buyerEmail, buyerPhone);
 
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
@@ -136,33 +203,50 @@ export function CheckoutPage() {
 
     setIsSubmitting(true);
     setFieldErrors({});
+    setOrderError(null);
 
     try {
+      const requestId = getCheckoutRequestId(JSON.stringify([snapshot.event.id, snapshot.items]));
       const response = await fetch('/api/checkout/orders', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           eventId: snapshot.event.id,
+          requestId,
           items: snapshot.items,
-          buyer: { name: buyerName.trim(), email: buyerEmail.trim() },
+          // Solo indica que no se ligue a la cuenta; quién es el usuario lo decide el servidor con la sesión.
+          ...(account && asGuest ? { asGuest: true } : {}),
+          buyer: {
+            name: buyerName.trim(),
+            email: buyerEmail.trim(),
+            ...(buyerPhone.trim() ? { phone: buyerPhone.trim() } : {}),
+          },
         }),
       });
       const body: unknown = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setFieldErrors(readFieldErrors(body) ?? { form: 'No pudimos crear la orden. Intentá nuevamente.' });
+        const invalidFields = readFieldErrors(body);
+
+        if (invalidFields) {
+          setFieldErrors(invalidFields);
+        } else {
+          setOrderError(checkoutErrorView(readApiError(body), response.status));
+        }
+
         return;
       }
 
       const order = readCreatedOrder(body);
 
       if (!order) {
-        setFieldErrors({ form: 'No pudimos crear la orden. Intentá nuevamente.' });
+        setOrderError(checkoutErrorView(null, response.status));
         return;
       }
 
       try {
         window.localStorage.removeItem(CART_STORAGE_KEY);
+        window.sessionStorage.removeItem(CHECKOUT_REQUEST_STORAGE_KEY);
         window.sessionStorage.setItem(
           CHECKOUT_SESSION_STORAGE_KEY,
           JSON.stringify({ orderId: order.orderId, checkoutToken: order.checkoutToken }),
@@ -171,9 +255,9 @@ export function CheckoutPage() {
         // La orden existe aunque el navegador no permita almacenamiento temporal.
       }
 
-      setCreatedOrder(order);
+      setCreatedOrder({ ...order, eventHref });
     } catch {
-      setFieldErrors({ form: 'No pudimos crear la orden. Revisá tu conexión e intentá nuevamente.' });
+      setOrderError(checkoutErrorView(null, 0));
     } finally {
       setIsSubmitting(false);
     }
@@ -217,19 +301,38 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start">
-      <section className="flex min-w-0 flex-col gap-6" aria-labelledby="checkout-title">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-2 md:px-6 md:pt-14">
+      <section className="flex min-w-0 flex-col gap-3 md:gap-6" aria-labelledby="checkout-title">
         <CheckoutSteps current="datos" free={provisionalTotals.totalCents === 0} />
-        <header className="flex flex-col gap-3">
-          <h1 id="checkout-title" className="font-titulo text-4xl font-bold leading-tight tracking-tight">
+        <header className="flex flex-col gap-2 md:gap-3">
+          <h1 id="checkout-title" className="font-titulo text-2xl font-bold leading-tight tracking-tight md:text-4xl">
             Finalizá tu compra
           </h1>
-          <p className="max-w-2xl font-texto text-base leading-7 text-texto-suave">
-            Completá tus datos para crear la orden. Este es un pago de demostración: no se cobrará dinero ni se pedirán datos de tarjeta.
+          <p className="max-w-2xl font-texto text-sm leading-6 text-texto-suave md:text-base md:leading-7">
+            <span className="md:hidden">Pago de demostración: no se cobra dinero ni se piden datos de tarjeta.</span>
+            <span className="hidden md:inline">
+              Completá tus datos para crear la orden. Este es un pago de demostración: no se cobrará dinero ni se pedirán datos de tarjeta.
+            </span>
           </p>
         </header>
 
-        <form onSubmit={submitOrder} className="flex flex-col gap-5 rounded-lg bg-superficie p-6 shadow-sm" noValidate>
+        {account ? (
+          <div className="flex flex-col gap-3 rounded-lg bg-superficie-sutil p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-2 font-texto text-sm leading-6">
+              <Icon name="user" size={16} />
+              {accountNotice(usingAccount)}
+            </p>
+            <button
+              type="button"
+              onClick={() => setAsGuest((current) => !current)}
+              className={cn(buttonVariants({ variant: 'secundario' }), 'w-full shrink-0 sm:w-auto')}
+            >
+              {usingAccount ? 'Comprar como invitado' : 'Usar mi cuenta'}
+            </button>
+          </div>
+        ) : null}
+
+        <form onSubmit={submitOrder} className="flex flex-col gap-3 rounded-lg bg-superficie p-3 shadow-sm md:gap-5 md:p-6" noValidate>
           <div className="flex flex-col gap-2">
             <label htmlFor="buyer-name" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
               <Icon name="user" size={16} />
@@ -269,14 +372,56 @@ export function CheckoutPage() {
               required
               maxLength={254}
               value={buyerEmail}
-              onChange={(input) => setBuyerEmail(input.target.value)}
+              onChange={(input) => setTypedEmail(input.target.value)}
+              readOnly={usingAccount}
               aria-invalid={Boolean(fieldErrors.buyerEmail)}
-              aria-describedby={fieldErrors.buyerEmail ? 'buyer-email-error' : undefined}
-              className={fieldClass}
+              aria-describedby={
+                [fieldErrors.buyerEmail ? 'buyer-email-error' : null, usingAccount ? 'buyer-email-hint' : null]
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              }
+              className={cn(fieldClass, usingAccount && 'cursor-default bg-superficie-sutil text-texto-suave')}
             />
+            {usingAccount ? (
+              <p id="buyer-email-hint" className="font-texto text-xs leading-5 text-texto-suave">
+                Es el correo de tu cuenta; a él se asocia la compra.
+              </p>
+            ) : null}
             {fieldErrors.buyerEmail ? (
               <p id="buyer-email-error" role="alert" className="font-texto text-sm text-error">
                 {fieldErrors.buyerEmail}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="buyer-phone" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
+              <Icon name="phone" size={16} />
+              Teléfono para WhatsApp (opcional)
+            </label>
+            <input
+              id="buyer-phone"
+              name="buyer-phone"
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              maxLength={20}
+              placeholder="7777 1234"
+              value={buyerPhone}
+              onChange={(input) => setBuyerPhone(input.target.value)}
+              aria-invalid={Boolean(fieldErrors.buyerPhone)}
+              aria-describedby={fieldErrors.buyerPhone ? 'buyer-phone-error buyer-phone-hint' : 'buyer-phone-hint'}
+              className={fieldClass}
+            />
+            <p id="buyer-phone-hint" className="font-texto text-xs leading-5 text-texto-suave">
+              <span className="md:hidden">8 dígitos de El Salvador, solo para tu orden DEMO.</span>
+              <span className="hidden md:inline">
+                Número de El Salvador de 8 dígitos. Solo lo guardamos con tu orden de demostración.
+              </span>
+            </p>
+            {fieldErrors.buyerPhone ? (
+              <p id="buyer-phone-error" role="alert" className="font-texto text-sm text-error">
+                {fieldErrors.buyerPhone}
               </p>
             ) : null}
           </div>
@@ -287,22 +432,27 @@ export function CheckoutPage() {
             </p>
           ) : null}
 
+          {orderError ? (
+            <CheckoutErrorNotice view={orderError} eventHref={eventHref} onRetry={createOrder} retrying={isSubmitting} />
+          ) : null}
+
+          <CartSummary totals={provisionalTotals} commissionPercent={siteConfig.demoCommissionPercent} compact />
+
           <button
             type="submit"
             disabled={isSubmitting}
             className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
           >
-            {isSubmitting ? 'Creando orden…' : 'Crear orden DEMO'}
+            {isSubmitting ? 'Creando orden…' : submitLabel(provisionalTotals.totalCents)}
           </button>
+          <p className="text-center font-texto text-xs leading-5 text-texto-suave">
+            Revisaremos precios y disponibilidad antes de guardar la orden.
+          </p>
         </form>
-      </section>
 
-      <aside className="flex flex-col gap-4 lg:sticky lg:top-6">
-        <CartSummary totals={provisionalTotals} commissionPercent={siteConfig.demoCommissionPercent} />
-        <p className="font-texto text-center text-xs leading-5 text-texto-suave">
-          Revisaremos precios y disponibilidad antes de guardar la orden.
-        </p>
-      </aside>
+        {/* Debajo del formulario: en móvil la compra va primero y la cuenta es opcional. */}
+        <AccountPrompt variant="checkout" signedIn={account !== null} />
+      </section>
     </div>
   );
 }

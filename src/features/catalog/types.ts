@@ -2,6 +2,9 @@ export type EventMode = 'presencial' | 'virtual';
 
 export type EventStatus = 'draft' | 'pending' | 'published' | 'archived' | 'rejected';
 
+/** Ponente de un evento (events.speakers). El rol puede ser una cadena vacía. */
+export type Speaker = { name: string; role: string };
+
 export type CatalogTicketType = {
   priceCents: number;
   isActive: boolean;
@@ -27,6 +30,7 @@ export type CatalogEvent = {
   topic: { slug: string } | null;
   location: { slug: string; name: string } | null;
   organizer: { name: string } | null;
+  speakers: Speaker[];
   ticketTypes: CatalogTicketType[];
 };
 

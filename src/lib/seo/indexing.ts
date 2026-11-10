@@ -6,18 +6,22 @@ import type { CatalogEvent, CatalogTaxonomy } from '../../features/catalog/types
 
 /**
  * Rutas privadas o transaccionales: no se rastrean (SEO_ROUTES.md, sección 5).
- * Solo se listan rutas que existen; `/mis-boletos/` la crea la Fase 3.
+ * Solo se listan rutas que existen; `/mis-boletos/` y `/cuenta/` las crea la Fase 3.
  */
 export const privatePaths = [
   '/admin/',
   '/api/',
   '/buscar/',
+  '/calendario/',
   '/carrito/',
   '/checkout/',
   '/confirmacion/',
+  '/cuenta/',
   '/ingresar/',
   '/mis-boletos/',
   '/panel/',
+  '/recuperar/',
+  '/registro/',
 ];
 
 /**

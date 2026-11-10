@@ -23,7 +23,7 @@ const supabaseShimSql = `
   create role authenticated nologin;
   create role service_role nologin;
   create schema auth;
-  create table auth.users (id uuid primary key, email text unique);
+  create table auth.users (id uuid primary key, email text unique, raw_user_meta_data jsonb not null default '{}'::jsonb);
   create function auth.uid() returns uuid
     language sql stable
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
@@ -63,11 +63,8 @@ export async function asSuperuser(db: PGlite): Promise<void> {
 export async function createUser(db: PGlite, role: 'organizer' | 'admin' = 'organizer') {
   const id = randomUUID();
   await db.query('insert into auth.users (id, email) values ($1, $2)', [id, `${id}@example.test`]);
-  await db.query('insert into public.profiles (id, role, display_name) values ($1, $2, $3)', [
-    id,
-    role,
-    'Fixture',
-  ]);
+  // El disparador de alta ya creó un perfil buyer; las pruebas fijan el rol que necesitan.
+  await db.query('update public.profiles set role = $2, display_name = $3 where id = $1', [id, role, 'Fixture']);
   return id;
 }
 

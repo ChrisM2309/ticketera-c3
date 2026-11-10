@@ -3,10 +3,18 @@
  * aplicar antes de llamar a la base, y la base repite los límites con sus restricciones.
  */
 
+import type { Speaker } from '../catalog/types';
+
 export const publishModes = ['presencial', 'virtual'] as const;
 export type PublishMode = (typeof publishModes)[number];
 
 export const maxTicketTypes = 4;
+
+/** Filas fijas del formulario y límites que repite la base (events_speakers_check). */
+export const speakerFormRows = 6;
+export const maxSpeakers = 8;
+export const maxSpeakerNameLength = 80;
+export const maxSpeakerRoleLength = 120;
 
 export type TicketTypeInput = {
   name: string;
@@ -27,6 +35,7 @@ export type PublishData = {
   imageUrl: string | null;
   startsAt: string;
   endsAt: string | null;
+  speakers: Speaker[];
   ticketTypes: TicketTypeInput[];
 };
 
@@ -42,6 +51,7 @@ export type PublishFieldName =
   | 'imageUrl'
   | 'startsAt'
   | 'endsAt'
+  | 'speakers'
   | 'tickets';
 
 export type PublishFieldErrors = Partial<Record<PublishFieldName, string>>;
@@ -96,6 +106,36 @@ export function buildEventSlug(title: string, suffix: string): string {
     .replace(/-+$/g, '');
 
   return `${base || 'evento'}-${suffix}`;
+}
+
+/** Filas de ponente: las vacías se ignoran; una fila con rol y sin nombre es un error. */
+function parseSpeakers(raw: unknown, errors: PublishFieldErrors): Speaker[] {
+  const speakers: Speaker[] = [];
+  const rows = Array.isArray(raw) ? raw : [];
+
+  for (const row of rows.slice(0, maxSpeakers)) {
+    const record = (row ?? {}) as Record<string, unknown>;
+    const name = text(record.name);
+    const role = text(record.role);
+
+    if (!name && !role) {
+      continue;
+    }
+
+    if (name.length < 1 || name.length > maxSpeakerNameLength) {
+      errors.speakers = `Cada ponente necesita un nombre de 1 a ${maxSpeakerNameLength} caracteres.`;
+      return [];
+    }
+
+    if (role.length > maxSpeakerRoleLength) {
+      errors.speakers = `El rol de un ponente no puede pasar de ${maxSpeakerRoleLength} caracteres.`;
+      return [];
+    }
+
+    speakers.push({ name, role });
+  }
+
+  return speakers;
 }
 
 function parseTicketTypes(raw: unknown[], errors: PublishFieldErrors): TicketTypeInput[] {
@@ -229,6 +269,8 @@ export function parsePublishInput(input: Record<string, unknown>, now: Date): Pu
     errors.endsAt = 'La fecha de fin debe ser posterior al inicio.';
   }
 
+  const speakers = parseSpeakers(input.speakers, errors);
+
   const ticketRows = Array.isArray(input.tickets) ? input.tickets : [];
   const ticketTypes = parseTicketTypes(ticketRows, errors);
 
@@ -250,6 +292,7 @@ export function parsePublishInput(input: Record<string, unknown>, now: Date): Pu
       imageUrl: imageUrl || null,
       startsAt,
       endsAt,
+      speakers,
       ticketTypes,
     },
   };

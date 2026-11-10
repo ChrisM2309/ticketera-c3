@@ -1,13 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { AccountNav } from '@/components/layout/account-nav';
 import { CartLink } from '@/components/layout/cart-link';
 import { CategoryNav } from '@/components/layout/category-nav';
-import { NavLink } from '@/components/layout/nav-link';
 import { SiteSearch } from '@/components/layout/site-search';
 import { DemoBadge } from '@/components/ui/demo-badge';
-import { Icon } from '@/components/ui/icon';
-import { accountLinks, categoryGroups } from '@/lib/navigation';
+import { categoryGroups } from '@/lib/navigation';
 
 export function SiteHeader() {
   return (
@@ -32,19 +31,12 @@ export function SiteHeader() {
 
         <SiteSearch />
 
-        {/* Escritorio: publicar a la derecha. En móvil va dentro del menú. */}
-        <nav aria-label="Publicar" className="hidden md:ml-auto md:flex md:items-center md:gap-1">
-          {accountLinks.map((link) => (
-            <NavLink key={link.href} href={link.href} className="gap-2">
-              {link.icon ? <Icon name={link.icon} /> : null}
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
+        {/* Escritorio: publicar y cuenta a la derecha (Ingresar, o Mis boletos y Mi cuenta con sesión). En móvil van dentro del menú. */}
+        <AccountNav />
 
         {/* Carrito y Menú van en la misma fila en móvil, sin abrir el menú para comprar. */}
         <CartLink className="ml-auto md:ml-0" />
-        <CategoryNav groups={categoryGroups} accountLinks={accountLinks} />
+        <CategoryNav groups={categoryGroups} />
       </div>
     </header>
   );
