@@ -152,13 +152,13 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-28 pt-4 md:px-6 md:pb-20 md:pt-14">
-      <Breadcrumbs items={breadcrumbs} />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 pb-28 pt-3 md:gap-8 md:px-6 md:pb-20 md:pt-14">
+      <Breadcrumbs items={breadcrumbs} compactOnMobile />
 
       {/* En móvil el orden es resumen, entradas, descripción, agenda y ponentes; en escritorio, dos columnas. */}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start lg:gap-8">
-        <div className="flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-start-1 lg:gap-8">
-          <div className="relative aspect-video max-h-32 overflow-hidden rounded-lg bg-navy shadow-sm md:max-h-none md:aspect-[16/8]">
+      <div className="grid gap-3 md:gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-3 lg:col-start-1 lg:row-start-1 lg:gap-8">
+          <div className="relative aspect-video max-h-20 overflow-hidden rounded-lg bg-navy shadow-sm md:max-h-none md:aspect-[16/8]">
             <Image
               src={coverImagePath(event)}
               alt={`Portada de ${event.title}`}
@@ -176,10 +176,10 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
           </div>
 
           <header className="flex flex-col gap-2 md:gap-4">
-            <h1 className="font-titulo text-3xl font-bold leading-tight tracking-tight md:text-5xl">
+            <h1 className="font-titulo text-2xl font-bold leading-tight tracking-tight md:text-5xl">
               {event.title}
             </h1>
-            <p className="font-texto text-sm font-medium text-texto-suave">{event.eventType.name}</p>
+            <p className="hidden font-texto text-sm font-medium text-texto-suave md:block">{event.eventType.name}</p>
             {past ? (
               <p className="inline-flex w-fit rounded-full bg-superficie-sutil px-3 py-1 font-titulo text-sm font-semibold text-texto-suave">
                 Evento finalizado
@@ -192,7 +192,7 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
             ) : null}
           </header>
 
-          <dl className="grid gap-2 rounded-lg bg-superficie p-4 shadow-sm sm:grid-cols-2 sm:gap-4 sm:p-5">
+          <dl className="grid gap-1.5 rounded-lg bg-superficie p-3 shadow-sm sm:grid-cols-2 sm:gap-4 sm:p-5">
             <div className={detailItemClass}>
               <dt className={detailTermClass}>
                 <Icon name="calendar" size={16} />

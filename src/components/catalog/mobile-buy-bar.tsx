@@ -22,7 +22,10 @@ export function MobileBuyBar({ label, available, anchorId }: MobileBuyBarProps) 
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-borde bg-superficie px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-md md:hidden">
+    <div
+      data-testid="barra-compra-movil"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-borde bg-superficie px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-md md:hidden"
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
         <p className="flex items-center gap-2 font-titulo text-lg font-bold text-texto">
           <Icon name="tag" />

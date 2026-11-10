@@ -3,7 +3,11 @@ import { expect, test, type Page } from '@playwright/test';
 /**
  * Ficha en móvil (CO-02): la primera entrada y el botón de compra se ven sin scroll.
  * Lee el catálogo de la base real con la clave anónima; los eventos DEMO con ponentes son
- * los de supabase/seed.sql.
+ * los de supabase/seed.sql. Requiere la migración de ponentes aplicada (columna events.speakers).
+ *
+ * Las pruebas de «sin ponentes» y «agotado» dependen de datos: se saltan si la base no tiene un
+ * evento publicado que las cumpla (el seed DEMO no incluye ninguno agotado). Lo que fijan esos
+ * comportamientos de forma permanente son las pruebas de render de tests/unit/event-detail-page.test.ts.
  */
 
 test.use({ viewport: { width: 375, height: 812 } });
@@ -39,24 +43,42 @@ async function primeraFichaSinPonentes(page: Page): Promise<Resumen | null> {
 test('la primera entrada y el botón de compra se ven sin scroll', async ({ page }) => {
   await page.goto(conPonentes);
 
-  const entradas = page.locator('#entradas');
-  await expect(entradas).toBeVisible();
+  // La primera tarjeta de entrada (nombre, precio y selector de cantidad), no solo el encabezado.
+  const primeraEntrada = page.getByRole('group', { name: 'Tipos de entrada' }).locator('> div').first();
+  await expect(primeraEntrada).toBeVisible();
+  await expect(primeraEntrada.getByRole('spinbutton')).toBeVisible();
 
-  const box = await entradas.boundingBox();
-  expect(box).not.toBeNull();
-  expect(box!.y + box!.height).toBeLessThanOrEqual(viewportHeight);
+  const entradaBox = await primeraEntrada.boundingBox();
+  expect(entradaBox).not.toBeNull();
 
-  const barra = page.getByRole('link', { name: /Elegir entradas/ });
-  await expect(barra).toBeVisible();
-  const barraBox = await barra.boundingBox();
-  expect(barraBox).not.toBeNull();
-  expect(barraBox!.y + barraBox!.height).toBeLessThanOrEqual(viewportHeight);
-  expect(barraBox!.height).toBeGreaterThanOrEqual(44);
+  const enlace = page.getByRole('link', { name: /Elegir entradas/ });
+  await expect(enlace).toBeVisible();
+  const enlaceBox = await enlace.boundingBox();
+  expect(enlaceBox).not.toBeNull();
+  expect(enlaceBox!.height).toBeGreaterThanOrEqual(44);
 
-  // La barra fija no debe tapar el encabezado de la caja de compra.
-  const barraFija = await page.locator('div.fixed.bottom-0').boundingBox();
-  expect(barraFija).not.toBeNull();
-  expect(box!.y + box!.height).toBeLessThanOrEqual(barraFija!.y);
+  const barra = await page.getByTestId('barra-compra-movil').boundingBox();
+  expect(barra).not.toBeNull();
+  // La barra fija está pegada al borde inferior y contiene el botón de compra.
+  expect(barra!.y + barra!.height).toBeCloseTo(viewportHeight, 0);
+  expect(enlaceBox!.y).toBeGreaterThanOrEqual(barra!.y);
+  expect(enlaceBox!.y + enlaceBox!.height).toBeLessThanOrEqual(viewportHeight);
+
+  // La primera entrada completa queda sobre el pliegue y la barra no la tapa.
+  expect(entradaBox!.y).toBeGreaterThanOrEqual(0);
+  expect(entradaBox!.y + entradaBox!.height).toBeLessThanOrEqual(barra!.y);
+});
+
+test('los controles de cantidad de la primera entrada tienen área táctil de 44 px', async ({ page }) => {
+  await page.goto(conPonentes);
+
+  const primeraEntrada = page.getByRole('group', { name: 'Tipos de entrada' }).locator('> div').first();
+  for (const nombre of [/^Agregar una entrada/, /^Quitar una entrada/]) {
+    const boton = await primeraEntrada.getByRole('button', { name: nombre }).boundingBox();
+    expect(boton).not.toBeNull();
+    expect(boton!.width).toBeGreaterThanOrEqual(44);
+    expect(boton!.height).toBeGreaterThanOrEqual(44);
+  }
 });
 
 test('la ficha muestra los ponentes DEMO después de la agenda', async ({ page }) => {

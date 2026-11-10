@@ -1,9 +1,16 @@
 import Link from 'next/link';
 
 import type { CatalogLink } from '@/features/catalog/routes';
+import { cn } from '@/lib/utils';
+
+type BreadcrumbsProps = Readonly<{
+  items: readonly CatalogLink[];
+  /** En móvil deja solo el nivel superior (la página actual ya la nombra el título) para ganar altura. */
+  compactOnMobile?: boolean;
+}>;
 
 /** Ruta de navegación. El último elemento es la página actual y no es enlace. */
-export function Breadcrumbs({ items }: Readonly<{ items: readonly CatalogLink[] }>) {
+export function Breadcrumbs({ items, compactOnMobile = false }: BreadcrumbsProps) {
   return (
     <nav aria-label="Ruta de navegación">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-texto text-sm text-texto-suave">
@@ -11,15 +18,40 @@ export function Breadcrumbs({ items }: Readonly<{ items: readonly CatalogLink[] 
           const isCurrent = index === items.length - 1;
 
           return (
-            <li key={item.label} className="flex items-center gap-2">
+            <li
+              key={item.label}
+              className={cn(
+                'flex items-center gap-2',
+                compactOnMobile && index < items.length - 2 && 'hidden md:flex',
+                compactOnMobile && isCurrent && 'hidden md:flex',
+              )}
+            >
+              {compactOnMobile && index === items.length - 2 ? (
+                <span aria-hidden="true" className="md:hidden">
+                  ‹
+                </span>
+              ) : null}
               {item.href && !isCurrent ? (
-                <Link href={item.href} className="underline-offset-4 hover:underline">
+                <Link
+                  href={item.href}
+                  className={cn(
+                    'underline-offset-4 hover:underline',
+                    compactOnMobile && 'inline-flex min-h-11 items-center md:min-h-0',
+                  )}
+                >
                   {item.label}
                 </Link>
               ) : (
                 <span aria-current={isCurrent ? 'page' : undefined}>{item.label}</span>
               )}
-              {isCurrent ? null : <span aria-hidden="true">›</span>}
+              {isCurrent ? null : (
+                <span
+                  aria-hidden="true"
+                  className={cn(compactOnMobile && index === items.length - 2 && 'hidden md:inline')}
+                >
+                  ›
+                </span>
+              )}
             </li>
           );
         })}

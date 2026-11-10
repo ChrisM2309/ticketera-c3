@@ -47,12 +47,12 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
         : null;
 
   return (
-    <section aria-labelledby="entradas" className="flex flex-col gap-5 rounded-lg bg-superficie p-5 shadow-sm">
+    <section aria-labelledby="entradas" className="flex flex-col gap-3 rounded-lg bg-superficie p-4 shadow-sm sm:gap-5 sm:p-5">
       <div className="flex flex-col gap-2">
-        <h2 id="entradas" className="font-titulo text-2xl font-bold">
+        <h2 id="entradas" className="font-titulo text-xl font-bold sm:text-2xl">
           Elegí tus entradas
         </h2>
-        <p className="font-texto text-sm leading-6 text-texto-suave">
+        <p className="hidden font-texto text-sm leading-6 text-texto-suave sm:block">
           Seleccioná cantidades del mismo evento. El precio final y los cupos se verifican al continuar.
         </p>
       </div>
@@ -63,7 +63,7 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
         </p>
       ) : null}
 
-      <div role="group" aria-label="Tipos de entrada" className="flex flex-col gap-3">
+      <div role="group" aria-label="Tipos de entrada" className="flex flex-col gap-2 sm:gap-3">
         {event.ticketTypes.map((ticket) => {
           const available = getAvailableQuantity(ticket);
           const limit = getTicketQuantityLimit(ticket);
@@ -74,12 +74,12 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
             <div
               key={ticket.id}
               className={cn(
-                'flex flex-col gap-4 rounded-md border p-4',
+                'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-md border p-3 sm:p-4',
                 quantity > 0 ? 'border-accion bg-superficie-sutil' : 'border-borde',
                 isDisabled && 'bg-superficie-sutil',
               )}
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="col-span-2 flex items-start justify-between gap-4">
                 <label
                   htmlFor={`entrada-${ticket.id}`}
                   className="min-w-0 font-titulo text-base font-semibold leading-6 text-texto"
@@ -91,7 +91,7 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
                 </p>
               </div>
 
-              <p id={`ayuda-${ticket.id}`} className="font-texto text-sm leading-5 text-texto-suave">
+              <p id={`ayuda-${ticket.id}`} className="font-texto text-xs leading-4 text-texto-suave sm:text-sm sm:leading-5">
                 {available > 0
                   ? `${available} cupos disponibles · máximo ${ticket.maxPerOrder} por orden`
                   : 'Agotada'}
