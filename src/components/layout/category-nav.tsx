@@ -5,14 +5,14 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
 import { NavLink } from '@/components/layout/nav-link';
+import { useAccountLinks } from '@/components/layout/use-account-links';
 import { Icon } from '@/components/ui/icon';
 import { iconForEventType, toneForEventType } from '@/features/catalog/icons';
-import type { CategoryGroup, MenuItem } from '@/lib/navigation';
+import type { CategoryGroup } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 
 type CategoryNavProps = Readonly<{
   groups: readonly CategoryGroup[];
-  accountLinks: readonly MenuItem[];
 }>;
 
 const disparador =
@@ -32,7 +32,8 @@ function TypeIcon({ slug }: Readonly<{ slug: string }>) {
  * Móvil: botón Menú que muestra los grupos como acordeones. Se cierra al navegar, con Escape
  * y al tocar fuera de un desplegable.
  */
-export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
+export function CategoryNav({ groups }: CategoryNavProps) {
+  const accountLinks = useAccountLinks();
   const [abierto, setAbierto] = useState(false);
   const pathname = usePathname();
   const menuId = useId();

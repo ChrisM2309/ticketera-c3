@@ -97,6 +97,10 @@ describe('reglas de robots', () => {
     expect(privatePaths).toEqual(expect.arrayContaining(['/calendario/', '/carrito/', '/checkout/', '/mis-boletos/']));
   });
 
+  it('privatePaths incluye registro, recuperar y cuenta', () => {
+    expect(privatePaths).toEqual(expect.arrayContaining(['/registro/', '/recuperar/', '/cuenta/']));
+  });
+
   it('privatePaths no lista rutas inexistentes', () => {
     expect(privatePaths).not.toContain('/publicar/');
     expect(privatePaths).toContain('/mis-boletos/');

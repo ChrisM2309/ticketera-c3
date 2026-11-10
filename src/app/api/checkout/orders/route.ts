@@ -6,6 +6,7 @@ import {
   parseOrderRequest,
 } from '@/features/checkout/order';
 import { deriveCheckoutToken, getCheckoutTokenSecret } from '@/features/checkout/token';
+import { readOptionalSession } from '@/lib/auth/optional-session';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
@@ -19,6 +20,11 @@ type CreatedOrder = {
 
 function orderError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
+}
+
+/** `asGuest: true` es la elección explícita de comprar como invitado aunque haya sesión. */
+function isGuestRequest(input: unknown): boolean {
+  return typeof input === 'object' && input !== null && (input as { asGuest?: unknown }).asGuest === true;
 }
 
 export async function POST(request: Request) {
@@ -51,6 +57,10 @@ export async function POST(request: Request) {
     return orderError('El checkout DEMO no está configurado todavía. Intentá más tarde.', 503);
   }
 
+  // El dueño de la orden sale solo de la sesión de las cookies. Un `buyerUserId` en el cuerpo se ignora; el
+  // único dato del cuerpo es `asGuest`, que solo sirve para NO ligar la compra a la cuenta.
+  const session = isGuestRequest(input) ? null : await readOptionalSession();
+
   const { data, error } = await client.rpc('create_pending_order', {
     p_event_id: parsed.data.eventId,
     p_items: parsed.data.items,
@@ -60,6 +70,7 @@ export async function POST(request: Request) {
     p_fee_percent: getServerDemoCommissionPercent(),
     p_request_id: parsed.data.requestId,
     p_buyer_phone: parsed.data.buyerPhone,
+    p_buyer_user_id: session?.userId ?? null,
   });
 
   if (error) {

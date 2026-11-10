@@ -136,8 +136,9 @@ describe('usuario que intenta subir de rol', () => {
     ).rejects.toThrow(/permission denied/);
     await asSuperuser(db);
 
-    const perfiles = await db.query(`select id from public.profiles where id = $1`, [usuario]);
-    expect(perfiles.rows).toHaveLength(0);
+    // El disparador de alta ya le dio un perfil buyer; el intento de admin no cambia nada.
+    const perfiles = await db.query<{ role: string }>(`select role from public.profiles where id = $1`, [usuario]);
+    expect(perfiles.rows).toEqual([{ role: 'buyer' }]);
   });
 
   it('no puede crear un perfil para otra cuenta', async () => {

@@ -13,11 +13,12 @@ import {
   parseCartSnapshot,
 } from '@/features/checkout/cart';
 import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
-import { submitLabel } from '@/features/checkout/labels';
+import { accountNotice, submitLabel } from '@/features/checkout/labels';
 import { CHECKOUT_REQUEST_STORAGE_KEY, CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
+import { AccountPrompt } from './account-prompt';
 import { CartSummary } from './cart-summary';
 import { CheckoutErrorNotice, CheckoutSteps, PaymentStep, type PendingOrder } from './payment-step';
 
@@ -27,6 +28,9 @@ type FieldErrors = {
   buyerPhone?: string;
   form?: string;
 };
+
+/** Cuenta con sesión, leída en el servidor desde las cookies; sirve solo para precargar el formulario. */
+export type CheckoutAccount = { name: string; email: string };
 
 type CreatedOrder = PendingOrder & {
   subtotalCents: number;
@@ -148,15 +152,19 @@ function validateBuyer(name: string, email: string, phone: string): FieldErrors 
   return errors;
 }
 
-export function CheckoutPage() {
+export function CheckoutPage({ account = null }: { account?: CheckoutAccount | null }) {
   const storedValue = useSyncExternalStore(
     subscribeToCartStorage,
     getCartStorageSnapshot,
     getServerCartStorageSnapshot,
   );
   const snapshot = parseCartSnapshot(storedValue);
-  const [buyerName, setBuyerName] = useState('');
-  const [buyerEmail, setBuyerEmail] = useState('');
+  const [buyerName, setBuyerName] = useState(account?.name ?? '');
+  const [typedEmail, setTypedEmail] = useState('');
+  // Con sesión se compra con la cuenta (correo fijo) salvo que el comprador elija seguir como invitado.
+  const [asGuest, setAsGuest] = useState(false);
+  const usingAccount = account !== null && !asGuest;
+  const buyerEmail = usingAccount ? account.email : typedEmail;
   const [buyerPhone, setBuyerPhone] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -206,6 +214,8 @@ export function CheckoutPage() {
           eventId: snapshot.event.id,
           requestId,
           items: snapshot.items,
+          // Solo indica que no se ligue a la cuenta; quién es el usuario lo decide el servidor con la sesión.
+          ...(account && asGuest ? { asGuest: true } : {}),
           buyer: {
             name: buyerName.trim(),
             email: buyerEmail.trim(),
@@ -306,6 +316,22 @@ export function CheckoutPage() {
           </p>
         </header>
 
+        {account ? (
+          <div className="flex flex-col gap-3 rounded-lg bg-superficie-sutil p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-2 font-texto text-sm leading-6">
+              <Icon name="user" size={16} />
+              {accountNotice(usingAccount)}
+            </p>
+            <button
+              type="button"
+              onClick={() => setAsGuest((current) => !current)}
+              className={cn(buttonVariants({ variant: 'secundario' }), 'w-full shrink-0 sm:w-auto')}
+            >
+              {usingAccount ? 'Comprar como invitado' : 'Usar mi cuenta'}
+            </button>
+          </div>
+        ) : null}
+
         <form onSubmit={submitOrder} className="flex flex-col gap-3 rounded-lg bg-superficie p-3 shadow-sm md:gap-5 md:p-6" noValidate>
           <div className="flex flex-col gap-2">
             <label htmlFor="buyer-name" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
@@ -346,11 +372,21 @@ export function CheckoutPage() {
               required
               maxLength={254}
               value={buyerEmail}
-              onChange={(input) => setBuyerEmail(input.target.value)}
+              onChange={(input) => setTypedEmail(input.target.value)}
+              readOnly={usingAccount}
               aria-invalid={Boolean(fieldErrors.buyerEmail)}
-              aria-describedby={fieldErrors.buyerEmail ? 'buyer-email-error' : undefined}
-              className={fieldClass}
+              aria-describedby={
+                [fieldErrors.buyerEmail ? 'buyer-email-error' : null, usingAccount ? 'buyer-email-hint' : null]
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              }
+              className={cn(fieldClass, usingAccount && 'cursor-default bg-superficie-sutil text-texto-suave')}
             />
+            {usingAccount ? (
+              <p id="buyer-email-hint" className="font-texto text-xs leading-5 text-texto-suave">
+                Es el correo de tu cuenta; a él se asocia la compra.
+              </p>
+            ) : null}
             {fieldErrors.buyerEmail ? (
               <p id="buyer-email-error" role="alert" className="font-texto text-sm text-error">
                 {fieldErrors.buyerEmail}
@@ -413,6 +449,9 @@ export function CheckoutPage() {
             Revisaremos precios y disponibilidad antes de guardar la orden.
           </p>
         </form>
+
+        {/* Debajo del formulario: en móvil la compra va primero y la cuenta es opcional. */}
+        <AccountPrompt variant="checkout" signedIn={account !== null} />
       </section>
     </div>
   );

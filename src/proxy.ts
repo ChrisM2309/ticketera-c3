@@ -11,7 +11,10 @@ import {
 import { gateSession } from '@/lib/auth/session-gate';
 import { readAuthConfig, refreshSessionTokens } from '@/lib/auth/supabase-auth';
 
-/** Solo las zonas privadas pasan por el proxy; el resto del sitio no paga esta comprobación. */
+/**
+ * Solo las zonas privadas y las rutas de sesión opcional (checkout, confirmación y su API) pasan por el proxy;
+ * el resto del sitio no paga esta comprobación. En las opcionales el proxy solo renueva el token, no redirige.
+ */
 export async function proxy(request: NextRequest) {
   const config = readAuthConfig();
   const secure = isSecureCookieContext();
@@ -37,6 +40,17 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  if (result.clearSession) {
+    // Sesión opcional con renovación caducada: sigue como invitado y se limpian las cookies vencidas.
+    const response = NextResponse.next();
+
+    for (const cookie of expiredSessionCookies(secure)) {
+      response.cookies.set(cookie.name, cookie.value, cookie.options);
+    }
+
+    return response;
+  }
+
   if (!result.refreshed) {
     return NextResponse.next();
   }
@@ -55,5 +69,13 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/panel/:path*', '/admin/:path*'],
+  matcher: [
+    '/panel/:path*',
+    '/admin/:path*',
+    '/mis-boletos/:path*',
+    '/cuenta/:path*',
+    '/checkout/:path*',
+    '/confirmacion/:path*',
+    '/api/checkout/:path*',
+  ],
 };

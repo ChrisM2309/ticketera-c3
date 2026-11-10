@@ -30,6 +30,7 @@ Supabase
 - Organizador autenticado ve sus propios eventos y métricas agregadas sin correos completos si no son necesarios.
 - Administrador comprobado en servidor; no confiar en un rol editable desde el navegador.
 - RLS activo; las funciones privilegiadas deben implementar controles explícitos y mínimo permiso.
+- El rol nunca viene del navegador ni de `user_metadata`. Un perfil nuevo siempre es `buyer`; solo el servidor o `admin_link_organizer` lo cambian.
 
 ## 3. Flujo comprador
 
@@ -44,12 +45,15 @@ Supabase
 7. Registros gratis siguen mismo paso transaccional sin cobro.
 8. Confirmación protegida por token difícil de adivinar y boleto descargable/print.
 9. Post-compra simulado: comprobante, «Boleto enviado… · Simulado» por correo y WhatsApp (outbox), recordatorio 24 horas antes, `.ics` y botón de compartir por WhatsApp.
+10. Cuenta opcional (D-37): el comprador puede registrarse con correo y contraseña, y recuperar la contraseña por correo. Con sesión, el checkout precarga nombre y correo, y la orden queda ligada a `buyer_user_id`. Sin sesión, la compra de invitado no cambia. Una orden de invitado puede reclamarse después con `claim_order`, solo si el correo coincide con el de la cuenta y se tiene el enlace de confirmación. «Mis boletos» (`/mis-boletos/`) lista solo las órdenes propias; `/cuenta/` edita nombre, universidad y preferencias de correo (desactivadas por defecto, sin envío real).
 
 ## 4. Flujo organizador
 
 `Login → Publicar evento → Borrador/Pendiente → Revisión admin → Publicado → Registros (resumen)`.
 
 Un organizador solo puede tener acceso a eventos que creó/posee. No implementar roles complejos ni payouts.
+
+**Alta de organizadores (P-7, CP-09):** la persona primero crea una cuenta de comprador. El administrador crea la organización en `/admin/organizadores/` y la vincula por correo con `admin_link_organizer`, que sube su perfil de `buyer` a `organizer`. No hay autoservicio ni aprobación de solicitudes en v1.
 
 ## 5. Estados
 
@@ -81,6 +85,7 @@ Las órdenes confirmadas guardan precio y comisión históricos; cambios posteri
 - `POST /api/checkout/orders/[orderId]/confirm/`: recibe `{ checkoutToken, decision }` con `decision` igual a `null` (registro gratuito), `approved` o `rejected` (pago DEMO). Llama a `confirm_order` (atómica e idempotente), genera los QR y responde `{ orderId, status, ticketCount, alreadyProcessed }`. Solo cuando esta llamada confirma una orden (gratis o aprobada) encola el boleto y el recordatorio en `notification_outbox`.
 - `GET /confirmacion/[orderId]/[token]/`: página privada (`noindex`) con boletos, comprobante y envío simulado. `GET /confirmacion/[orderId]/[token]/qr/[ticketId]/` descarga el QR en SVG. Un token o identificador inválido responde 404.
 - `GET /calendario/[eventId]/`: descarga el `.ics` (`text/calendar`) de un evento **publicado** con el cliente público; uuid inválido o evento inexistente o no publicado responde 404. No lleva datos del comprador y la ruta está en `privatePaths` (no se indexa). La respuesta 200 se cachea poco (`s-maxage=300`, el navegador revalida) y los errores no se cachean.
+- Cuentas (Fase 3): `/registro/` e `/ingresar/` (inicio de sesión y recuperación), `/mis-boletos/` y `/cuenta/` para el comprador (todas `noindex`); `/admin/organizadores/` para el alta de organizadores.
 - Organizador/admin: Server Actions protegidas para operaciones CRUD y aprobación.
 
 ### Token de checkout y `request_id`
@@ -89,6 +94,7 @@ Las órdenes confirmadas guardan precio y comisión históricos; cambios posteri
 - El token público **se deriva**, no se guarda: `checkoutToken = base64url(HMAC-SHA256(CHECKOUT_TOKEN_SECRET, request_id))` (43 caracteres, sin relleno). La base solo guarda el SHA-256 del token (`orders.public_token_hash`).
 - Con el mismo `request_id`, `create_pending_order` devuelve la misma orden (una sola orden y un solo pago) y el servidor deriva el mismo token, así un reintento o un doble clic obtiene el mismo enlace de confirmación. Si el `request_id` ya se usó con otro evento, la RPC lo rechaza.
 - Los QR de los boletos se derivan del token y del id de cada boleto, por lo que la confirmación los recupera sin guardarlos en claro.
+- En «Mis boletos», el enlace de cada orden de la cuenta se deriva igual, a partir de `checkout_request_id` (P-2). Así una compra con cuenta se recupera sin guardar tokens en claro.
 - `CHECKOUT_TOKEN_SECRET` es una variable **solo de servidor**. En producción su ausencia falla de forma explícita (la creación de órdenes responde 503); fuera de producción se usa un valor local de desarrollo. Debe crearse en Vercel antes del despliegue.
 
 ### Notificaciones simuladas

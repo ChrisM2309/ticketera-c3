@@ -3,11 +3,18 @@
  * No importa nada de Next ni de Supabase, para poder probarlas en `tests/unit`.
  */
 
-export const appRoles = ['organizer', 'admin'] as const;
+import { safeNextPath } from './next-path';
+
+export { safeNextPath };
+
+/** De menor a mayor privilegio: cada rol entra a las zonas del rol anterior. */
+export const appRoles = ['buyer', 'organizer', 'admin'] as const;
 
 export type AppRole = (typeof appRoles)[number];
 
 export const signInPath = '/ingresar/';
+export const buyerHomePath = '/mis-boletos/';
+export const accountPath = '/cuenta/';
 export const organizerHomePath = '/panel/';
 export const adminHomePath = '/admin/';
 
@@ -15,8 +22,14 @@ export const sessionErrorCodes = ['sesion-expirada', 'sin-rol'] as const;
 
 export type SessionErrorCode = (typeof sessionErrorCodes)[number];
 
-/** Cada zona privada admite un único rol: un organizador no entra a /admin/ y el admin no usa /panel/. */
+/**
+ * Cada zona privada declara el rol mínimo que la abre. La jerarquía es comprador < organizador < administrador:
+ * organizador y administrador también entran a /mis-boletos/ y /cuenta/, el administrador también a /panel/,
+ * y solo el administrador entra a /admin/.
+ */
 const zoneRoles: readonly { prefix: string; role: AppRole }[] = [
+  { prefix: buyerHomePath, role: 'buyer' },
+  { prefix: accountPath, role: 'buyer' },
   { prefix: organizerHomePath, role: 'organizer' },
   { prefix: adminHomePath, role: 'admin' },
 ];
@@ -29,18 +42,49 @@ export function requiredRoleForPath(pathname: string): AppRole | null {
   return zone ? zone.role : null;
 }
 
+/**
+ * Rutas públicas que leen la sesión de forma opcional (checkout, confirmación y la API de órdenes): no exigen
+ * ingresar, pero el proxy renueva el token vencido para que un comprador con cuenta no se trate como invitado.
+ */
+const optionalSessionPrefixes = ['/checkout/', '/confirmacion/', '/api/checkout/'] as const;
+
+export function isOptionalSessionPath(pathname: string): boolean {
+  return optionalSessionPrefixes.some(
+    (prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix),
+  );
+}
+
 export function isAppRole(value: unknown): value is AppRole {
   return typeof value === 'string' && (appRoles as readonly string[]).includes(value);
 }
 
-export function homePathFor(role: AppRole): string {
-  return role === 'admin' ? adminHomePath : organizerHomePath;
+/** Zona por defecto de cada rol tras ingresar. */
+export function landingPathForRole(role: AppRole): string {
+  if (role === 'admin') {
+    return adminHomePath;
+  }
+
+  return role === 'organizer' ? organizerHomePath : buyerHomePath;
+}
+
+/** `true` si `role` alcanza el rol mínimo `required` de una zona. */
+export function roleSatisfies(role: AppRole, required: AppRole): boolean {
+  return appRoles.indexOf(role) >= appRoles.indexOf(required);
+}
+
+/** Destino tras ingresar: la ruta pedida si es interna y el rol puede verla; si no, la zona del rol. */
+export function destinationAfterSignIn(role: AppRole, requested: unknown): string {
+  const landing = landingPathForRole(role);
+  const path = safeNextPath(requested, landing);
+  const required = requiredRoleForPath(path);
+
+  return required && !roleSatisfies(role, required) ? landing : path;
 }
 
 export type AccessDecision = { action: 'allow' } | { action: 'sign-in' } | { action: 'redirect'; to: string };
 
 /**
- * Decide qué hacer con una petición a una zona privada.
+ * Decide qué hacer con una petición a una zona privada cuyo rol mínimo es `required`.
  * `role` debe venir de `profiles` leído en el servidor con la sesión del usuario, nunca del navegador.
  */
 export function decideAccess(input: {
@@ -56,31 +100,11 @@ export function decideAccess(input: {
     return { action: 'redirect', to: signInUrl({ error: 'sin-rol' }) };
   }
 
-  if (input.role !== input.required) {
-    return { action: 'redirect', to: homePathFor(input.role) };
+  if (!roleSatisfies(input.role, input.required)) {
+    return { action: 'redirect', to: landingPathForRole(input.role) };
   }
 
   return { action: 'allow' };
-}
-
-/**
- * Acepta solo rutas internas del propio sitio (evita redirecciones abiertas).
- * Cualquier otro valor cae en el destino por defecto.
- */
-export function safeNextPath(value: unknown, fallback: string): string {
-  if (typeof value !== 'string' || value.length > 200) {
-    return fallback;
-  }
-
-  if (!value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
-    return fallback;
-  }
-
-  if (/[\u0000-\u001f\u007f\\]/.test(value)) {
-    return fallback;
-  }
-
-  return value;
 }
 
 export function signInUrl(options: { next?: string; error?: SessionErrorCode } = {}): string {
