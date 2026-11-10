@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
+  buildReminderNotifications,
   buildTicketNotifications,
   enqueueNotifications,
   maskEmail,
@@ -58,6 +59,50 @@ describe('buildTicketNotifications', () => {
     expect(serialized).not.toContain('ana.perez');
     expect(serialized).not.toContain(phone);
     expect(serialized).not.toContain('12345678');
+  });
+});
+
+describe('buildReminderNotifications', () => {
+  const email = 'ana@gmail.com';
+
+  test('evento en 48 h crea recordatorio a las 24 h', () => {
+    const eventStartsAt = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    const rows = buildReminderNotifications({ orderId, email, phone: null, eventStartsAt, now });
+
+    expect(rows).toEqual([
+      {
+        orderId,
+        channel: 'email',
+        template: 'reminder_24h',
+        destinationMasked: 'a***@gmail.com',
+        scheduledFor: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+      },
+    ]);
+  });
+
+  test('evento en 10 h no crea recordatorio', () => {
+    const eventStartsAt = new Date(now.getTime() + 10 * 60 * 60 * 1000);
+
+    expect(buildReminderNotifications({ orderId, email, phone: '+50312345678', eventStartsAt, now })).toEqual([]);
+  });
+
+  test('el recordatorio por WhatsApp solo existe con teléfono', () => {
+    const eventStartsAt = new Date(now.getTime() + 72 * 60 * 60 * 1000);
+    const sinTelefono = buildReminderNotifications({ orderId, email, phone: null, eventStartsAt, now });
+    const conTelefono = buildReminderNotifications({ orderId, email, phone: '+50312345678', eventStartsAt, now });
+
+    expect(sinTelefono.map((row) => row.channel)).toEqual(['email']);
+    expect(conTelefono.map((row) => [row.channel, row.template, row.destinationMasked])).toEqual([
+      ['email', 'reminder_24h', 'a***@gmail.com'],
+      ['whatsapp', 'reminder_24h', '+503 ****-5678'],
+    ]);
+    expect(conTelefono.every((row) => row.scheduledFor.getTime() === eventStartsAt.getTime() - 24 * 60 * 60 * 1000)).toBe(true);
+  });
+
+  test('un evento exactamente a 24 h no crea recordatorio ya vencido', () => {
+    const eventStartsAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    expect(buildReminderNotifications({ orderId, email, phone: null, eventStartsAt, now })).toEqual([]);
   });
 });
 

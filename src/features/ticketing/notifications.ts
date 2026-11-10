@@ -49,6 +49,44 @@ export function buildTicketNotifications({ orderId, email, phone, now }: TicketN
   return rows;
 }
 
+const REMINDER_LEAD_MS = 24 * 60 * 60 * 1000;
+
+type ReminderNotificationInput = {
+  orderId: string;
+  email: string;
+  phone: string | null;
+  eventStartsAt: Date;
+  now: Date;
+};
+
+/**
+ * Recordatorio simulado 24 h antes del evento: la fila del outbox es el registro, no hay job real.
+ * Si ese instante ya pasó (o es ahora mismo) no se crea nada, porque el boleto acaba de salir.
+ */
+export function buildReminderNotifications({
+  orderId,
+  email,
+  phone,
+  eventStartsAt,
+  now,
+}: ReminderNotificationInput): OutboxRow[] {
+  const scheduledFor = new Date(eventStartsAt.getTime() - REMINDER_LEAD_MS);
+
+  if (Number.isNaN(scheduledFor.getTime()) || scheduledFor.getTime() <= now.getTime()) {
+    return [];
+  }
+
+  const rows: OutboxRow[] = [
+    { orderId, channel: 'email', template: 'reminder_24h', destinationMasked: maskEmail(email), scheduledFor },
+  ];
+
+  if (phone) {
+    rows.push({ orderId, channel: 'whatsapp', template: 'reminder_24h', destinationMasked: maskPhone(phone), scheduledFor });
+  }
+
+  return rows;
+}
+
 /**
  * Registra las notificaciones simuladas. Un fallo del outbox nunca revierte una compra ya
  * confirmada: se registra el error y se sigue. El cliente se importa al usarlo para que el módulo
