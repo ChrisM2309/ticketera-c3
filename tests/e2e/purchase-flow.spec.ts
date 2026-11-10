@@ -7,8 +7,9 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * La página `/confirmacion/…` (comprobante, «Boleto enviado… · Simulado», enlace de calendario y botón de
  * WhatsApp) se renderiza en el servidor con la orden real, así que una orden simulada no puede verla:
- * esos elementos se comprueban en purchase-flow-real.spec.ts. Aquí se cubren los mismos enlaces desde la
- * ficha del evento y el resumen del comprobante que muestra el propio panel al confirmar.
+ * esos elementos se comprueban en purchase-flow-real.spec.ts (con órdenes reales) y, sin base de datos, en
+ * tests/unit/confirmation-page.test.ts. Aquí se cubren los mismos enlaces desde la ficha del evento y el
+ * resumen del comprobante que muestra el propio panel al confirmar. Desvío del brief registrado en D-60.
  */
 
 const orderId = '55555555-5555-4555-8555-555555555555';
