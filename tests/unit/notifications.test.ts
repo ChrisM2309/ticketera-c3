@@ -37,7 +37,7 @@ describe('buildTicketNotifications', () => {
     const rows = buildTicketNotifications({ orderId, email: 'ana@gmail.com', phone: null, now });
 
     expect(rows).toEqual([
-      { orderId, channel: 'email', template: 'ticket', destinationMasked: 'a***@gmail.com', scheduledFor: now },
+      { orderId, channel: 'email', template: 'ticket', destinationMasked: 'a***@gmail.com', scheduledFor: now, status: 'pending' },
     ]);
   });
 
@@ -144,6 +144,7 @@ describe('enqueueNotifications', () => {
           template: 'ticket',
           destination_masked: 'a***@gmail.com',
           scheduled_for: now.toISOString(),
+          status: 'pending',
         },
       ],
       { onConflict: 'order_id,channel,template', ignoreDuplicates: true },

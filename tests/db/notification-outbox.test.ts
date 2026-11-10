@@ -107,10 +107,38 @@ describe('notification_outbox', () => {
     await expect(
       db.query(
         `insert into public.notification_outbox (order_id, channel, template, destination_masked, status)
-         values ($1, 'email', 'ticket', 'x', 'sent')`,
+         values ($1, 'email', 'ticket', 'x', 'entregado')`,
         [orderId],
       ),
     ).rejects.toThrow(/status/);
+  });
+
+  it('el correo de boleto pasa por pending y sent, y guarda intentos y motivo acotado', async () => {
+    await asRole(db, 'service_role');
+    await db.query(
+      `insert into public.notification_outbox (order_id, channel, template, destination_masked, status)
+       values ($1, 'email', 'ticket', 'a***@gmail.com', 'pending')`,
+      [orderId],
+    );
+    await db.query(
+      `update public.notification_outbox
+          set status = 'sent', provider_message_id = '<msg-demo@brevo>', attempts = 1, sent_at = now()
+        where order_id = $1 and channel = 'email' and template = 'ticket'`,
+      [orderId],
+    );
+
+    const result = await db.query<{ status: string; attempts: number; provider_message_id: string }>(
+      `select status, attempts, provider_message_id from public.notification_outbox where order_id = $1 and channel = 'email'`,
+      [orderId],
+    );
+    expect(result.rows).toEqual([{ status: 'sent', attempts: 1, provider_message_id: '<msg-demo@brevo>' }]);
+
+    await expect(
+      db.query(`update public.notification_outbox set attempts = -1 where order_id = $1`, [orderId]),
+    ).rejects.toThrow(/attempts/);
+    await expect(
+      db.query(`update public.notification_outbox set last_error = $2 where order_id = $1`, [orderId, 'x'.repeat(201)]),
+    ).rejects.toThrow(/last_error/);
   });
 
   it('se elimina junto con la orden', async () => {

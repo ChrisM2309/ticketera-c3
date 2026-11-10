@@ -30,6 +30,7 @@
 - `superpowers/plans/2026-11-09-fase-5-contenido-seo.md` — Fase 5: contenido, SEO, indexación y analítica.
 - `superpowers/plans/2026-11-09-fase-6-checkin.md` — Fase 6: check-in y post-evento.
 - `superpowers/plans/2026-11-09-fase-7-cierre.md` — Fase 7: cierre y entrega.
+- `superpowers/plans/2026-11-10-correo-brevo.md` — plan del correo de confirmación con Brevo (pendiente de decisiones del responsable).
 - `superpowers/plans/implementation-backlog.md` — backlog de tareas por área, dependencias y criterios de aceptación.
 - `DECISIONS.md` — decisiones cerradas, supuestos y pendientes menores.
 
