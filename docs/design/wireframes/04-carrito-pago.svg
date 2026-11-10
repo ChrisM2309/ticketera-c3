@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1120" width="1800" height="1120" role="img">
+  <title>Wireframe 04: Carrito y pago, móvil y escritorio (baja fidelidad)</title>
+  <style>
+    .marco { fill: none; stroke: currentColor; stroke-width: 2; }
+    .trazo { fill: none; stroke: currentColor; stroke-width: 1; }
+    .caja { fill: currentColor; fill-opacity: 0.12; stroke: currentColor; stroke-width: 1; }
+    .imagen { fill: currentColor; fill-opacity: 0.22; stroke: none; }
+    .punto { fill: currentColor; stroke: none; }
+    .h1 { fill: currentColor; font-family: sans-serif; font-size: 24px; font-weight: 700; }
+    .txt { fill: currentColor; font-family: sans-serif; font-size: 14px; }
+    .txt-b { fill: currentColor; font-family: sans-serif; font-size: 15px; font-weight: 700; }
+    .txt-s { fill: currentColor; font-family: sans-serif; font-size: 12px; }
+    .txt-xs { fill: currentColor; font-family: sans-serif; font-size: 11px; }
+    .etiqueta { fill: currentColor; font-family: sans-serif; font-size: 20px; font-weight: 700; }
+    .nota { fill: currentColor; font-family: sans-serif; font-size: 15px; }
+    .centro { text-anchor: middle; }
+    .fin { text-anchor: end; }
+  </style>
+
+  <text class="etiqueta" x="40" y="50">04 · Carrito y pago: compra sin cuenta, total con comisión, pago DEMO (WF-01)</text>
+
+  <g id="movil" transform="translate(40 96)" data-ancho="375" data-alto="812">
+    <text class="txt-s" x="0" y="-20">Móvil · 375 × 812</text>
+    <rect class="marco" x="0" y="0" width="375" height="812"/>
+
+    <!-- Cabecera simple: volver y logo -->
+    <rect class="caja" x="16" y="10" width="90" height="44"/>
+    <text class="txt centro" x="61" y="37">Volver</text>
+    <rect class="caja" x="120" y="10" width="239" height="44"/>
+    <text class="txt-s centro" x="239.5" y="36">Logo (va al Home)</text>
+
+    <text class="h1" x="16" y="88">Carrito y pago</text>
+
+    <!-- Carrito: una línea con el evento y su acción de quitar (área táctil de 44 px) -->
+    <rect class="trazo" x="16" y="100" width="343" height="100"/>
+    <rect class="imagen" x="24" y="108" width="64" height="84"/>
+    <text class="txt-b" x="100" y="128">Título del evento DEMO</text>
+    <text class="txt-s" x="100" y="146">Entrada general × 2</text>
+    <text class="txt" x="100" y="166">$XX.XX</text>
+    <rect class="trazo" x="299" y="100" width="60" height="44"/>
+    <text class="txt-s centro" x="329" y="126">Quitar</text>
+
+    <!-- Cuenta: invitado por defecto, inicio de sesión opcional -->
+    <text class="txt-b" x="16" y="226">Cuenta (opcional)</text>
+    <rect class="trazo" x="16" y="234" width="343" height="44"/>
+    <circle class="trazo" cx="38" cy="256" r="9"/>
+    <circle class="punto" cx="38" cy="256" r="4"/>
+    <text class="txt-b" x="58" y="261">Continuar como invitado</text>
+    <rect class="trazo" x="16" y="284" width="343" height="44"/>
+    <circle class="trazo" cx="38" cy="306" r="9"/>
+    <text class="txt" x="58" y="311">Iniciar sesión (opcional)</text>
+
+    <!-- Datos para el boleto -->
+    <text class="txt-s" x="16" y="348">Correo para el boleto</text>
+    <rect class="caja" x="16" y="354" width="343" height="44"/>
+    <text class="txt" x="28" y="381">Correo electrónico</text>
+    <text class="txt-s" x="16" y="416">WhatsApp para el boleto (opcional)</text>
+    <rect class="caja" x="16" y="422" width="343" height="44"/>
+    <text class="txt" x="28" y="449">Número de WhatsApp</text>
+
+    <!-- Resumen: comisión visible antes de pagar -->
+    <rect class="trazo" x="16" y="478" width="343" height="104"/>
+    <text class="txt" x="28" y="500">Subtotal</text>
+    <text class="txt fin" x="347" y="500">$XX.XX</text>
+    <text class="txt" x="28" y="522">Comisión de servicio</text>
+    <text class="txt fin" x="347" y="522">$X.XX</text>
+    <line class="trazo" x1="28" y1="532" x2="347" y2="532"/>
+    <text class="txt-b" x="28" y="554">Total</text>
+    <text class="txt-b fin" x="347" y="554">$XX.XX</text>
+    <text class="txt-s" x="28" y="574">Sin cargos adicionales después de pagar</text>
+
+    <!-- Pago de demostración: sin datos de tarjeta -->
+    <text class="txt-b" x="16" y="608">Pago de demostración (DEMO)</text>
+    <rect class="trazo" x="16" y="616" width="343" height="44"/>
+    <circle class="trazo" cx="38" cy="638" r="9"/>
+    <circle class="punto" cx="38" cy="638" r="4"/>
+    <text class="txt" x="58" y="643">Resultado aprobado</text>
+    <rect class="trazo" x="16" y="664" width="343" height="44"/>
+    <circle class="trazo" cx="38" cy="686" r="9"/>
+    <text class="txt" x="58" y="691">Resultado rechazado</text>
+
+    <rect class="caja" x="16" y="724" width="343" height="52"/>
+    <text class="txt-b centro" x="187.5" y="755">Pagar $XX.XX (DEMO)</text>
+    <text class="txt-s" x="16" y="796">Pago simulado: no se piden datos de tarjeta</text>
+  </g>
+
+  <g id="escritorio" transform="translate(470 96)" data-ancho="1280" data-alto="800">
+    <text class="txt-s" x="0" y="-20">Escritorio · 1280 × 800</text>
+    <rect class="marco" x="0" y="0" width="1280" height="800"/>
+
+    <!-- Cabecera -->
+    <line class="trazo" x1="0" y1="72" x2="1280" y2="72"/>
+    <rect class="caja" x="24" y="18" width="150" height="36"/>
+    <text class="txt-s" x="36" y="40">Logo (va al Home)</text>
+    <rect class="trazo" x="1186" y="22" width="70" height="28"/>
+    <text class="txt-b centro" x="1221" y="41">DEMO</text>
+
+    <text class="h1" x="24" y="112">Carrito y pago</text>
+
+    <!-- Columna izquierda: carrito, cuenta y datos -->
+    <rect class="trazo" x="24" y="130" width="736" height="110"/>
+    <rect class="imagen" x="36" y="142" width="86" height="86"/>
+    <text class="txt-b" x="140" y="168">Título del evento DEMO</text>
+    <text class="txt-s" x="140" y="188">Entrada general × 2</text>
+    <text class="txt fin" x="600" y="168">$XX.XX</text>
+    <rect class="trazo" x="676" y="186" width="64" height="44"/>
+    <text class="txt-s centro" x="708" y="212">Quitar</text>
+
+    <rect class="trazo" x="24" y="252" width="736" height="110"/>
+    <rect class="imagen" x="36" y="264" width="86" height="86"/>
+    <text class="txt-b" x="140" y="290">Título del evento DEMO</text>
+    <text class="txt-s" x="140" y="310">Entrada anticipada × 1</text>
+    <text class="txt fin" x="600" y="290">$XX.XX</text>
+    <rect class="trazo" x="676" y="308" width="64" height="44"/>
+    <text class="txt-s centro" x="708" y="334">Quitar</text>
+
+    <text class="txt-b" x="24" y="396">Cuenta (opcional)</text>
+    <rect class="trazo" x="24" y="406" width="360" height="44"/>
+    <circle class="trazo" cx="46" cy="428" r="9"/>
+    <circle class="punto" cx="46" cy="428" r="4"/>
+    <text class="txt-b" x="66" y="433">Continuar como invitado</text>
+    <rect class="trazo" x="400" y="406" width="360" height="44"/>
+    <circle class="trazo" cx="422" cy="428" r="9"/>
+    <text class="txt" x="442" y="433">Iniciar sesión (opcional)</text>
+
+    <text class="txt-s" x="24" y="484">Correo para el boleto</text>
+    <rect class="caja" x="24" y="494" width="360" height="44"/>
+    <text class="txt" x="36" y="521">Correo electrónico</text>
+    <text class="txt-s" x="400" y="484">WhatsApp para el boleto (opcional)</text>
+    <rect class="caja" x="400" y="494" width="360" height="44"/>
+    <text class="txt" x="412" y="521">Número de WhatsApp</text>
+    <text class="txt-s" x="24" y="566">Sin crear cuenta: el boleto llega al correo y al WhatsApp indicados (envío simulado).</text>
+
+    <!-- Columna derecha: resumen con comisión, pago DEMO y botón -->
+    <rect class="trazo" x="800" y="130" width="456" height="370"/>
+    <text class="txt-b" x="820" y="160">Resumen</text>
+    <text class="txt" x="820" y="196">Subtotal</text>
+    <text class="txt fin" x="1236" y="196">$XX.XX</text>
+    <text class="txt" x="820" y="224">Comisión de servicio</text>
+    <text class="txt fin" x="1236" y="224">$X.XX</text>
+    <line class="trazo" x1="820" y1="240" x2="1236" y2="240"/>
+    <text class="txt-b" x="820" y="270">Total</text>
+    <text class="txt-b fin" x="1236" y="270">$XX.XX</text>
+    <text class="txt-s" x="820" y="292">Sin cargos adicionales después de pagar</text>
+
+    <text class="txt-b" x="820" y="326">Pago de demostración (DEMO)</text>
+    <rect class="trazo" x="820" y="336" width="416" height="44"/>
+    <circle class="trazo" cx="842" cy="358" r="9"/>
+    <circle class="punto" cx="842" cy="358" r="4"/>
+    <text class="txt" x="862" y="363">Resultado aprobado</text>
+    <rect class="trazo" x="820" y="388" width="416" height="44"/>
+    <circle class="trazo" cx="842" cy="410" r="9"/>
+    <text class="txt" x="862" y="415">Resultado rechazado</text>
+
+    <rect class="caja" x="820" y="444" width="416" height="44"/>
+    <text class="txt-b centro" x="1028" y="471">Pagar $XX.XX (DEMO)</text>
+    <text class="txt-s" x="820" y="520">Pago simulado: no se piden datos de tarjeta</text>
+  </g>
+
+  <g id="notas">
+    <text class="nota" x="40" y="950">Nota: compra sin crear cuenta por defecto («Continuar como invitado»). «Iniciar sesión» es opcional y no bloquea el pago.</text>
+    <text class="nota" x="40" y="976">Nota: total claro. Subtotal, comisión de servicio y total aparecen antes del botón de pago; no hay cargos después de pagar.</text>
+    <text class="nota" x="40" y="1002">Nota: pago de demostración sin datos de tarjeta: «Resultado aprobado» o «Resultado rechazado». Botón y resumen llevan la etiqueta DEMO.</text>
+    <text class="nota" x="40" y="1028">Nota: un pago rechazado no emite boletos ni consume inventario. Precios y comisión se validan en servidor, no en el navegador.</text>
+    <text class="nota" x="40" y="1054">Nota: en móvil, el botón de pago queda dentro del primer desplazamiento (de 724 a 776 px), con el total ya visible encima.</text>
+    <text class="nota" x="40" y="1080">Nota: carrito y checkout son rutas privadas con noindex; no tienen palabra clave SEO (SEO_ROUTES, checkout). Textos de marcador, sin datos reales.</text>
+  </g>
+</svg>
