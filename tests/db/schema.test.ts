@@ -5,8 +5,8 @@ import { createDatabase, seedSql } from './helpers';
 
 const expectedTables = [
   'categories',
-  'event_featured',
   'events',
+  'featured_placements',
   'notification_outbox',
   'order_items',
   'orders',
@@ -14,6 +14,7 @@ const expectedTables = [
   'payments',
   'profiles',
   'seo_routes',
+  'site_settings',
   'ticket_types',
   'tickets',
 ];
