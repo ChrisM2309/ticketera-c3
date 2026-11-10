@@ -21,7 +21,7 @@ describe('updateSettingsAction', () => {
     requireRole.mockReset().mockResolvedValue({ client: { rpc } });
   });
 
-  it('envía números y beneficios como valores JSON tipados al RPC', async () => {
+  it('guarda todas las claves juntas en una sola llamada con valores JSON tipados', async () => {
     const formData = new FormData();
     formData.set('dailyRate', '12.50');
     formData.set('packagePrice', '99.99');
@@ -33,22 +33,18 @@ describe('updateSettingsAction', () => {
 
     await expect(updateSettingsAction(formData)).rejects.toThrow('redirect:/admin/ajustes/?ok=guardar');
 
-    expect(rpc).toHaveBeenNthCalledWith(1, 'admin_set_setting', {
-      p_key: 'featured_daily_rate_cents',
-      p_value: 1250,
-    });
-    expect(rpc).toHaveBeenNthCalledWith(2, 'admin_set_setting', {
-      p_key: 'package_annual_price_cents',
-      p_value: 9999,
-    });
-    expect(rpc).toHaveBeenNthCalledWith(3, 'admin_set_setting', {
-      p_key: 'package_benefits',
-      p_value: {
-        eventsIncluded: 10,
-        featuredDaysIncluded: 30,
-        featuredDiscountPercent: 50,
-        personalizedFollowUp: true,
-        advancedReport: true,
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('admin_set_settings', {
+      p_settings: {
+        featured_daily_rate_cents: 1250,
+        package_annual_price_cents: 9999,
+        package_benefits: {
+          eventsIncluded: 10,
+          featuredDaysIncluded: 30,
+          featuredDiscountPercent: 50,
+          personalizedFollowUp: true,
+          advancedReport: true,
+        },
       },
     });
   });
@@ -64,5 +60,14 @@ describe('updateSettingsAction', () => {
       p_key: 'indexing_enabled',
       p_value: true,
     });
+  });
+
+  it('rechaza un valor de indexación malformado sin cambiar los ajustes', async () => {
+    const formData = new FormData();
+    formData.set('indexingEnabled', 'desconocido');
+
+    await expect(toggleIndexingAction(formData)).rejects.toThrow('redirect:/admin/ajustes/?error=formulario');
+
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

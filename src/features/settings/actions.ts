@@ -21,9 +21,14 @@ export async function updateSettingsAction(formData: FormData): Promise<void> {
   if (!parsed.valid) redirect(`${settingsPath}?error=formulario`);
 
   try {
-    await setSetting(account.client, 'featured_daily_rate_cents', parsed.data.dailyRateCents);
-    await setSetting(account.client, 'package_annual_price_cents', parsed.data.packagePriceCents);
-    await setSetting(account.client, 'package_benefits', parsed.data.benefits);
+    const { error } = await account.client.rpc('admin_set_settings', {
+      p_settings: {
+        featured_daily_rate_cents: parsed.data.dailyRateCents,
+        package_annual_price_cents: parsed.data.packagePriceCents,
+        package_benefits: parsed.data.benefits,
+      },
+    });
+    if (error) throw new Error(error.message);
   } catch {
     redirect(`${settingsPath}?error=guardar`);
   }
@@ -36,7 +41,11 @@ export async function updateSettingsAction(formData: FormData): Promise<void> {
 
 export async function toggleIndexingAction(formData: FormData): Promise<void> {
   const account = await requireRole('admin', settingsPath);
-  const enabled = formData.get('indexingEnabled') === 'true';
+  const indexingValue = formData.get('indexingEnabled');
+  if (indexingValue !== 'true' && indexingValue !== 'false') {
+    redirect(`${settingsPath}?error=formulario`);
+  }
+  const enabled = indexingValue === 'true';
   if (enabled && formData.get('acknowledgeDemo') !== 'on') {
     redirect(`${settingsPath}?error=confirmacion`);
   }
