@@ -11,7 +11,7 @@ import { parseSettingsForm } from './form';
 const settingsPath = '/admin/ajustes/';
 
 async function setSetting(client: SupabaseClient, key: string, value: unknown) {
-  const { error } = await client.rpc('admin_set_setting', { p_key: key, p_value: value === null ? null : JSON.stringify(value) });
+  const { error } = await client.rpc('admin_set_setting', { p_key: key, p_value: value });
   if (error) throw new Error(error.message);
 }
 
