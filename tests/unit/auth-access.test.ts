@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decideAccess,
   destinationAfterSignIn,
+  isOptionalSessionPath,
   landingPathForRole,
   parseLoginInput,
   readSessionError,
@@ -10,6 +11,7 @@ import {
   safeNextPath,
   signInUrl,
 } from '../../src/lib/auth/access';
+import { config as proxyConfig } from '../../src/proxy';
 import { gateSession } from '../../src/lib/auth/session-gate';
 import type { SessionTokens } from '../../src/lib/auth/cookies';
 
@@ -224,6 +226,47 @@ describe('comprobación optimista del proxy', () => {
       action: 'redirect',
       to: '/ingresar/?next=%2Fpanel%2F&error=sesion-expirada',
       clearSession: true,
+    });
+  });
+
+  describe('rutas de sesión opcional', () => {
+    const optionalPaths = ['/checkout/', '/confirmacion/abc/token/', '/api/checkout/orders/'];
+
+    it('reconoce checkout, confirmación y la API de órdenes sin exigir rol', () => {
+      for (const path of optionalPaths) {
+        expect(isOptionalSessionPath(path)).toBe(true);
+        expect(requiredRoleForPath(path)).toBeNull();
+      }
+
+      expect(isOptionalSessionPath('/')).toBe(false);
+      expect(isOptionalSessionPath('/eventos/')).toBe(false);
+    });
+
+    it('el proxy las incluye en su matcher', () => {
+      expect(proxyConfig.matcher).toEqual(
+        expect.arrayContaining(['/checkout/:path*', '/confirmacion/:path*', '/api/checkout/:path*']),
+      );
+    });
+
+    it('renueva el token vencido para que el comprador con cuenta no pase por invitado', async () => {
+      for (const pathname of optionalPaths) {
+        const result = await gateSession({ pathname, refreshToken: 'renovacion' }, async () => tokens);
+
+        expect(result).toEqual({ action: 'next', refreshed: tokens });
+      }
+    });
+
+    it('con token de acceso o sin cookies no consulta la red', async () => {
+      await expect(gateSession({ pathname: '/checkout/', accessToken: 'acceso' }, noRefresh)).resolves.toEqual({
+        action: 'next',
+      });
+      await expect(gateSession({ pathname: '/checkout/' }, noRefresh)).resolves.toEqual({ action: 'next' });
+    });
+
+    it('si la renovación falla sigue como invitado: no redirige y limpia las cookies', async () => {
+      await expect(
+        gateSession({ pathname: '/confirmacion/abc/token/', refreshToken: 'caducada' }, async () => null),
+      ).resolves.toEqual({ action: 'next', clearSession: true });
     });
   });
 });

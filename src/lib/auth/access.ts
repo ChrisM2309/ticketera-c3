@@ -42,6 +42,18 @@ export function requiredRoleForPath(pathname: string): AppRole | null {
   return zone ? zone.role : null;
 }
 
+/**
+ * Rutas públicas que leen la sesión de forma opcional (checkout, confirmación y la API de órdenes): no exigen
+ * ingresar, pero el proxy renueva el token vencido para que un comprador con cuenta no se trate como invitado.
+ */
+const optionalSessionPrefixes = ['/checkout/', '/confirmacion/', '/api/checkout/'] as const;
+
+export function isOptionalSessionPath(pathname: string): boolean {
+  return optionalSessionPrefixes.some(
+    (prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix),
+  );
+}
+
 export function isAppRole(value: unknown): value is AppRole {
   return typeof value === 'string' && (appRoles as readonly string[]).includes(value);
 }

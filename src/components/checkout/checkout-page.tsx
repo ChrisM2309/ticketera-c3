@@ -13,7 +13,7 @@ import {
   parseCartSnapshot,
 } from '@/features/checkout/cart';
 import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
-import { submitLabel } from '@/features/checkout/labels';
+import { accountNotice, submitLabel } from '@/features/checkout/labels';
 import { CHECKOUT_REQUEST_STORAGE_KEY, CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
@@ -320,9 +320,7 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
           <div className="flex flex-col gap-3 rounded-lg bg-superficie-sutil p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="flex items-center gap-2 font-texto text-sm leading-6">
               <Icon name="user" size={16} />
-              {usingAccount
-                ? 'Compras con tu cuenta: la orden aparecerá en Mis boletos.'
-                : 'Compras como invitado: la orden no se guardará en tu cuenta.'}
+              {accountNotice(usingAccount)}
             </p>
             <button
               type="button"
