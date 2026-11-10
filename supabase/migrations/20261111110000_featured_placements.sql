@@ -32,6 +32,10 @@ create policy featured_placements_owner_read on public.featured_placements
   for select to authenticated
   using (public.owns_event(event_id));
 
+create policy featured_placements_admin_read on public.featured_placements
+  for select to authenticated
+  using (public.is_admin());
+
 create or replace function public.request_paid_featured(
   p_event_id uuid,
   p_starts_on date,
