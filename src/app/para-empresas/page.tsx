@@ -8,15 +8,14 @@ import { buttonVariants } from '@/components/ui/button';
 import { formatUsd } from '@/features/catalog/format';
 import { describeBenefits } from '@/features/packages/benefits';
 import { getSiteSettings } from '@/features/settings/settings';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+import { siteConfig } from '@/lib/site-config';
 import { readOptionalSession } from '@/lib/auth/optional-session';
 import { cn } from '@/lib/utils';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
-  return {
-    title: 'Para empresas | Ticketera C3 DEMO',
-    robots: settings.indexingEnabled ? { index: true, follow: true } : { index: false, follow: false },
-  };
+  return buildPageMetadata({ title: 'Para empresas', description: 'Conoce el paquete anual DEMO para organizaciones con varios eventos tecnológicos.', path: '/para-empresas/', indexable: true, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
 }
 
 export default async function ForBusinessesPage() {

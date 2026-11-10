@@ -4,13 +4,16 @@ import { EventCard } from '@/components/catalog/event-card';
 import { SiteSearch } from '@/components/layout/site-search';
 import { getCatalogListing } from '@/features/catalog/queries';
 import { parseSearchQuery, searchCatalogEvents } from '@/features/catalog/search';
+import { getSiteSettings } from '@/features/settings/settings';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+import { siteConfig } from '@/lib/site-config';
 import type { CatalogEvent } from '@/features/catalog/types';
 
 // Resultados de búsqueda: no se indexan (son variantes del catálogo, no categorías del árbol).
-export const metadata: Metadata = {
-  title: 'Buscar eventos',
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return buildPageMetadata({ title: 'Buscar eventos', description: 'Busca eventos tecnológicos publicados en Ticketera C3.', path: '/buscar/', indexable: false, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
+}
 
 type SearchPageProps = Readonly<{
   searchParams: Promise<Record<string, string | string[] | undefined>>;

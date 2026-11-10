@@ -7,9 +7,11 @@ import { FeaturedCarousel } from '@/components/catalog/featured-carousel';
 import { buttonVariants } from '@/components/ui/button';
 import { getHomeCatalog } from '@/features/catalog/queries';
 import { getSiteSettings } from '@/features/settings/settings';
+import { webSiteJsonLd } from '@/lib/seo/jsonld';
 import type { CatalogEvent } from '@/features/catalog/types';
 import { eventPath } from '@/features/catalog/paths';
 import { robotsMetadata } from '@/lib/seo/indexing';
+import { siteConfig } from '@/lib/site-config';
 
 export const revalidate = 60;
 
@@ -38,7 +40,7 @@ function EventGrid({ events, empty }: Readonly<{ events: CatalogEvent[]; empty: 
 }
 
 export default async function Home() {
-  const catalog = await getHomeCatalog();
+  const [catalog, settings] = await Promise.all([getHomeCatalog(), getSiteSettings()]);
 
   if (catalog.status === 'unavailable') {
     return (
@@ -56,6 +58,7 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-20 pb-20">
+      {settings.indexingEnabled ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteJsonLd(siteConfig.siteUrl)).replace(/</g, '\\u003c') }} /> : null}
       <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pt-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-center md:px-6 md:pt-16">
         <div className="flex flex-col gap-6">
           <h1 className="font-titulo text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">

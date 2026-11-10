@@ -162,7 +162,7 @@ export function EventDetailPage({ event, related, indexingEnabled = false }: Eve
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 pb-28 pt-3 md:gap-8 md:px-6 md:pb-20 md:pt-14">
-      <Breadcrumbs items={breadcrumbs} compactOnMobile />
+      <Breadcrumbs items={breadcrumbs} compactOnMobile indexingEnabled={indexingEnabled} />
 
       {/* En móvil el orden es resumen, entradas, descripción, agenda y ponentes; en escritorio, dos columnas. */}
       <div className="grid gap-3 md:gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start lg:gap-8">

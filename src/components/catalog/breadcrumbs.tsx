@@ -1,19 +1,23 @@
 import Link from 'next/link';
 
 import type { CatalogLink } from '@/features/catalog/routes';
+import { breadcrumbListJsonLd } from '@/lib/seo/jsonld';
+import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
 type BreadcrumbsProps = Readonly<{
   items: readonly CatalogLink[];
   /** En móvil deja solo el nivel superior (la página actual ya la nombra el título) para ganar altura. */
   compactOnMobile?: boolean;
+  indexingEnabled?: boolean;
 }>;
 
 /** Ruta de navegación. El último elemento es la página actual y no es enlace. */
-export function Breadcrumbs({ items, compactOnMobile = false }: BreadcrumbsProps) {
+export function Breadcrumbs({ items, compactOnMobile = false, indexingEnabled = false }: BreadcrumbsProps) {
   return (
-    <nav aria-label="Ruta de navegación">
-      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-texto text-sm text-texto-suave">
+    <>
+      <nav aria-label="Ruta de navegación">
+        <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 font-texto text-sm text-texto-suave">
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1;
 
@@ -55,7 +59,9 @@ export function Breadcrumbs({ items, compactOnMobile = false }: BreadcrumbsProps
             </li>
           );
         })}
-      </ol>
-    </nav>
+        </ol>
+      </nav>
+      {indexingEnabled ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbListJsonLd(items.map((item) => ({ name: item.label, path: item.href ?? '/' })), siteConfig.siteUrl)).replace(/</g, '\\u003c') }} /> : null}
+    </>
   );
 }

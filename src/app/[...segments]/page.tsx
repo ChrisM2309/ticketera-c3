@@ -29,7 +29,8 @@ import {
 import { publicImagePath } from '@/features/catalog/images';
 import { eventPathMatches } from '@/features/catalog/paths';
 import { hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
-import { robotsMetadata } from '@/lib/seo/indexing';
+import { buildPageMetadata } from '@/lib/seo/metadata';
+import { siteConfig } from '@/lib/site-config';
 
 type CatalogPageProps = Readonly<{
   params: Promise<{ segments: string[] }>;
@@ -86,34 +87,18 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
       ? `/${segments.join('/')}/`
       : undefined;
     const settings = await getSiteSettings();
-    const noIndex = !settings.indexingEnabled || isEventPast(event) || !hasAvailableTickets(event);
     const image = publicImagePath(event.imagePath) ?? undefined;
-
-    return {
-      title: event.title,
-      description: event.description,
-      alternates: canonical ? { canonical } : undefined,
-      robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: !noIndex }),
-      openGraph: {
-        title: event.title,
-        description: event.description,
-        images: image ? [image] : undefined,
-      },
-    };
+    const eventDate = new Intl.DateTimeFormat('es-SV', { dateStyle: 'medium', timeZone: 'America/El_Salvador' }).format(new Date(event.startsAt));
+    const place = event.mode === 'virtual' ? 'Virtual' : event.location?.name ?? event.venue ?? 'El Salvador';
+    return buildPageMetadata({ title: `${event.title} · ${eventDate} · ${place}`, description: event.description, path: canonical ?? `/${segments.join('/')}/`, indexable: !isEventPast(event) && hasAvailableTickets(event), indexingEnabled: settings.indexingEnabled, image }, siteConfig.siteUrl);
   }
 
   const { listing, scope } = route;
+  const settings = await getSiteSettings();
   const hasEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, new Date()).length > 0;
   // Sin eventos próximos, o en una ruta de modalidad sin contenido, la página no se indexa (D-24, D-25).
   const indexable = isCatalogRouteIndexable(segments, listing.taxonomy) && hasEvents;
-  const settings = await getSiteSettings();
-
-  return {
-    title: scopeTitle(scope),
-    description: scopeIntro(scope),
-    alternates: { canonical: scopePath(scope) },
-    robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: indexable }),
-  };
+  return buildPageMetadata({ title: scopeTitle(scope), description: scopeIntro(scope), path: scopePath(scope), indexable, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
 }
 
 /** Páginas de tipo, tema, ciudad y tipo + tema (SEO_ROUTES.md). Todo lo demás responde 404. */
@@ -140,6 +125,7 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   }
 
   const { listing, scope } = route;
+  const settings = await getSiteSettings();
 
   const now = new Date();
   const locationSlugs = listing.taxonomy.locations.map((location) => location.slug);
@@ -156,7 +142,7 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 pb-20 pt-10 md:px-6 md:pt-14">
-      <Breadcrumbs items={scopeBreadcrumbs(scope)} />
+      <Breadcrumbs items={scopeBreadcrumbs(scope)} indexingEnabled={settings.indexingEnabled} />
 
       <header className="flex max-w-3xl flex-col gap-4">
         <h1 className="font-titulo text-4xl font-bold leading-tight tracking-tight">
