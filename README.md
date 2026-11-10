@@ -1,6 +1,6 @@
 # Ticketera C3 — Base de planificación (proyecto académico)
 
-> **Estado:** la aplicación Next.js está en producción en [demo.ticketera.c3.com.sv](https://demo.ticketera.c3.com.sv). Las tareas T01–T18 y T23 del backlog están terminadas. Las nuevas áreas se documentan en [`docs/analisis/2026-11-09-brechas-y-requerimientos.md`](docs/analisis/2026-11-09-brechas-y-requerimientos.md) y se ejecutan según [`docs/superpowers/plans/2026-11-09-roadmap-nuevas-areas.md`](docs/superpowers/plans/2026-11-09-roadmap-nuevas-areas.md).
+> **Estado:** la aplicación Next.js está en producción en [demo.ticketera.c3.com.sv](https://demo.ticketera.c3.com.sv). Las tareas T01–T18 (T10 con la prueba de concurrencia real pendiente) y T23 del backlog están terminadas. Las nuevas áreas se documentan en [`docs/analisis/2026-11-09-brechas-y-requerimientos.md`](docs/analisis/2026-11-09-brechas-y-requerimientos.md) y se ejecutan según [`docs/superpowers/plans/2026-11-09-roadmap-nuevas-areas.md`](docs/superpowers/plans/2026-11-09-roadmap-nuevas-areas.md).
 
 Ticketera C3 es un prototipo funcional de marketplace B2C/B2B para descubrir, comprar y publicar eventos tecnológicos en El Salvador. El estilo visual se basa en la identidad de Competitive Coding Club (C3), pero **no es una iniciativa ni servicio oficial de C3**.
 
