@@ -16,6 +16,7 @@ import {
 } from '@/features/catalog/filters';
 import { CATALOG_EVENT_LIMIT, getCatalogListing, getEventDetail } from '@/features/catalog/queries';
 import { getCategoryFeaturedIds } from '@/features/featured/queries';
+import { getSiteSettings } from '@/features/settings/settings';
 import {
   isCatalogRouteIndexable,
   resolveCatalogRoute,
@@ -28,7 +29,7 @@ import {
 import { publicImagePath } from '@/features/catalog/images';
 import { eventPathMatches } from '@/features/catalog/paths';
 import { hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
-import { siteConfig } from '@/lib/site-config';
+import { robotsMetadata } from '@/lib/seo/indexing';
 
 type CatalogPageProps = Readonly<{
   params: Promise<{ segments: string[] }>;
@@ -84,14 +85,15 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
     const canonical = eventPathMatches(segments, event)
       ? `/${segments.join('/')}/`
       : undefined;
-    const noIndex = siteConfig.isDemo || isEventPast(event) || !hasAvailableTickets(event);
+    const settings = await getSiteSettings();
+    const noIndex = !settings.indexingEnabled || isEventPast(event) || !hasAvailableTickets(event);
     const image = publicImagePath(event.imagePath) ?? undefined;
 
     return {
       title: event.title,
       description: event.description,
       alternates: canonical ? { canonical } : undefined,
-      robots: noIndex ? { index: false, follow: true } : undefined,
+      robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: !noIndex }),
       openGraph: {
         title: event.title,
         description: event.description,
@@ -104,12 +106,13 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
   const hasEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, new Date()).length > 0;
   // Sin eventos próximos, o en una ruta de modalidad sin contenido, la página no se indexa (D-24, D-25).
   const indexable = isCatalogRouteIndexable(segments, listing.taxonomy) && hasEvents;
+  const settings = await getSiteSettings();
 
   return {
     title: scopeTitle(scope),
     description: scopeIntro(scope),
     alternates: { canonical: scopePath(scope) },
-    robots: indexable && !siteConfig.isDemo ? undefined : { index: false, follow: true },
+    robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: indexable }),
   };
 }
 
@@ -132,7 +135,8 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   }
 
   if (route.kind === 'event') {
-    return <EventDetailPage event={route.event} related={route.related} />;
+    const settings = await getSiteSettings();
+    return <EventDetailPage event={route.event} related={route.related} indexingEnabled={settings.indexingEnabled} />;
   }
 
   const { listing, scope } = route;

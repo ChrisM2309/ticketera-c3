@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { getCatalogListing } from '@/features/catalog/queries';
+import { getSiteSettings } from '@/features/settings/settings';
 import { indexableCatalogPaths } from '@/lib/seo/indexing';
 import { siteConfig } from '@/lib/site-config';
 
@@ -9,7 +10,8 @@ export const revalidate = 60;
 
 /** Sitemap del catálogo indexable. En el sitio demo queda vacío (D-25). */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  if (siteConfig.isDemo) {
+  const settings = await getSiteSettings();
+  if (!settings.indexingEnabled) {
     return [];
   }
 

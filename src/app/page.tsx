@@ -6,19 +6,22 @@ import { EventCard } from '@/components/catalog/event-card';
 import { FeaturedCarousel } from '@/components/catalog/featured-carousel';
 import { buttonVariants } from '@/components/ui/button';
 import { getHomeCatalog } from '@/features/catalog/queries';
+import { getSiteSettings } from '@/features/settings/settings';
 import type { CatalogEvent } from '@/features/catalog/types';
 import { eventPath } from '@/features/catalog/paths';
-import { siteConfig } from '@/lib/site-config';
+import { robotsMetadata } from '@/lib/seo/indexing';
 
 export const revalidate = 60;
 
 /** Palabra clave del Excel «boletos para el salvador» (SEO_ROUTES.md, sección 5). */
-export const metadata: Metadata = {
-  title: siteConfig.isDemo
-    ? 'Boletos para eventos tecnológicos en El Salvador · Ticketera C3 · DEMO'
-    : 'Boletos para eventos tecnológicos en El Salvador',
-  alternates: { canonical: '/' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return {
+    title: 'Boletos para eventos tecnológicos en El Salvador',
+    alternates: { canonical: '/' },
+    robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: true }),
+  };
+}
 
 function EventGrid({ events, empty }: Readonly<{ events: CatalogEvent[]; empty: string }>) {
   if (events.length === 0) {

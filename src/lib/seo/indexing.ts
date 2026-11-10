@@ -43,9 +43,9 @@ export function indexableCatalogPaths(
     .map((route) => route.path);
 }
 
-/** Sitio demo: no se rastrea nada. Sitio real: todo salvo lo privado, y se anuncia el sitemap. */
-export function buildRobots(options: { isDemo: boolean; siteUrl: string }): MetadataRoute.Robots {
-  if (options.isDemo) {
+/** El interruptor de administración gobierna el rastreo; la etiqueta DEMO no cambia esta política. */
+export function buildRobots(options: { indexingEnabled: boolean; siteUrl: string }): MetadataRoute.Robots {
+  if (!options.indexingEnabled) {
     return { rules: { userAgent: '*', disallow: '/' } };
   }
 
@@ -53,4 +53,9 @@ export function buildRobots(options: { isDemo: boolean; siteUrl: string }): Meta
     rules: { userAgent: '*', allow: '/', disallow: privatePaths },
     sitemap: new URL('/sitemap.xml', options.siteUrl).toString(),
   };
+}
+
+export function robotsMetadata(options: { indexingEnabled: boolean; pageIndexable: boolean }): { index: boolean; follow: boolean } {
+  const index = options.indexingEnabled && options.pageIndexable;
+  return { index, follow: index };
 }

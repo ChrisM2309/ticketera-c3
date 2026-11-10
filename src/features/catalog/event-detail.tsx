@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 type EventDetailPageProps = Readonly<{
   event: CatalogEventDetail;
   related: CatalogEvent[];
+  indexingEnabled?: boolean;
 }>;
 
 const dateFormatter = new Intl.DateTimeFormat('es-SV', {
@@ -145,7 +146,7 @@ function jsonLdScript(event: CatalogEventDetail) {
   return JSON.stringify(structuredEvent(event)).replace(/</g, '\\u003c');
 }
 
-export function EventDetailPage({ event, related }: EventDetailPageProps) {
+export function EventDetailPage({ event, related, indexingEnabled = false }: EventDetailPageProps) {
   const past = isEventPast(event);
   const soldOut = !hasAvailableTickets(event);
   const canPurchase = !past && !soldOut;
@@ -310,7 +311,7 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
 
       <MobileBuyBar label={buyBarLabel(event)} available={canPurchase} anchorId="entradas" />
 
-      {!siteConfig.isDemo ? (
+      {indexingEnabled ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(event) }} />
       ) : null}
     </div>

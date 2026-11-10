@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
+import { getSiteSettings } from '@/features/settings/settings';
+import { robotsMetadata } from '@/lib/seo/indexing';
 import { siteConfig } from '@/lib/site-config';
 
 import './globals.css';
@@ -21,15 +23,18 @@ const poppins = Poppins({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.siteUrl),
-  title: {
-    default: `${siteConfig.name} · DEMO`,
-    template: `%s · ${siteConfig.name} · DEMO`,
-  },
-  description: siteConfig.description,
-  robots: siteConfig.isDemo ? { index: false, follow: false } : undefined,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  return {
+    metadataBase: new URL(siteConfig.siteUrl),
+    title: {
+      default: `${siteConfig.name} · DEMO`,
+      template: `%s · ${siteConfig.name} · DEMO`,
+    },
+    description: siteConfig.description,
+    robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: true }),
+  };
+}
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (

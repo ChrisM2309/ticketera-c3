@@ -45,7 +45,8 @@ begin
   end if;
 
   if p_value is null then
-    raise exception 'El valor de configuración no puede ser nulo.' using errcode = '22023';
+    delete from public.site_settings where key = p_key;
+    return;
   end if;
 
   if p_key in ('featured_daily_rate_cents', 'package_annual_price_cents') then
