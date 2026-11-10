@@ -28,7 +28,7 @@ export const privacySections: LegalSection[] = [
     title: 'Analítica',
     paragraphs: [
       'Cuando se active, la analítica será propia y solo se activará si aceptas. No la usaremos si la rechazas.',
-      'Su fin es entender cómo se usa el sitio dentro del proyecto académico, Nunca vendemos tus datos. Solo los procesan los proveedores que alojan el sitio y la base de datos (Vercel y Supabase).',
+      'Su fin es entender cómo se usa el sitio dentro del proyecto académico. Nunca vendemos tus datos. Solo los procesan los proveedores que alojan el sitio y la base de datos (Vercel y Supabase).',
     ],
   },
   {
