@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { FeaturedTable } from '@/components/admin/featured-table';
+import { answerPackageFollowupAction } from '@/features/packages/actions';
 import { formatEventStart } from '@/features/organizers/panel';
 import {
   adminFeaturedPath,
@@ -57,6 +58,13 @@ export default async function FeaturedAdminPage({ searchParams }: Props) {
     .limit(50);
   if (eventsResult.error) throw new Error('No pudimos cargar los eventos publicados.');
 
+  const followupsResult = await account.client
+    .from('package_followup_requests')
+    .select('id, message, status, created_at, package:business_packages(organizer:organizers(name))')
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (followupsResult.error) throw new Error('No pudimos cargar los seguimientos.');
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -82,6 +90,18 @@ export default async function FeaturedAdminPage({ searchParams }: Props) {
       </form>
 
       <FeaturedTable rows={rows} />
+
+      <section aria-labelledby="followups-title" className="flex flex-col gap-4 rounded-lg bg-superficie p-6">
+        <h2 id="followups-title" className="font-titulo text-xl font-bold">Seguimientos de empresas</h2>
+        {(followupsResult.data ?? []).length === 0 ? <p className="font-texto text-sm text-texto-suave">No hay seguimientos registrados.</p> : (
+          <ul className="flex flex-col divide-y divide-borde">
+            {(followupsResult.data ?? []).map((followup) => {
+              const row = followup as unknown as { id: string; message: string; status: string; package: { organizer: { name: string } | null } | null };
+              return <li key={row.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-col gap-1"><span className="font-texto text-sm font-semibold">{row.package?.organizer?.name ?? 'Organizador'}</span><span className="font-texto text-sm leading-6 text-texto-suave">{row.message}</span></div>{row.status === 'open' ? <form action={answerPackageFollowupAction}><input type="hidden" name="followupId" value={row.id} /><button type="submit" className={buttonVariants({ variant: 'secundario' })}>Marcar respondido</button></form> : <span className="font-texto text-sm text-texto-suave">Respondido</span>}</li>;
+            })}
+          </ul>
+        )}
+      </section>
 
       <section aria-labelledby="manual-title" className="flex flex-col gap-4 rounded-lg bg-superficie p-6">
         <h2 id="manual-title" className="font-titulo text-xl font-bold">Crear destacado manual</h2>

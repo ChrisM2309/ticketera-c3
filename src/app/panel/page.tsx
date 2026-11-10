@@ -104,6 +104,9 @@ export default async function PanelPage() {
             <Icon name="calendarPlus" />
             Publicar evento
           </Link>
+          <Link href="/panel/paquete/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            Paquete para empresas
+          </Link>
         </div>
         <form action={signOutAction}>
           <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
