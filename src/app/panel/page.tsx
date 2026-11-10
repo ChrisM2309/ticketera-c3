@@ -141,9 +141,14 @@ export default async function PanelPage() {
                     <div className="flex flex-col gap-1">
                       <span className="font-texto text-base font-medium text-texto">{event.title}</span>
                       {event.status === 'published' ? (
-                        <Link href={`/panel/eventos/${event.id}/checkin/`} className="font-texto text-sm font-semibold text-accion underline">
-                          Check-in
-                        </Link>
+                        <div className="flex flex-wrap gap-4">
+                          <Link href={`/panel/eventos/${event.id}/checkin/`} className="font-texto text-sm font-semibold text-accion underline">
+                            Check-in
+                          </Link>
+                          <Link href={`/panel/eventos/${event.id}/reporte/`} className="font-texto text-sm font-semibold text-accion underline">
+                            Reporte
+                          </Link>
+                        </div>
                       ) : null}
                       <span className="flex flex-wrap items-center gap-x-3 gap-y-1 font-texto text-sm text-texto-suave">
                         <span className="inline-flex items-center gap-1.5">

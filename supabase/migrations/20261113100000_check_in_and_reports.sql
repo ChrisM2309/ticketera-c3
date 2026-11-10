@@ -69,3 +69,44 @@ $$;
 
 revoke all on function public.organizer_event_check_in_counts(uuid) from public, anon;
 grant execute on function public.organizer_event_check_in_counts(uuid) to authenticated;
+
+-- Fase 6.2: reporte agregado sin exponer datos de compradores.
+create or replace function public.organizer_event_report(p_event_id uuid)
+returns table (
+  issued integer,
+  checked_in integer,
+  subtotal_cents integer,
+  fee_cents integer,
+  event_ended boolean,
+  survey_count integer,
+  survey_average numeric
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if not public.owns_event(p_event_id) and not public.is_admin() then
+    raise exception 'No tienes permiso para consultar el reporte de este evento.' using errcode = '42501';
+  end if;
+
+  return query
+    select
+      (select count(*)::integer from public.tickets t join public.orders o on o.id = t.order_id
+        where o.event_id = e.id and o.status = 'confirmed'),
+      (select count(*)::integer from public.tickets t join public.orders o on o.id = t.order_id
+        where o.event_id = e.id and o.status = 'confirmed' and t.checked_in_at is not null),
+      (select coalesce(sum(o.subtotal_cents), 0)::integer from public.orders o
+        where o.event_id = e.id and o.status = 'confirmed'),
+      (select coalesce(sum(o.fee_cents), 0)::integer from public.orders o
+        where o.event_id = e.id and o.status = 'confirmed'),
+      coalesce(e.ends_at, e.starts_at) <= now(),
+      0::integer,
+      null::numeric
+    from public.events e
+    where e.id = p_event_id;
+end;
+$$;
+
+revoke all on function public.organizer_event_report(uuid) from public, anon;
+grant execute on function public.organizer_event_report(uuid) to authenticated;
