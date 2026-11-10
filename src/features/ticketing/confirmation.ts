@@ -24,7 +24,11 @@ export type OrderConfirmation = {
     venue: string | null;
   };
   tickets: ConfirmationTicket[];
+  /** Envíos simulados del boleto, con el destino ya enmascarado. */
+  deliveries: ConfirmationDelivery[];
 };
+
+export type ConfirmationDelivery = { channel: 'email' | 'whatsapp'; destinationMasked: string };
 
 export type ConfirmationResult =
   | { status: 'ok'; confirmation: OrderConfirmation }
@@ -129,6 +133,26 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     );
   }
 
+  // El outbox se lee solo después de validar el token del enlace (la orden se buscó por su hash).
+  // Es información secundaria: si falla, la página muestra los boletos sin la lista de envíos.
+  let deliveries: ConfirmationDelivery[] = [];
+
+  if (order.status === 'confirmed') {
+    const outboxResult = await client
+      .from('notification_outbox')
+      .select('channel, destination_masked')
+      .eq('order_id', order.id)
+      .eq('template', 'ticket')
+      .eq('status', 'simulated')
+      .order('channel', { ascending: true });
+
+    if (!outboxResult.error) {
+      deliveries = ((outboxResult.data ?? []) as { channel: ConfirmationDelivery['channel']; destination_masked: string }[]).map(
+        (row) => ({ channel: row.channel, destinationMasked: row.destination_masked }),
+      );
+    }
+  }
+
   return {
     status: 'ok',
     confirmation: {
@@ -156,6 +180,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
         venue: event.venue,
       },
       tickets,
+      deliveries,
     },
   };
 }

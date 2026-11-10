@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
 
 import { PrintButton } from '@/components/checkout/print-button';
+import { SimulatedDelivery } from '@/components/checkout/simulated-delivery';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon, type IconTone } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
@@ -177,6 +178,8 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
           </ul>
         </section>
       ) : null}
+
+      {tickets.length > 0 ? <SimulatedDelivery deliveries={confirmation.deliveries} /> : null}
 
       {confirmation.status !== 'pending' ? (
         <section aria-labelledby="receipt-title" className="flex flex-col gap-4 rounded-lg bg-superficie p-6 shadow-sm">

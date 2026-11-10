@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
 import { paymentIdempotencyKey, paymentOutcomeFor, parseConfirmRequest } from '@/features/checkout/payment';
+import { buildTicketNotifications, enqueueNotifications } from '@/features/ticketing/notifications';
 import { createTicketId, deriveTicketQrToken, hashTicketQrToken } from '@/features/ticketing/qr';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
@@ -55,7 +56,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   // recibe el mismo error que una orden inexistente.
   const orderResult = await client
     .from('orders')
-    .select('total_cents')
+    .select('total_cents, buyer_email, buyer_phone')
     .eq('id', orderId)
     .eq('public_token_hash', publicTokenHash)
     .maybeSingle();
@@ -112,6 +113,23 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   if (!confirmed) {
     return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
+  }
+
+  // El boleto «se envía» solo cuando esta llamada confirmó la orden: un reintento ya procesado y un
+  // pago rechazado no generan notificaciones. Un fallo del outbox no revierte la compra.
+  if (
+    (outcome === 'free' || outcome === 'demo_approved') &&
+    confirmed.result_status === 'confirmed' &&
+    !confirmed.result_already_processed
+  ) {
+    await enqueueNotifications(
+      buildTicketNotifications({
+        orderId: confirmed.result_order_id,
+        email: orderResult.data.buyer_email as string,
+        phone: (orderResult.data.buyer_phone as string | null) ?? null,
+        now: new Date(),
+      }),
+    );
   }
 
   return NextResponse.json({
