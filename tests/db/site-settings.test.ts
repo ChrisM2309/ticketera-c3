@@ -17,6 +17,10 @@ async function setSetting(key: string, value: unknown) {
   return db.query(`select public.admin_set_setting($1, $2::jsonb)`, [key, JSON.stringify(value)]);
 }
 
+async function setSettings(settings: Record<string, unknown>) {
+  return db.query(`select public.admin_set_settings($1::jsonb)`, [JSON.stringify(settings)]);
+}
+
 describe('site_settings', () => {
   it('anon lee solo las claves permitidas', async () => {
     const admin = await createUser(db, 'admin');
@@ -56,6 +60,17 @@ describe('site_settings', () => {
 
     await asRole(db, 'authenticated', organizer);
     await expect(setSetting('featured_daily_rate_cents', 2500)).rejects.toThrow(/Solo el administrador/);
+    await expect(setSettings({
+      featured_daily_rate_cents: 2500,
+      package_annual_price_cents: 120000,
+      package_benefits: {
+        eventsIncluded: 10,
+        featuredDaysIncluded: 30,
+        featuredDiscountPercent: 50,
+        personalizedFollowUp: true,
+        advancedReport: true,
+      },
+    })).rejects.toThrow(/Solo el administrador/);
     await expect(
       db.query(`insert into public.site_settings (key, value) values ('featured_daily_rate_cents', '1'::jsonb)`),
     ).rejects.toThrow(/permission denied/);
@@ -129,5 +144,70 @@ describe('site_settings', () => {
     await asSuperuser(db);
     const rows = await db.query(`select 1 from public.site_settings where key = 'featured_daily_rate_cents'`);
     expect(rows.rows).toEqual([]);
+  });
+
+  it('guarda tarifas y beneficios juntas cuando todas las claves son válidas', async () => {
+    const admin = await createUser(db, 'admin');
+    await asRole(db, 'authenticated', admin);
+    await setSettings({
+      featured_daily_rate_cents: 1250,
+      package_annual_price_cents: 9999,
+      package_benefits: {
+        eventsIncluded: 10,
+        featuredDaysIncluded: 30,
+        featuredDiscountPercent: 50,
+        personalizedFollowUp: true,
+        advancedReport: true,
+      },
+    });
+
+    await asSuperuser(db);
+    const rows = await db.query<{ key: string; value: unknown }>(
+      `select key, value from public.site_settings order by key`,
+    );
+    expect(rows.rows).toEqual([
+      {
+        key: 'featured_daily_rate_cents',
+        value: 1250,
+      },
+      {
+        key: 'package_annual_price_cents',
+        value: 9999,
+      },
+      {
+        key: 'package_benefits',
+        value: {
+          eventsIncluded: 10,
+          featuredDaysIncluded: 30,
+          featuredDiscountPercent: 50,
+          personalizedFollowUp: true,
+          advancedReport: true,
+        },
+      },
+    ]);
+  });
+
+  it('revierte todos los ajustes si una de las claves del guardado combinado es inválida', async () => {
+    const admin = await createUser(db, 'admin');
+    await asRole(db, 'authenticated', admin);
+    await setSetting('featured_daily_rate_cents', 100);
+
+    await expect(setSettings({
+      featured_daily_rate_cents: 200,
+      package_annual_price_cents: -1,
+      package_benefits: {
+        eventsIncluded: 10,
+        featuredDaysIncluded: 30,
+        featuredDiscountPercent: 50,
+        personalizedFollowUp: true,
+        advancedReport: true,
+      },
+    })).rejects.toThrow(/entero/);
+
+    await asSuperuser(db);
+    const rows = await db.query<{ value: number }>(
+      `select value from public.site_settings where key = 'featured_daily_rate_cents'`,
+    );
+    expect(rows.rows).toEqual([{ value: 100 }]);
   });
 });
