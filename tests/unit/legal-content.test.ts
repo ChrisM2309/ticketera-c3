@@ -20,6 +20,11 @@ describe('contenido legal DEMO', () => {
     }
   });
 
+  test('la privacidad dice que no se piden datos de tarjeta', () => {
+    const text = privacySections.flatMap((section) => section.paragraphs).join(' ');
+    expect(text).toContain('No pedimos datos de tarjeta');
+  });
+
   test('los términos incluyen pagos simulados y no servicio oficial de C3', () => {
     expect(termsSections.map((section) => section.id)).toEqual([
       'alcance',

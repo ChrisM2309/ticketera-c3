@@ -10,17 +10,17 @@ export const privacySections: LegalSection[] = [
     id: 'datos',
     title: 'Qué datos tratamos',
     paragraphs: [
-      'Cuando compras entradas te pedimos tu nombre, tu correo y, si quieres, tu teléfono. No necesitas cuenta para comprar.',
-      'Cuando existan cuentas para organizadores, guardaremos tu correo, tu nombre y, de forma opcional, tu universidad.',
-      'Nunca pedimos ni guardamos datos de tarjeta: los pagos de este sitio son simulados.',
+      'Cuando compras entradas te pedimos solo tu nombre y tu correo. No necesitas cuenta para comprar. Si algún día añadimos un campo de teléfono, será opcional y lo explicaremos aquí.',
+      'Las cuentas de organizador y de administrador ya existen: guardamos tu correo y tu nombre para que puedas ingresar. Cuando existan cuentas de comprador, tratarán los mismos datos.',
+      'No pedimos datos de tarjeta ni los guardamos: el pago es una simulación y solo pedimos nombre y correo.',
     ],
   },
   {
     id: 'finalidad',
     title: 'Para qué los usamos',
     paragraphs: [
-      'Usamos los datos de compra para registrar tu orden, emitir tus boletos con código QR y enviarte la confirmación.',
-      'Usamos los datos de cuenta para que los organizadores puedan ingresar y gestionar sus eventos.',
+      'Usamos los datos de compra para registrar tu orden, emitir tus boletos con código QR y mostrarte la confirmación en pantalla, con un enlace privado para recuperarla.',
+      'Usamos los datos de cuenta para que organizadores y administradores puedan ingresar y gestionar eventos.',
     ],
   },
   {
@@ -28,15 +28,15 @@ export const privacySections: LegalSection[] = [
     title: 'Analítica',
     paragraphs: [
       'Cuando se active, la analítica será propia y solo se activará si aceptas. No la usaremos si la rechazas.',
-      'Su fin es entender cómo se usa el sitio dentro del proyecto académico, sin vender ni compartir tus datos con terceros.',
+      'Su fin es entender cómo se usa el sitio dentro del proyecto académico, Nunca vendemos tus datos. Solo los procesan los proveedores que alojan el sitio y la base de datos (Vercel y Supabase).',
     ],
   },
   {
     id: 'cookies',
     title: 'Cookies',
     paragraphs: [
-      'Usamos cookies de sesión para mantener tu ingreso cuando tienes cuenta.',
-      'Usamos una cookie para recordar tu decisión sobre el consentimiento.',
+      'Usamos cookies de sesión para mantener el ingreso de las personas que inician sesión.',
+      'Cuando se active el aviso de consentimiento, una cookie recordará tu decisión.',
     ],
   },
   {
