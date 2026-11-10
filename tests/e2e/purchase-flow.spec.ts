@@ -113,7 +113,9 @@ test.describe('compra de escritorio', () => {
 
     await selectTickets(page, paidEvent);
     await fillBuyer(page);
-    await page.getByRole('button', { name: 'Simular pago aprobado' }).click();
+    await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
+    await page.getByRole('radio', { name: /^Simular pago aprobado/ }).check();
+    await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
 
     await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver mis boletos' })).toBeVisible();
@@ -135,7 +137,9 @@ test.describe('compra de escritorio', () => {
 
     await selectTickets(page, paidEvent);
     await fillBuyer(page);
-    await page.getByRole('button', { name: 'Simular pago rechazado' }).click();
+    await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
+    await page.getByRole('radio', { name: /^Simular pago rechazado/ }).check();
+    await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
 
     await expect(page.getByRole('heading', { name: 'Pago rechazado' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ver mis boletos' })).toHaveCount(0);

@@ -85,9 +85,9 @@ test('checkout de invitado envía solo selección y muestra los importes verific
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
   await page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Elegí el resultado del pago' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Pago de demostración' })).toBeVisible();
   await expect(page.getByText('Total verificado')).toBeVisible();
-  await expect(page.getByText('$47.25')).toBeVisible();
+  await expect(page.locator('dd').filter({ hasText: /^\$47\.25$/ }).first()).toBeVisible();
   await expect(page).not.toHaveURL(/secreto-solo-de-sesion/);
   await expect
     .poll(() => page.evaluate(({ cartKey, checkoutKey }) => ({
@@ -168,7 +168,14 @@ async function reachPaymentStep(page: Page, cart: typeof storedCart, totalCents:
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
   await page.getByRole('button', { name: submitName(totalCents) }).click();
-  await expect(page.getByRole('heading', { name: /Confirmá tu registro|Elegí el resultado del pago/ })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: /Confirmá tu registro|Pago de demostración/ })).toBeVisible();
+}
+
+/** Recorre el panel de pago simulado: resumen, resultado elegido y confirmación. */
+async function simulatePayment(page: Page, decision: 'aprobado' | 'rechazado') {
+  await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
+  await page.getByRole('radio', { name: new RegExp(`^Simular pago ${decision}`) }).check();
+  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
 }
 
 test('registro gratuito se confirma sin pasarela y muestra los boletos emitidos', async ({ page }) => {
@@ -207,10 +214,59 @@ test('pago DEMO aprobado confirma la orden y explica que no hubo cobro', async (
     });
   });
 
-  await page.getByRole('button', { name: 'Simular pago aprobado' }).click();
+  await simulatePayment(page, 'aprobado');
 
   await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: 'Emitimos 3 boletos para esta orden.' })).toBeVisible();
+});
+
+test('el comprador recorre los pasos y ve el comprobante aprobado', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4725);
+  const notice = page.getByText('Modo demostración: aquí no se cobrará dinero ni se solicitará información bancaria.');
+  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ checkoutToken, decision: 'approved' });
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] }),
+    });
+  });
+
+  // Paso 1: resumen. Sin campos de tarjeta en ningún paso.
+  await expect(page.getByRole('heading', { level: 2, name: 'Resumen', exact: true }).first()).toBeVisible();
+  await expect(notice).toBeVisible();
+  await expect(page.locator('dt').filter({ hasText: 'Total a pagar (simulado)' })).toBeVisible();
+  await expect(page.locator('input[autocomplete^="cc-"], input[name*="card" i]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
+
+  // Paso 2: elegir el resultado de la simulación.
+  await expect(page.getByRole('heading', { name: 'Resultado de la simulación' })).toBeVisible();
+  await expect(notice).toBeVisible();
+  await expect(page.getByRole('radio')).toHaveCount(2);
+  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Elegí el resultado que quieres simular.' })).toBeVisible();
+  await page.getByRole('radio', { name: /^Simular pago aprobado/ }).check();
+  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
+
+  // Paso 3: procesamiento. Paso 4: resultado aprobado.
+  await expect(page.getByRole('heading', { name: 'Procesando pago de demostración…' })).toBeVisible();
+  await expect(notice).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
+  await expect(page.getByText('Pago de demostración: Aprobado (simulado)')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver mis boletos' })).toHaveAttribute(
+    'href',
+    `/confirmacion/${orderId}/${checkoutToken}/`,
+  );
+});
+
+test('se puede volver del paso de resultado al resumen', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4725);
+
+  await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
+  await page.getByRole('button', { name: 'Volver al resumen' }).click();
+
+  await expect(page.getByRole('button', { name: 'Continuar con el pago simulado' })).toBeVisible();
 });
 
 test('pago DEMO rechazado deja la orden fallida sin boletos', async ({ page }) => {
@@ -224,11 +280,30 @@ test('pago DEMO rechazado deja la orden fallida sin boletos', async ({ page }) =
     });
   });
 
-  await page.getByRole('button', { name: 'Simular pago rechazado' }).click();
+  await simulatePayment(page, 'rechazado');
 
   await expect(page.getByRole('heading', { name: 'Pago rechazado' })).toBeVisible();
   await expect(page.getByText('No se emitieron boletos ni se descontó cupo.')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Volver al inicio' })).toBeVisible();
+});
+
+test('un pago rechazado muestra el comprobante rechazado y cero boletos', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4725);
+  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ checkoutToken, decision: 'rejected' });
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ orderId, status: 'failed', ticketCount: 0, alreadyProcessed: false, tickets: [] }),
+    });
+  });
+
+  await simulatePayment(page, 'rechazado');
+
+  await expect(page.getByRole('heading', { name: 'Pago rechazado' })).toBeVisible();
+  await expect(page.getByText('Pago de demostración: Rechazado (simulado)')).toBeVisible();
+  await expect(page.getByText('No se emitieron boletos ni se descontó cupo.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver mis boletos' })).toHaveCount(0);
 });
 
 test('un error del servidor se anuncia y el comprador puede reintentar', async ({ page }) => {
@@ -247,10 +322,12 @@ test('un error del servidor se anuncia y el comprador puede reintentar', async (
     });
   });
 
-  await page.getByRole('button', { name: 'Simular pago aprobado' }).click();
+  await simulatePayment(page, 'aprobado');
   await expect(page.getByRole('alert').filter({ hasText: 'No pudimos confirmar la orden.' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Simular pago aprobado' }).click();
+  // El panel vuelve al paso de resultado con la elección intacta para reintentar.
+  await expect(page.getByRole('radio', { name: /^Simular pago aprobado/ })).toBeChecked();
+  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
   await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
 });
 

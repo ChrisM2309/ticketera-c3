@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
+import { buildReceipt, type Receipt } from '@/features/checkout/payment-flow';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 import { recoverTicketQrs, type RecoveredTicket } from './qr';
@@ -14,6 +15,8 @@ export type OrderConfirmation = {
   feeCents: number;
   totalCents: number;
   buyerName: string;
+  /** Comprobante del pago de demostración (o del registro gratuito) de la orden. */
+  receipt: Receipt;
   event: {
     title: string;
     startsAt: string;
@@ -47,7 +50,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
 
   const orderResult = await client
     .from('orders')
-    .select('id, event_id, status, subtotal_cents, fee_cents, total_cents, buyer_name')
+    .select('id, event_id, status, subtotal_cents, fee_cents, total_cents, buyer_name, confirmed_at')
     .eq('id', orderId)
     .eq('public_token_hash', hashCheckoutToken(checkoutToken))
     .maybeSingle();
@@ -68,6 +71,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     fee_cents: number;
     total_cents: number;
     buyer_name: string;
+    confirmed_at: string | null;
   };
 
   const eventResult = await client
@@ -86,6 +90,20 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     mode: OrderConfirmation['event']['mode'];
     venue: string | null;
   };
+
+  const paymentResult = await client
+    .from('payments')
+    .select('id, status')
+    .eq('order_id', order.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (paymentResult.error) {
+    return { status: 'unavailable' };
+  }
+
+  const payment = paymentResult.data as { id: string; status: string } | null;
 
   let tickets: ConfirmationTicket[] = [];
 
@@ -120,6 +138,17 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
       feeCents: order.fee_cents,
       totalCents: order.total_cents,
       buyerName: order.buyer_name,
+      receipt: buildReceipt({
+        order: {
+          id: order.id,
+          status: order.status,
+          subtotalCents: order.subtotal_cents,
+          feeCents: order.fee_cents,
+          totalCents: order.total_cents,
+          confirmedAt: order.confirmed_at,
+        },
+        payment,
+      }),
       event: {
         title: event.title,
         startsAt: event.starts_at,

@@ -3,9 +3,13 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
+import { SimulatedPaymentPanel } from '@/components/payments/simulated-payment-panel';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
+import type { PaymentDecision } from '@/features/checkout/payment';
+import { receiptStatusLabel } from '@/features/checkout/payment-flow';
+import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
 export type PendingOrder = {
@@ -73,8 +77,10 @@ export function CheckoutSteps({ current, free = false }: CheckoutStepsProps) {
 type PaymentView = { status: 'pending' } | { status: 'confirmed'; ticketCount: number } | { status: 'failed' };
 
 type PaymentStepProps = {
-  order: PendingOrder;
+  order: PendingOrder & { subtotalCents: number; feeCents: number };
 };
+
+type ConfirmOutcome = { ok: true } | { ok: false; message: string };
 
 const fallbackError = 'No pudimos confirmar la orden. Intentá nuevamente.';
 
@@ -110,15 +116,8 @@ export function PaymentStep({ order }: PaymentStepProps) {
   const inFlight = useRef(false);
   const isFree = order.totalCents === 0;
 
-  async function confirm(decision: 'approved' | 'rejected' | null) {
-    if (inFlight.current) {
-      return;
-    }
-
-    inFlight.current = true;
-    setIsConfirming(true);
-    setError(null);
-
+  /** Pide la confirmación al servidor (misma API y clave de idempotencia para pago y registro gratuito). */
+  async function requestConfirmation(decision: PaymentDecision | null): Promise<ConfirmOutcome> {
     try {
       const response = await fetch(`/api/checkout/orders/${order.orderId}/confirm/`, {
         method: 'POST',
@@ -128,24 +127,47 @@ export function PaymentStep({ order }: PaymentStepProps) {
       const body: unknown = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setError(readError(body) ?? fallbackError);
-        return;
+        return { ok: false, message: readError(body) ?? fallbackError };
       }
 
       const result = readResult(body);
 
       if (!result) {
-        setError(fallbackError);
-        return;
+        return { ok: false, message: fallbackError };
       }
 
       setView(result);
+      return { ok: true };
     } catch {
-      setError('No pudimos confirmar la orden. Revisá tu conexión e intentá nuevamente.');
+      return { ok: false, message: 'No pudimos confirmar la orden. Revisá tu conexión e intentá nuevamente.' };
+    }
+  }
+
+  async function confirmFree() {
+    if (inFlight.current) {
+      return;
+    }
+
+    inFlight.current = true;
+    setIsConfirming(true);
+    setError(null);
+
+    try {
+      const outcome = await requestConfirmation(null);
+
+      if (!outcome.ok) {
+        setError(outcome.message);
+      }
     } finally {
       inFlight.current = false;
       setIsConfirming(false);
     }
+  }
+
+  async function confirmPayment(decision: PaymentDecision) {
+    const outcome = await requestConfirmation(decision);
+
+    return outcome.ok ? { ok: true } : { ok: false, message: outcome.message };
   }
 
   if (view.status === 'confirmed') {
@@ -162,6 +184,11 @@ export function PaymentStep({ order }: PaymentStepProps) {
             : `Emitimos ${view.ticketCount} boletos para esta orden.`}
         </p>
         <p className="font-texto text-sm leading-6 text-texto-suave">Número de orden: {order.orderId}</p>
+        {isFree ? null : (
+          <p className="font-texto text-sm leading-6 text-texto-suave">
+            Pago de demostración: {receiptStatusLabel('approved')}
+          </p>
+        )}
         <Link
           href={`/confirmacion/${order.orderId}/${order.checkoutToken}/`}
           className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
@@ -184,6 +211,9 @@ export function PaymentStep({ order }: PaymentStepProps) {
         <p role="status" className="font-texto text-base leading-7 text-texto-suave">
           La orden quedó fallida. No se emitieron boletos ni se descontó cupo.
         </p>
+        <p className="font-texto text-sm leading-6 text-texto-suave">
+          Pago de demostración: {receiptStatusLabel('rejected')}
+        </p>
         <Link href="/" className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full')}>
           Volver al inicio
         </Link>
@@ -196,52 +226,41 @@ export function PaymentStep({ order }: PaymentStepProps) {
       <CheckoutSteps current="pago" free={isFree} />
       <header className="flex flex-col gap-2">
         <h1 id="payment-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
-          {isFree ? 'Confirmá tu registro' : 'Elegí el resultado del pago'}
+          {isFree ? 'Confirmá tu registro' : 'Pago de demostración'}
         </h1>
-        <p className="font-texto text-base leading-7 text-texto-suave">
-          {isFree
-            ? 'Este evento es gratuito. Confirmá tu registro para emitir tus boletos.'
-            : 'Modo demostración: aquí no se cobrará dinero ni se solicitará información bancaria. Elegí el resultado que quieres simular.'}
-        </p>
+        {isFree ? (
+          <p className="font-texto text-base leading-7 text-texto-suave">
+            Este evento es gratuito. Confirmá tu registro para emitir tus boletos.
+          </p>
+        ) : null}
       </header>
 
-      {error ? (
-        <p role="alert" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-error">
-          {error}
-        </p>
-      ) : null}
-
       {isFree ? (
-        <button
-          type="button"
-          disabled={isConfirming}
-          onClick={() => confirm(null)}
-          className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
-        >
-          <Icon name="check" />
-          {isConfirming ? 'Confirmando…' : 'Confirmar registro gratuito'}
-        </button>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <>
+          {error ? (
+            <p role="alert" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-error">
+              {error}
+            </p>
+          ) : null}
           <button
             type="button"
             disabled={isConfirming}
-            onClick={() => confirm('approved')}
+            onClick={confirmFree}
             className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
           >
             <Icon name="check" />
-            {isConfirming ? 'Confirmando…' : 'Simular pago aprobado'}
+            {isConfirming ? 'Confirmando…' : 'Confirmar registro gratuito'}
           </button>
-          <button
-            type="button"
-            disabled={isConfirming}
-            onClick={() => confirm('rejected')}
-            className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full')}
-          >
-            <Icon name="close" />
-            Simular pago rechazado
-          </button>
-        </div>
+        </>
+      ) : (
+        <SimulatedPaymentPanel
+          amountCents={order.totalCents}
+          summary={[
+            { label: 'Subtotal', amountCents: order.subtotalCents },
+            { label: `Comisión DEMO (${siteConfig.demoCommissionPercent} %)`, amountCents: order.feeCents },
+          ]}
+          onDecision={confirmPayment}
+        />
       )}
     </section>
   );

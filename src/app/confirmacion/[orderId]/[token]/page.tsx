@@ -9,6 +9,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Icon, type IconTone } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
 import { eventDateParts, formatUsd, modeLabel } from '@/features/catalog/format';
+import { receiptStatusLabel } from '@/features/checkout/payment-flow';
 import { loadOrderConfirmation, type OrderConfirmation } from '@/features/ticketing/confirmation';
 import { cn } from '@/lib/utils';
 
@@ -44,6 +45,16 @@ const statusTone: Record<OrderConfirmation['status'], IconTone> = {
 };
 
 const termClass = 'flex items-center gap-2 text-texto-suave';
+
+/** Fecha y hora de la confirmación en la zona de El Salvador. */
+function formatPaidAt(isoDate: string): string {
+  const parts = eventDateParts(isoDate);
+  const year = new Intl.DateTimeFormat('es-SV', { timeZone: 'America/El_Salvador', year: 'numeric' }).format(
+    new Date(isoDate),
+  );
+
+  return `${parts.day} ${parts.month} ${year} · ${parts.time}`;
+}
 
 export default async function ConfirmationPage({ params }: ConfirmationPageProps) {
   const { orderId, token } = await params;
@@ -164,6 +175,63 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
               </li>
             ))}
           </ul>
+        </section>
+      ) : null}
+
+      {confirmation.status !== 'pending' ? (
+        <section aria-labelledby="receipt-title" className="flex flex-col gap-4 rounded-lg bg-superficie p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 id="receipt-title" className="font-titulo text-xl font-bold">
+              Comprobante
+            </h2>
+            <div className="sm:w-56">
+              <PrintButton label="Imprimir comprobante" />
+            </div>
+          </div>
+          <p className="font-texto text-sm text-texto-suave">
+            Comprobante simulado: no corresponde a un cobro real ni se pidieron datos de tarjeta.
+          </p>
+          <dl className="grid gap-3 font-texto text-sm sm:grid-cols-2">
+            <div>
+              <dt className={termClass}>Número de orden</dt>
+              <dd className="break-all">{confirmation.receipt.orderNumber}</dd>
+            </div>
+            <div>
+              <dt className={termClass}>Método</dt>
+              <dd>{confirmation.receipt.methodLabel}</dd>
+            </div>
+            <div>
+              <dt className={termClass}>Estado</dt>
+              <dd className="flex items-center gap-2">
+                <Icon name={statusIcon[confirmation.status]} size={16} tone={statusTone[confirmation.status]} />
+                {receiptStatusLabel(confirmation.receipt.status)}
+              </dd>
+            </div>
+            {confirmation.receipt.paymentId ? (
+              <div>
+                <dt className={termClass}>Referencia de pago</dt>
+                <dd className="break-all">{confirmation.receipt.paymentId}</dd>
+              </div>
+            ) : null}
+            {confirmation.receipt.paidAt ? (
+              <div>
+                <dt className={termClass}>Fecha de confirmación</dt>
+                <dd>{formatPaidAt(confirmation.receipt.paidAt)}</dd>
+              </div>
+            ) : null}
+            <div>
+              <dt className={termClass}>Subtotal</dt>
+              <dd className="tabular-nums">{formatUsd(confirmation.receipt.subtotalCents)}</dd>
+            </div>
+            <div>
+              <dt className={termClass}>Comisión DEMO</dt>
+              <dd className="tabular-nums">{formatUsd(confirmation.receipt.feeCents)}</dd>
+            </div>
+            <div>
+              <dt className={termClass}>Total</dt>
+              <dd className="font-semibold tabular-nums">{formatUsd(confirmation.receipt.totalCents)}</dd>
+            </div>
+          </dl>
         </section>
       ) : null}
 
