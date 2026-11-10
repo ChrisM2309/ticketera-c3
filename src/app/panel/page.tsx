@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 
-import { signOutAction } from '@/features/auth/actions';
 import { formatUsd } from '@/features/catalog/format';
 import { eventStatusLabel, formatEventStart } from '@/features/organizers/panel';
 import { ticketsIssuedText } from '@/features/organizers/review';
@@ -92,7 +91,7 @@ export default async function PanelPage() {
 
   return (
     <section aria-labelledby="panel-title" className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-2">
           <h1 id="panel-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
             Panel del organizador
@@ -100,20 +99,11 @@ export default async function PanelPage() {
           <p className="font-texto text-base leading-7 text-texto-suave">
             Modo DEMO. Aquí ves tus organizadores y el estado de sus eventos.
           </p>
-          <Link href="/panel/eventos/nuevo/" className={cn(buttonVariants({ variant: 'compra' }), 'w-full sm:w-auto')}>
-            <Icon name="calendarPlus" />
-            Publicar evento
-          </Link>
-          <Link href="/panel/paquete/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            Paquete para empresas
-          </Link>
         </div>
-        <form action={signOutAction}>
-          <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            <Icon name="logOut" />
-            Cerrar sesión
-          </button>
-        </form>
+        <Link href="/panel/eventos/nuevo/" className={cn(buttonVariants({ variant: 'compra' }), 'w-full sm:w-auto')}>
+          <Icon name="calendarPlus" />
+          Publicar evento
+        </Link>
       </header>
 
       {organizers.length === 0 ? (
