@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 
+import { Icon } from '@/components/ui/icon';
 import { CART_CHANGED_EVENT, CART_STORAGE_KEY, cartItemCount, parseCartSnapshot } from '@/features/checkout/cart';
 import { cn } from '@/lib/utils';
 
@@ -44,21 +45,7 @@ export function CartLink({ className }: CartLinkProps) {
         className,
       )}
     >
-      <svg
-        aria-hidden="true"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M2 3h2.6l2.4 12.1a1.6 1.6 0 0 0 1.6 1.3h8.9a1.6 1.6 0 0 0 1.6-1.2L21 7H6.1" />
-        <circle cx="9" cy="20.5" r="1.5" />
-        <circle cx="17" cy="20.5" r="1.5" />
-      </svg>
+      <Icon name="cart" />
       Carrito
       {cantidad > 0 ? (
         <span

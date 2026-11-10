@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 
 type FeaturedControlsProps = Readonly<{
@@ -11,14 +12,6 @@ type FeaturedControlsProps = Readonly<{
 
 const botonClase =
   'inline-flex size-11 cursor-pointer items-center justify-center rounded-pill border-2 border-borde-fuerte text-texto transition-colors hover:bg-superficie-sutil disabled:cursor-default disabled:opacity-40';
-
-function Flecha({ direccion }: Readonly<{ direccion: 'anterior' | 'siguiente' }>) {
-  return (
-    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d={direccion === 'anterior' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'} />
-    </svg>
-  );
-}
 
 /** Flechas y puntos del carrusel de destacados. Solo cambian la posición del desplazamiento. */
 export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
@@ -63,7 +56,7 @@ export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
           onClick={() => irA(indice - 1)}
           className={botonClase}
         >
-          <Flecha direccion="anterior" />
+          <Icon name="chevronLeft" size={20} />
         </button>
         <button
           type="button"
@@ -72,7 +65,7 @@ export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
           onClick={() => irA(indice + 1)}
           className={botonClase}
         >
-          <Flecha direccion="siguiente" />
+          <Icon name="chevronRight" size={20} />
         </button>
       </div>
 
