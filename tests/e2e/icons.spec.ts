@@ -11,7 +11,7 @@ const viewports = [
 ] as const;
 
 const ficha = '/congresos/inteligencia-artificial/congreso-demo-ia/';
-const rutas = ['/', '/congresos/', ficha, '/carrito/', '/ingresar/'] as const;
+const rutasConFicha = (href: string) => ['/', '/congresos/', href, '/carrito/', '/ingresar/'];
 
 async function primeraFicha(page: Page): Promise<string> {
   await page.goto('/congresos/');
@@ -26,7 +26,8 @@ for (const viewport of viewports) {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
     test('no hay scroll horizontal', async ({ page }) => {
-      for (const ruta of rutas) {
+      const href = await primeraFicha(page);
+      for (const ruta of rutasConFicha(href)) {
         await page.goto(ruta);
 
         const cabe = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
@@ -35,7 +36,8 @@ for (const viewport of viewports) {
     });
 
     test('todo icono con significado tiene nombre accesible', async ({ page }) => {
-      for (const ruta of rutas) {
+      const href = await primeraFicha(page);
+      for (const ruta of rutasConFicha(href)) {
         await page.goto(ruta);
 
         const sinNombre = await page.evaluate(() =>
