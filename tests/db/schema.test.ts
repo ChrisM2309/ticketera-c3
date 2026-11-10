@@ -4,16 +4,19 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabase, seedSql } from './helpers';
 
 const expectedTables = [
+  'business_packages',
   'categories',
-  'event_featured',
   'events',
+  'featured_placements',
   'notification_outbox',
   'order_items',
   'orders',
   'organizers',
+  'package_followup_requests',
   'payments',
   'profiles',
   'seo_routes',
+  'site_settings',
   'ticket_types',
   'tickets',
 ];

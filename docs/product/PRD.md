@@ -6,7 +6,7 @@
 
 ## 1. Problema y propuesta
 
-Un marketplace dedicado a descubrir eventos de tecnología en El Salvador y permitir que comunidades/organizadores los publiquen. El catálogo se ordena por intención de búsqueda y el flujo B2C prioriza compras de bajo esfuerzo, especialmente móvil. El modelo económico académico combina publicación gratis, comisión solo por entradas vendidas y servicios B2B adicionales presentados en la estrategia, **no** implementados comercialmente.
+Un marketplace dedicado a descubrir eventos de tecnología en El Salvador y permitir que comunidades/organizadores los publiquen. El catálogo se ordena por intención de búsqueda y el flujo B2C prioriza compras de bajo esfuerzo, especialmente móvil. El modelo económico académico combina publicación gratis, comisión solo por entradas vendidas y servicios B2B adicionales presentados en la estrategia; los cobros de destacados y paquetes siguen siendo simulados.
 
 ## 2. Audiencias del material del equipo
 
@@ -48,10 +48,13 @@ La cuenta es opcional: la compra como invitado no cambia (D-37). Historias de la
 | S-02 | organizador | proponer un evento | formulario guarda borrador o pendiente, con precio/cupos |
 | S-03 | organizador | ver estado de publicación | lista básica de eventos propios y registros agregados |
 | A-01 | admin | publicar un evento pendiente | aprueba/rechaza; solo aprobados aparecen en catálogo |
+| S-04 | organizador | destacar un evento | selecciona días, revisa el total calculado en servidor y elige un resultado de pago DEMO |
+| S-05 | organizador | contratar un paquete empresarial | ve beneficios configurables, compra con pago DEMO y consulta días/eventos restantes |
+| A-02 | admin | gestionar destacados y seguimientos | crea destacados manuales, revisa solicitudes pagadas y responde seguimientos |
 
 ### Simplificaciones B2B
 
-Sin cobro del organizador, informes exportables, payout, calendario recurrente o facturación electrónica. Para representar al vendedor basta una publicación editable y estado de revisión.
+Sin payout, calendario recurrente o facturación electrónica. La publicación de eventos es gratuita; los destacados por día y el paquete empresarial tienen precio configurable y cobro simulado. Los informes exportables quedan fuera de esta fase; el paquete solo registra el beneficio de reporte superior.
 
 ## 5. Pantallas mínimas de la materia
 

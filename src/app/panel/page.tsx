@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { signOutAction } from '@/features/auth/actions';
+import { formatUsd } from '@/features/catalog/format';
 import { eventStatusLabel, formatEventStart } from '@/features/organizers/panel';
 import { ticketsIssuedText } from '@/features/organizers/review';
 import { requireRole } from '@/lib/auth/require-role';
@@ -70,6 +71,25 @@ export default async function PanelPage() {
     ]),
   );
 
+  const featuredResult = await account.client
+    .from('featured_placements')
+    .select('id, status, days, total_cents, starts_on, ends_on, event:events(title)')
+    .order('created_at', { ascending: false });
+
+  if (featuredResult.error) {
+    throw new Error('No pudimos cargar tus destacados.');
+  }
+
+  const featured = (featuredResult.data ?? []) as unknown as {
+    id: string;
+    status: string;
+    days: number;
+    total_cents: number;
+    starts_on: string;
+    ends_on: string;
+    event: { title: string } | null;
+  }[];
+
   return (
     <section aria-labelledby="panel-title" className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -83,6 +103,9 @@ export default async function PanelPage() {
           <Link href="/panel/eventos/nuevo/" className={cn(buttonVariants({ variant: 'compra' }), 'w-full sm:w-auto')}>
             <Icon name="calendarPlus" />
             Publicar evento
+          </Link>
+          <Link href="/panel/paquete/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            Paquete para empresas
           </Link>
         </div>
         <form action={signOutAction}>
@@ -114,7 +137,8 @@ export default async function PanelPage() {
               ) : (
                 <ul className="flex flex-col divide-y divide-borde rounded-lg bg-superficie">
                   {organizerEvents.map((event) => (
-                    <li key={event.id} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <li key={event.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-1">
                       <span className="font-texto text-base font-medium text-texto">{event.title}</span>
                       <span className="flex flex-wrap items-center gap-x-3 gap-y-1 font-texto text-sm text-texto-suave">
                         <span className="inline-flex items-center gap-1.5">
@@ -130,7 +154,13 @@ export default async function PanelPage() {
                           {ticketsIssuedText(ticketsByEvent.get(event.id) ?? 0)}
                         </span>
                       </span>
-                    </li>
+                    </div>
+                    {event.status === 'published' ? (
+                      <Link href={`/panel/destacar/${event.id}/`} className={buttonVariants({ variant: 'secundario' })}>
+                        Destacar
+                      </Link>
+                    ) : null}
+                  </li>
                   ))}
                 </ul>
               )}
@@ -138,6 +168,22 @@ export default async function PanelPage() {
           );
         })
       )}
+
+      <section aria-labelledby="featured-title" className="flex flex-col gap-4">
+        <h2 id="featured-title" className="font-titulo text-xl font-bold">Mis destacados</h2>
+        {featured.length === 0 ? (
+          <p className="rounded-lg bg-superficie p-6 font-texto text-base leading-7 text-texto-suave">Todavía no has solicitado destacados.</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-borde rounded-lg bg-superficie">
+            {featured.map((placement) => (
+              <li key={placement.id} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <span className="font-texto text-base font-medium text-texto">{placement.event?.title ?? 'Evento'}</span>
+                <span className="font-texto text-sm text-texto-suave">{placement.status} · {placement.days} días · {placement.starts_on} – {placement.ends_on} · Total simulado {formatUsd(placement.total_cents)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </section>
   );
 }

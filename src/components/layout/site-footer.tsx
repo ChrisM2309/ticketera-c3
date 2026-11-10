@@ -37,6 +37,9 @@ export function SiteFooter() {
           <Link href="/buscar/" className={enlace}>
             Ver todos los eventos
           </Link>
+          <Link href="/para-empresas/" className={enlace}>
+            Para empresas
+          </Link>
           {accountLinks.map((link) => (
             <Link key={link.href} href={link.href} className={enlace}>
               {link.icon ? <Icon name={link.icon} size={16} /> : null}
