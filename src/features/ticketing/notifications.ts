@@ -7,6 +7,8 @@ export type OutboxRow = {
   template: OutboxTemplate;
   destinationMasked: string;
   scheduledFor: Date;
+  /** Por defecto `simulated`. El correo de boleto nace `pending` y lo cierra el envío real. */
+  status?: 'simulated' | 'pending';
 };
 
 /** «ana@gmail.com» pasa a «a***@gmail.com»: primera letra, tres asteriscos y el dominio. */
@@ -39,7 +41,7 @@ type TicketNotificationInput = {
 /** Boleto por correo siempre y por WhatsApp solo si el comprador dejó teléfono; sale de inmediato. */
 export function buildTicketNotifications({ orderId, email, phone, now }: TicketNotificationInput): OutboxRow[] {
   const rows: OutboxRow[] = [
-    { orderId, channel: 'email', template: 'ticket', destinationMasked: maskEmail(email), scheduledFor: now },
+    { orderId, channel: 'email', template: 'ticket', destinationMasked: maskEmail(email), scheduledFor: now, status: 'pending' },
   ];
 
   if (phone) {
@@ -113,6 +115,7 @@ export async function enqueueNotifications(rows: OutboxRow[]): Promise<void> {
         template: row.template,
         destination_masked: row.destinationMasked,
         scheduled_for: row.scheduledFor.toISOString(),
+        status: row.status ?? 'simulated',
       })),
       { onConflict: 'order_id,channel,template', ignoreDuplicates: true },
     );

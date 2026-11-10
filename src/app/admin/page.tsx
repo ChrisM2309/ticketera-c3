@@ -1,18 +1,14 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
 import { formatUsd } from '@/features/catalog/format';
-import { signOutAction } from '@/features/auth/actions';
 import { formatEventStart, pendingReviewText } from '@/features/organizers/panel';
 import { orderStatusLabel, reviewResultMessage } from '@/features/organizers/review';
 import { reviewEventAction } from '@/features/organizers/review-actions';
-import { adminOrganizersPath } from '@/features/organizers/link-form';
 import { adminHomePath } from '@/lib/auth/access';
 import { requireRole } from '@/lib/auth/require-role';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
-import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Administración DEMO',
@@ -84,37 +80,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   return (
     <section aria-labelledby="admin-title" className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 id="admin-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
-            Administración
-          </h1>
-          <p className="font-texto text-base leading-7 text-texto-suave">Modo DEMO. Zona exclusiva del administrador.</p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link href={adminOrganizersPath} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            <Icon name="users" />
-            Organizadores
-          </Link>
-          <Link href="/admin/destacados/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            Destacados
-          </Link>
-          <Link href="/admin/ajustes/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            Ajustes
-          </Link>
-          <Link href="/admin/contenido/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            Contenido
-          </Link>
-          <Link href="/admin/metricas/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-            Métricas
-          </Link>
-          <form action={signOutAction}>
-            <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
-              <Icon name="logOut" />
-              Cerrar sesión
-            </button>
-          </form>
-        </div>
+      <header className="flex flex-col gap-2">
+        <h1 id="admin-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
+          Administración
+        </h1>
+        <p className="font-texto text-base leading-7 text-texto-suave">
+          Modo DEMO. Zona exclusiva del administrador. Las secciones están en el panel lateral.
+        </p>
       </header>
 
       {message ? (

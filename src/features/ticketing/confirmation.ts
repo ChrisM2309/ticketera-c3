@@ -155,7 +155,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
       .select('channel, destination_masked')
       .eq('order_id', order.id)
       .eq('template', 'ticket')
-      .eq('status', 'simulated')
+      .in('status', ['simulated', 'sent'])
       .order('channel', { ascending: true });
 
     if (!outboxResult.error) {

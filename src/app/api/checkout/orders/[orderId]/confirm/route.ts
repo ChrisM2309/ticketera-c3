@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
 import { paymentIdempotencyKey, paymentOutcomeFor, parseConfirmRequest } from '@/features/checkout/payment';
@@ -7,6 +7,7 @@ import {
   buildTicketNotifications,
   enqueueNotifications,
 } from '@/features/ticketing/notifications';
+import { deliverTicketEmail } from '@/features/ticketing/email/deliver-ticket-email';
 import { createTicketId, deriveTicketQrToken, hashTicketQrToken } from '@/features/ticketing/qr';
 import { buildSurveyNotifications } from '@/features/ticketing/survey';
 import { createServiceRoleClient } from '@/lib/supabase/server';
@@ -61,7 +62,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   // recibe el mismo error que una orden inexistente.
   const orderResult = await client
     .from('orders')
-    .select('total_cents, buyer_email, buyer_phone, event_id')
+    .select('total_cents, buyer_name, buyer_email, buyer_phone, event_id')
     .eq('id', orderId)
     .eq('public_token_hash', publicTokenHash)
     .maybeSingle();
@@ -136,7 +137,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     // fecha del evento solo se omite el recordatorio; la compra y el boleto no se tocan.
     const eventResult = await client
       .from('events')
-      .select('starts_at, ends_at')
+      .select('title, starts_at, ends_at')
       .eq('id', orderResult.data.event_id as string)
       .maybeSingle();
 
@@ -161,6 +162,24 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     await enqueueNotifications(rows);
+
+    // El correo sale después de responder y usa el token de esta petición; un fallo queda en el outbox.
+    const checkoutToken = parsed.data.checkoutToken;
+    const eventTitle = (eventResult.data?.title as string | undefined) ?? null;
+    const eventStartsAt = eventResult.data?.starts_at ? new Date(eventResult.data.starts_at as string) : null;
+    const buyerName = (orderResult.data.buyer_name as string | null) ?? '';
+
+    after(() =>
+      deliverTicketEmail({
+        orderId: confirmed.result_order_id,
+        checkoutToken,
+        email,
+        buyerName,
+        eventTitle,
+        eventStartsAt,
+        ticketCount: quantity,
+      }),
+    );
   }
 
   return NextResponse.json({
