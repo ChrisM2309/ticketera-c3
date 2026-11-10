@@ -58,6 +58,8 @@ Detalle y orden en el [roadmap](2026-11-09-roadmap-nuevas-areas.md); decisiones 
 | F6 | Nuevas áreas | [Check-in y post-evento](2026-11-09-fase-6-checkin.md) | — | 3, 4 | Pendiente |
 | F7 | Nuevas áreas | [Cierre y entrega](2026-11-09-fase-7-cierre.md) | — | 1 a 6 | Pendiente |
 
+**Bloqueo conocido, ajeno a las tareas de la Fase 1 (registrado en la tarea 1.2, 2026-11-09):** `tests/e2e/navigation.spec.ts:15` («cada grupo es un desplegable y un enlace lleva a su categoría») falla en escritorio: al hacer clic en «Workshops» dentro del desplegable la URL se queda en `/`. Es previo a 1.2: se reprodujo con los cinco componentes de la tarea restaurados a su versión de `03d72cc` (6 casos pasan, 1 falla) y con todos los cambios de 1.2 aplicados (mismo resultado). No hay causa confirmada; el servidor de desarrollo registra «The destination stream errored while writing data» y el caso tarda entre 10 y 16 s, por lo que una hipótesis es la compilación en frío de la ruta de categoría. Los otros seis casos de ese archivo pasan. Pendiente: abrir una tarea aparte para investigarlo y, antes de dar la Fase 1 por cerrada, comprobar si ese E2E pasa en `master`; hasta entonces no se puede afirmar que sea ajeno a la fase.
+
 ## Área A — Fundamentos y sistema visual
 
 ### T01 · Inicializar proyecto [P0]
