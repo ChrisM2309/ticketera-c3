@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { PaymentDecision } from '@/features/checkout/payment';
 import { requireRole } from '@/lib/auth/require-role';
 
-export type PackageActionResult = { ok: boolean; message?: string };
+export type PackageActionResult = { ok: boolean; message?: string; analyticsEvent?: 'package_purchased' };
 
 export async function purchaseBusinessPackageAction(decision: PaymentDecision): Promise<PackageActionResult> {
   if (decision !== 'approved' && decision !== 'rejected') {
@@ -37,7 +37,7 @@ export async function purchaseBusinessPackageAction(decision: PaymentDecision): 
   revalidatePath('/para-empresas/');
   revalidatePath('/panel/paquete/');
   revalidatePath('/panel/');
-  return { ok: true };
+  return { ok: true, analyticsEvent: decision === 'approved' ? 'package_purchased' : undefined };
 }
 
 export async function requestPackageFollowupAction(formData: FormData): Promise<void> {

@@ -17,6 +17,7 @@ import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/e
 import { accountNotice, submitLabel } from '@/features/checkout/labels';
 import { CHECKOUT_REQUEST_STORAGE_KEY, CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
+import { trackEvent } from '@/lib/analytics/track';
 import { cn } from '@/lib/utils';
 
 import { AccountPrompt } from './account-prompt';
@@ -205,6 +206,7 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
     setIsSubmitting(true);
     setFieldErrors({});
     setOrderError(null);
+    trackEvent('begin_checkout', { path: '/checkout/' });
 
     try {
       const requestId = getCheckoutRequestId(JSON.stringify([snapshot.event.id, snapshot.items]));

@@ -11,6 +11,7 @@ import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/e
 import type { PaymentDecision } from '@/features/checkout/payment';
 import { receiptStatusLabel } from '@/features/checkout/payment-flow';
 import { siteConfig } from '@/lib/site-config';
+import { trackEvent } from '@/lib/analytics/track';
 import { cn } from '@/lib/utils';
 
 export type PendingOrder = {
@@ -118,7 +119,7 @@ type PaymentStepProps = {
   order: PendingOrder & { subtotalCents: number; feeCents: number };
 };
 
-type ConfirmOutcome = { ok: true } | { ok: false; view: CheckoutErrorView };
+type ConfirmOutcome = { ok: true; confirmed: boolean } | { ok: false; view: CheckoutErrorView };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -174,7 +175,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
       }
 
       setView(result);
-      return { ok: true };
+      return { ok: true, confirmed: result.status === 'confirmed' };
     } catch {
       return { ok: false, view: checkoutErrorView(null, 0) };
     }
@@ -194,6 +195,8 @@ export function PaymentStep({ order }: PaymentStepProps) {
 
       if (!outcome.ok) {
         setErrorView(outcome.view);
+      } else if (outcome.confirmed) {
+        trackEvent('purchase_confirmed', { path: window.location.pathname });
       }
     } finally {
       inFlight.current = false;
@@ -208,6 +211,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
     const outcome = await requestConfirmation(decision);
 
     if (outcome.ok) {
+      if (outcome.confirmed) trackEvent('purchase_confirmed', { path: window.location.pathname });
       return { ok: true };
     }
 

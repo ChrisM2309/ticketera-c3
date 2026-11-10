@@ -7,7 +7,7 @@ import { requireRole } from '@/lib/auth/require-role';
 
 import { validateFeaturedRequest } from './request';
 
-export type FeaturedRequestActionResult = { ok: boolean; message?: string };
+export type FeaturedRequestActionResult = { ok: boolean; message?: string; analyticsEvent?: 'featured_purchased' };
 
 export async function requestFeaturedAction(formData: FormData): Promise<FeaturedRequestActionResult> {
   const account = await requireRole('organizer', '/panel/');
@@ -32,5 +32,5 @@ export async function requestFeaturedAction(formData: FormData): Promise<Feature
 
   revalidatePath('/panel/');
   revalidatePath('/panel/destacar/[eventId]', 'page');
-  return { ok: true };
+  return { ok: true, analyticsEvent: decision === 'approved' ? 'featured_purchased' : undefined };
 }

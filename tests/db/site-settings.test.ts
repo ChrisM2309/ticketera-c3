@@ -120,4 +120,14 @@ describe('site_settings', () => {
     const rows = await db.query(`select 1 from public.site_settings`);
     expect(rows.rows).toHaveLength(0);
   });
+
+  it('el administrador puede borrar una tarifa para dejarla por definir', async () => {
+    const admin = await createUser(db, 'admin');
+    await asRole(db, 'authenticated', admin);
+    await setSetting('featured_daily_rate_cents', 250);
+    await db.query(`select public.admin_set_setting('featured_daily_rate_cents', null)`);
+    await asSuperuser(db);
+    const rows = await db.query(`select 1 from public.site_settings where key = 'featured_daily_rate_cents'`);
+    expect(rows.rows).toEqual([]);
+  });
 });

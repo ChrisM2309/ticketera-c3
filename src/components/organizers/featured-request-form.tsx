@@ -6,6 +6,7 @@ import { SimulatedPaymentPanel } from '@/components/payments/simulated-payment-p
 import { formatUsd } from '@/features/catalog/format';
 import { provisionalFeaturedTotal } from '@/features/featured/pricing';
 import type { FeaturedRequestActionResult } from '@/features/featured/request-actions';
+import { trackEvent } from '@/lib/analytics/track';
 
 type Props = {
   eventId: string;
@@ -33,7 +34,9 @@ export function FeaturedRequestForm({ eventId, eventTitle, dailyRateCents, minDa
     formData.set('startsOn', startsOn);
     formData.set('days', String(days));
     formData.set('decision', decision);
-    return action(formData);
+    const result = await action(formData);
+    if (result.ok && result.analyticsEvent) trackEvent(result.analyticsEvent, { path: '/panel/destacar/' });
+    return result;
   }
 
   return (

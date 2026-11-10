@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildRobots, indexableCatalogPaths, privatePaths } from '../../src/lib/seo/indexing';
+import { buildRobots, indexableCatalogPaths, privatePaths, robotsMetadata } from '../../src/lib/seo/indexing';
 import type { CatalogEvent, CatalogTaxonomy } from '../../src/features/catalog/types';
 
 const now = new Date('2027-03-01T12:00:00Z');
@@ -83,18 +83,24 @@ describe('rutas indexables del catálogo', () => {
 });
 
 describe('reglas de robots', () => {
-  it('bloquea todo el sitio demo y no anuncia sitemap', () => {
-    expect(buildRobots({ isDemo: true, siteUrl: 'https://demo.ticketera.c3.com.sv' })).toEqual({
+  it('apagado bloquea todo y no anuncia sitemap', () => {
+    expect(buildRobots({ indexingEnabled: false, siteUrl: 'https://demo.ticketera.c3.com.sv' })).toEqual({
       rules: { userAgent: '*', disallow: '/' },
     });
   });
 
-  it('en el sitio real permite el rastreo, excluye lo privado y anuncia el sitemap', () => {
-    expect(buildRobots({ isDemo: false, siteUrl: 'https://ticketera.example' })).toEqual({
+  it('encendido permite todo salvo rutas privadas y anuncia el sitemap', () => {
+    expect(buildRobots({ indexingEnabled: true, siteUrl: 'https://ticketera.example' })).toEqual({
       rules: { userAgent: '*', allow: '/', disallow: privatePaths },
       sitemap: 'https://ticketera.example/sitemap.xml',
     });
     expect(privatePaths).toEqual(expect.arrayContaining(['/calendario/', '/carrito/', '/checkout/', '/mis-boletos/']));
+  });
+
+  it('robotsMetadata solo indexa con interruptor y página indexable', () => {
+    expect(robotsMetadata({ indexingEnabled: false, pageIndexable: true })).toEqual({ index: false, follow: false });
+    expect(robotsMetadata({ indexingEnabled: true, pageIndexable: false })).toEqual({ index: false, follow: false });
+    expect(robotsMetadata({ indexingEnabled: true, pageIndexable: true })).toEqual({ index: true, follow: true });
   });
 
   it('privatePaths incluye registro, recuperar y cuenta', () => {

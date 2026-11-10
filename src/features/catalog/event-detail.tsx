@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 type EventDetailPageProps = Readonly<{
   event: CatalogEventDetail;
   related: CatalogEvent[];
+  indexingEnabled?: boolean;
 }>;
 
 const dateFormatter = new Intl.DateTimeFormat('es-SV', {
@@ -145,7 +146,7 @@ function jsonLdScript(event: CatalogEventDetail) {
   return JSON.stringify(structuredEvent(event)).replace(/</g, '\\u003c');
 }
 
-export function EventDetailPage({ event, related }: EventDetailPageProps) {
+export function EventDetailPage({ event, related, indexingEnabled = false }: EventDetailPageProps) {
   const past = isEventPast(event);
   const soldOut = !hasAvailableTickets(event);
   const canPurchase = !past && !soldOut;
@@ -161,7 +162,7 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 pb-28 pt-3 md:gap-8 md:px-6 md:pb-20 md:pt-14">
-      <Breadcrumbs items={breadcrumbs} compactOnMobile />
+      <Breadcrumbs items={breadcrumbs} compactOnMobile indexingEnabled={indexingEnabled} />
 
       {/* En móvil el orden es resumen, entradas, descripción, agenda y ponentes; en escritorio, dos columnas. */}
       <div className="grid gap-3 md:gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start lg:gap-8">
@@ -222,7 +223,14 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
               </dt>
               <dd className={detailValueClass}>
                 {modeLabel(event.mode)}
-                {event.location ? ` · ${event.location.name}` : ''}
+                {event.location ? (
+                  <>
+                    {' · '}
+                    <Link href={`/${event.location.slug}/`} className="underline underline-offset-4">
+                      {event.location.name}
+                    </Link>
+                  </>
+                ) : null}
                 {event.venue ? ` · ${event.venue}` : ''}
               </dd>
             </div>
@@ -310,7 +318,7 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
 
       <MobileBuyBar label={buyBarLabel(event)} available={canPurchase} anchorId="entradas" />
 
-      {!siteConfig.isDemo ? (
+      {indexingEnabled ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(event) }} />
       ) : null}
     </div>

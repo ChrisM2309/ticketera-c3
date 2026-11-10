@@ -6,6 +6,8 @@ import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
 import { FeaturedBlock } from '@/components/catalog/featured-block';
+import { CategoryIntro } from '@/components/content/category-intro';
+import { OrganizerPage } from '@/components/catalog/organizer-page';
 import { EventDetailPage } from '@/features/catalog/event-detail';
 import {
   filterCatalogEvents,
@@ -16,6 +18,9 @@ import {
 } from '@/features/catalog/filters';
 import { CATALOG_EVENT_LIMIT, getCatalogListing, getEventDetail } from '@/features/catalog/queries';
 import { getCategoryFeaturedIds } from '@/features/featured/queries';
+import { getEditorialPage } from '@/features/content/queries';
+import { getOrganizerPage, isOrganizerSlugAllowed, type OrganizerPageData } from '@/features/catalog/organizers';
+import { getSiteSettings } from '@/features/settings/settings';
 import {
   isCatalogRouteIndexable,
   resolveCatalogRoute,
@@ -28,6 +33,7 @@ import {
 import { publicImagePath } from '@/features/catalog/images';
 import { eventPathMatches } from '@/features/catalog/paths';
 import { hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
+import { buildPageMetadata } from '@/lib/seo/metadata';
 import { siteConfig } from '@/lib/site-config';
 
 type CatalogPageProps = Readonly<{
@@ -38,6 +44,7 @@ type CatalogPageProps = Readonly<{
 type PublicRoute =
   | { kind: 'unavailable' }
   | { kind: 'catalog'; listing: Extract<Awaited<ReturnType<typeof getCatalogListing>>, { status: 'ok' }>; scope: NonNullable<ReturnType<typeof resolveCatalogRoute>> }
+  | { kind: 'organizer'; organizer: OrganizerPageData }
   | { kind: 'event'; event: Extract<Awaited<ReturnType<typeof getEventDetail>>, { status: 'ok' }>['event']; related: Extract<Awaited<ReturnType<typeof getEventDetail>>, { status: 'ok' }>['related'] }
   | { kind: 'not_found' };
 
@@ -52,6 +59,14 @@ async function resolvePublicRoute(segments: string[]): Promise<PublicRoute> {
 
   if (scope) {
     return { kind: 'catalog', listing, scope };
+  }
+
+  if (segments.length === 1) {
+    const taxonomySlugs = [...listing.taxonomy.eventTypes, ...listing.taxonomy.topics, ...listing.taxonomy.locations].map((category) => category.slug);
+    if (isOrganizerSlugAllowed(segments[0], taxonomySlugs)) {
+      const organizer = await getOrganizerPage(segments[0]);
+      if (organizer) return { kind: 'organizer', organizer };
+    }
   }
 
   if (segments.length !== 2 && segments.length !== 3) {
@@ -84,33 +99,24 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
     const canonical = eventPathMatches(segments, event)
       ? `/${segments.join('/')}/`
       : undefined;
-    const noIndex = siteConfig.isDemo || isEventPast(event) || !hasAvailableTickets(event);
+    const settings = await getSiteSettings();
     const image = publicImagePath(event.imagePath) ?? undefined;
+    const eventDate = new Intl.DateTimeFormat('es-SV', { dateStyle: 'medium', timeZone: 'America/El_Salvador' }).format(new Date(event.startsAt));
+    const place = event.mode === 'virtual' ? 'Virtual' : event.location?.name ?? event.venue ?? 'El Salvador';
+    return buildPageMetadata({ title: `${event.title} · ${eventDate} · ${place}`, description: event.description, path: canonical ?? `/${segments.join('/')}/`, indexable: !isEventPast(event) && hasAvailableTickets(event), indexingEnabled: settings.indexingEnabled, image }, siteConfig.siteUrl);
+  }
 
-    return {
-      title: event.title,
-      description: event.description,
-      alternates: canonical ? { canonical } : undefined,
-      robots: noIndex ? { index: false, follow: true } : undefined,
-      openGraph: {
-        title: event.title,
-        description: event.description,
-        images: image ? [image] : undefined,
-      },
-    };
+  if (route.kind === 'organizer') {
+    const settings = await getSiteSettings();
+    return buildPageMetadata({ title: `${route.organizer.name} · Organizador DEMO`, description: route.organizer.description, path: `/${segments[0]}/`, indexable: route.organizer.events.length > 0, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
   }
 
   const { listing, scope } = route;
+  const settings = await getSiteSettings();
   const hasEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, new Date()).length > 0;
   // Sin eventos próximos, o en una ruta de modalidad sin contenido, la página no se indexa (D-24, D-25).
   const indexable = isCatalogRouteIndexable(segments, listing.taxonomy) && hasEvents;
-
-  return {
-    title: scopeTitle(scope),
-    description: scopeIntro(scope),
-    alternates: { canonical: scopePath(scope) },
-    robots: indexable && !siteConfig.isDemo ? undefined : { index: false, follow: true },
-  };
+  return buildPageMetadata({ title: scopeTitle(scope), description: scopeIntro(scope), path: scopePath(scope), indexable, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
 }
 
 /** Páginas de tipo, tema, ciudad y tipo + tema (SEO_ROUTES.md). Todo lo demás responde 404. */
@@ -132,10 +138,17 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   }
 
   if (route.kind === 'event') {
-    return <EventDetailPage event={route.event} related={route.related} />;
+    const settings = await getSiteSettings();
+    return <EventDetailPage event={route.event} related={route.related} indexingEnabled={settings.indexingEnabled} />;
+  }
+
+  if (route.kind === 'organizer') {
+    const settings = await getSiteSettings();
+    return <OrganizerPage organizer={route.organizer} indexingEnabled={settings.indexingEnabled} />;
   }
 
   const { listing, scope } = route;
+  const settings = await getSiteSettings();
 
   const now = new Date();
   const locationSlugs = listing.taxonomy.locations.map((location) => location.slug);
@@ -149,10 +162,16 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   const visibleEvents = events.filter((event) => !featuredSet.has(event.id));
   const subcategories = scopeSubcategories(scope, listing.taxonomy);
   const countLabel = events.length === 1 ? '1 evento' : `${events.length} eventos`;
+  const editorialCategoryId = scope.kind === 'event_type' || scope.kind === 'event_type_topic' || scope.kind === 'modality'
+    ? scope.eventType.id
+    : scope.kind === 'topic'
+      ? scope.topic.id
+      : undefined;
+  const editorial = editorialCategoryId ? await getEditorialPage(editorialCategoryId) : null;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 pb-20 pt-10 md:px-6 md:pt-14">
-      <Breadcrumbs items={scopeBreadcrumbs(scope)} />
+      <Breadcrumbs items={scopeBreadcrumbs(scope)} indexingEnabled={settings.indexingEnabled} />
 
       <header className="flex max-w-3xl flex-col gap-4">
         <h1 className="font-titulo text-4xl font-bold leading-tight tracking-tight">
@@ -215,6 +234,8 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
           </p>
         )}
       </section>
+
+      {editorial ? <CategoryIntro introMd={editorial.introMd} faq={editorial.faq} /> : null}
     </div>
   );
 }

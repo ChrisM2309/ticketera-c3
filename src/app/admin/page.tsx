@@ -99,6 +99,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <Link href="/admin/destacados/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
             Destacados
           </Link>
+          <Link href="/admin/ajustes/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            Ajustes
+          </Link>
+          <Link href="/admin/contenido/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            Contenido
+          </Link>
+          <Link href="/admin/metricas/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            Métricas
+          </Link>
           <form action={signOutAction}>
             <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
               <Icon name="logOut" />

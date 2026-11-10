@@ -87,6 +87,10 @@ describe('resolución de rutas de catálogo', () => {
     expect(resolveCatalogRoute(['congresos', 'inteligencia-artificial', 'congreso-demo-ia'], taxonomy)).toBeNull();
   });
 
+  it('reserva blog para su ruta pública', () => {
+    expect(resolveCatalogRoute(['blog'], taxonomy)).toBeNull();
+  });
+
   it('marca como no indexables las rutas de modalidad', () => {
     expect(isCatalogRouteIndexable(['congresos', 'inteligencia-artificial', 'virtual'], taxonomy)).toBe(false);
     expect(isCatalogRouteIndexable(['congresos', 'inteligencia-artificial'], taxonomy)).toBe(true);
