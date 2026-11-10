@@ -14,6 +14,10 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
+vi.mock('@/features/ticketing/claim', () => ({
+  resolveOrderAccount: async () => ({ signedIn: false, saved: false }),
+}));
+
 vi.mock('@/features/ticketing/confirmation', () => ({
   loadOrderConfirmation: async () => ({
     status: 'ok',

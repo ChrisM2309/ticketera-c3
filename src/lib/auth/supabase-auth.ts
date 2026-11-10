@@ -84,6 +84,20 @@ export async function userIdFromAccessToken(config: AuthConfig, accessToken: str
   }
 }
 
+/** Como userIdFromAccessToken, pero también devuelve el correo de la cuenta (para precargar el checkout). */
+export async function userFromAccessToken(
+  config: AuthConfig,
+  accessToken: string,
+): Promise<{ id: string; email: string | null } | null> {
+  try {
+    const { data, error } = await createAuthClient(config).auth.getUser(accessToken);
+
+    return error || !data.user ? null : { id: data.user.id, email: data.user.email ?? null };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Rol del usuario leído con su propia sesión: RLS solo devuelve su fila (o la de cualquiera si es admin).
  * Devuelve null si no hay perfil. Lanza error si la consulta falla, para no confundirlo con "sin rol".

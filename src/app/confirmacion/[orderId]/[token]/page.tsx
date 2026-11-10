@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
 
 import { ShareButton } from '@/components/catalog/share-button';
+import { AccountPrompt } from '@/components/checkout/account-prompt';
 import { PrintButton } from '@/components/checkout/print-button';
 import { SimulatedDelivery } from '@/components/checkout/simulated-delivery';
 import { buttonVariants } from '@/components/ui/button';
@@ -12,7 +13,9 @@ import { Icon, type IconTone } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
 import { eventDateParts, formatUsd, modeLabel } from '@/features/catalog/format';
 import { receiptStatusLabel } from '@/features/checkout/payment-flow';
+import { resolveOrderAccount } from '@/features/ticketing/claim';
 import { loadOrderConfirmation, type OrderConfirmation } from '@/features/ticketing/confirmation';
+import { buyerHomePath } from '@/lib/auth/access';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -81,6 +84,8 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
   }
 
   const { confirmation } = result;
+  // Con sesión, la compra de invitado con el mismo correo se guarda en la cuenta.
+  const account = await resolveOrderAccount(orderId, token);
   const date = eventDateParts(confirmation.event.startsAt);
   const tickets = await Promise.all(
     confirmation.tickets.map(async (ticket, index) => ({
@@ -256,6 +261,24 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
           </dl>
         </section>
       ) : null}
+
+      {account.saved ? (
+        <section
+          aria-label="Compra guardada en tu cuenta"
+          className="flex flex-col gap-3 rounded-lg bg-superficie-sutil p-4 print:hidden sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="flex items-center gap-2 font-titulo text-sm font-semibold">
+            <Icon name="check" size={16} tone="exito" />
+            Guardamos esta compra en tu cuenta
+          </p>
+          <Link href={buyerHomePath} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            <Icon name="ticket" />
+            Ver Mis boletos
+          </Link>
+        </section>
+      ) : null}
+
+      <AccountPrompt variant="confirmation" signedIn={account.signedIn} next={`/confirmacion/${orderId}/${token}/`} />
 
       <Link href="/" className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full print:hidden')}>
         Volver al inicio

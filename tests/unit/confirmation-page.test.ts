@@ -15,7 +15,10 @@ import type { OrderConfirmation } from '../../src/features/ticketing/confirmatio
  */
 const loadOrderConfirmation = vi.hoisted(() => vi.fn());
 
+const resolveOrderAccount = vi.hoisted(() => vi.fn());
+
 vi.mock('../../src/features/ticketing/confirmation', () => ({ loadOrderConfirmation }));
+vi.mock('../../src/features/ticketing/claim', () => ({ resolveOrderAccount }));
 
 const orderId = '3f2b6f0e-5c1a-4d7e-8b9a-1c2d3e4f5a6b';
 const eventId = '8a1c2d3e-4f5a-4b6c-9d7e-0f1a2b3c4d5e';
@@ -62,6 +65,8 @@ async function renderPage(): Promise<string> {
 describe('página de confirmación', () => {
   beforeEach(() => {
     loadOrderConfirmation.mockReset();
+    resolveOrderAccount.mockReset();
+    resolveOrderAccount.mockResolvedValue({ signedIn: false, saved: false });
   });
 
   test('las máscaras que espera el E2E real coinciden con el código', () => {
@@ -129,5 +134,37 @@ describe('página de confirmación', () => {
     expect(html).not.toContain('Boleto enviado');
     expect(html).not.toContain('Tus boletos');
     expect(html).not.toContain('/calendario/');
+  });
+
+  test('invitado: invita a crear una cuenta y vuelve a esta confirmación tras registrarse', async () => {
+    loadOrderConfirmation.mockResolvedValue({ status: 'ok', confirmation: confirmationFixture() });
+
+    const html = await renderPage();
+
+    expect(html).toContain('Crea una cuenta para ver tus boletos en Mis boletos');
+    expect(html).toContain(encodeURIComponent(`/confirmacion/${orderId}/${token}/`));
+    expect(html).not.toContain('Guardamos esta compra en tu cuenta');
+    expect(resolveOrderAccount).toHaveBeenCalledWith(orderId, token);
+  });
+
+  test('con sesión y compra reclamada: avisa que se guardó en la cuenta y no invita a registrarse', async () => {
+    loadOrderConfirmation.mockResolvedValue({ status: 'ok', confirmation: confirmationFixture() });
+    resolveOrderAccount.mockResolvedValue({ signedIn: true, saved: true });
+
+    const html = await renderPage();
+
+    expect(html).toContain('Guardamos esta compra en tu cuenta');
+    expect(html).toContain('Ver Mis boletos');
+    expect(html).not.toContain('Crea una cuenta para ver tus boletos');
+  });
+
+  test('con sesión pero sin reclamo (correo distinto): no avisa ni invita a registrarse', async () => {
+    loadOrderConfirmation.mockResolvedValue({ status: 'ok', confirmation: confirmationFixture() });
+    resolveOrderAccount.mockResolvedValue({ signedIn: true, saved: false });
+
+    const html = await renderPage();
+
+    expect(html).not.toContain('Guardamos esta compra en tu cuenta');
+    expect(html).not.toContain('Crea una cuenta para ver tus boletos');
   });
 });
