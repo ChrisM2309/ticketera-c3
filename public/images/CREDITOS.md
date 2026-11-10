@@ -17,3 +17,11 @@ Fecha de descarga: 2026-11-06.
 | `stock/stock-lobby-01.jpg` | Lobby iluminado con piso de madera | Bertellifotografia | https://www.pexels.com/photo/luxury-illuminated-lobby-with-wooden-floor-17109094/ | Pexels License |
 | `stock/stock-conferencia-tecnologia-01.jpg` | Sala de juntas con micrófonos y pantallas | Werner Pfennig | https://www.pexels.com/photo/modern-conference-room-6949365/ | Pexels License |
 | `stock/stock-camara-auditorio-01.jpg` | Equipo de cámara en un auditorio | Caleb Oquendo | https://www.pexels.com/photo/professional-camera-setup-in-modern-auditorium-34506066/ | Pexels License |
+
+## Ilustraciones propias del proyecto
+
+Las 24 imágenes de `tipos/` (12 tipos de evento por 2 variantes) son ilustraciones dibujadas para este proyecto académico. No son fotos, no muestran personas ni texto y no usan material de terceros. Se usan como portada de respaldo cuando un evento no tiene imagen propia, y la interfaz las marca como imagen ilustrativa (D-36).
+
+- Origen editable: `design/illustrations/{tipo}-{1|2}.svg` (paleta C3: navy `#0F203E`, azul `#205298`, violeta `#4F5BA9`, turquesa `#33BEAC`; nodos circulares del logo como motivo).
+- Archivos publicados: `tipos/{tipo}-{1|2}.webp`, 1600x900, generados con `node scripts/build-illustrations.mjs` (usa `sharp`).
+- Autoría: equipo del proyecto. Licencia: uso interno del proyecto DEMO; no son un producto ni servicio oficial de C3.
