@@ -9,7 +9,7 @@ export function PrintButton({ label = 'Imprimir boletos' }: Readonly<{ label?: s
     <button
       type="button"
       onClick={() => window.print()}
-      className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full print:hidden')}
+      className={cn(buttonVariants({ variant: 'secundario', size: 'lg' }), 'w-full whitespace-nowrap print:hidden')}
     >
       <Icon name="print" />
       {label}

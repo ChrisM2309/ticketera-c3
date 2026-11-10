@@ -8,6 +8,7 @@ import { fieldClass } from '@/components/ui/field';
 import { Icon } from '@/components/ui/icon';
 import { eventPath } from '@/features/catalog/paths';
 import {
+  CART_CHANGED_EVENT,
   CART_STORAGE_KEY,
   calculateCartTotals,
   parseCartSnapshot,
@@ -246,6 +247,8 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
 
       try {
         window.localStorage.removeItem(CART_STORAGE_KEY);
+        // Avisa a la cabecera en la misma pestaña para que el contador del carrito llegue a cero.
+        window.dispatchEvent(new Event(CART_CHANGED_EVENT));
         window.sessionStorage.removeItem(CHECKOUT_REQUEST_STORAGE_KEY);
         window.sessionStorage.setItem(
           CHECKOUT_SESSION_STORAGE_KEY,
