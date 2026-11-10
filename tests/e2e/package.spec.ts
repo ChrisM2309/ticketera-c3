@@ -8,7 +8,7 @@ test('sin precio configurado la página dice Precio por definir', async ({ page 
 
 test('un visitante sin sesión ve los beneficios pero no el botón Contratar', async ({ page }) => {
   await page.goto('/para-empresas/');
-  await expect(page.getByRole('heading', { name: 'Multieventos' })).toBeVisible();
+  await expect(page.getByText('Multieventos', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Contratar' })).toHaveCount(0);
 });
 
