@@ -10,6 +10,9 @@
 - `testing/ACCEPTANCE.md` — criterios de aceptación, pruebas y pruebas de usabilidad.
 - `analisis/2026-11-09-brechas-y-requerimientos.md` — análisis de brechas y requerimientos de las nuevas áreas.
 - `analisis/auditoria-flujo-compra.md` — auditoría del flujo de compra (CO-01, Fase 2).
+- `analisis/auditoria-seo.md` — auditoría técnica SEO de la demo y sus pendientes.
+- `analisis/activacion.md` — lista manual mínima para activar el dominio y la indexación.
+- `analisis/evidencias/fase-7/README.md` — capturas del sitio final en móvil y escritorio.
 - `../PRODUCT.md` — contexto de producto y de diseño (raíz del repositorio).
 - `superpowers/specs/2026-11-02-ticketera-design.md` — especificación base de la solución.
 - `superpowers/plans/2026-11-02-t01-next-project-plan.md` — plan de T01 (proyecto Next.js).

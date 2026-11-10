@@ -161,16 +161,15 @@ La corrida E2E completa quedó en `5/7` antes del refuerzo de accesibilidad; la 
 
 **Nunca** marcar estas filas como exitosas si no se han ejecutado.
 
-## Investigación y testeo UX requerido por la PPT
+## Entregables externos fuera del cierre de desarrollo
 
-La presentación del equipo propone **5 usuarios, 3 tareas y 3 métricas** (éxito, tiempo, errores). Tareas: comprar un workshop de IA; encontrar evento gratis en San Salvador; encontrar una entrada comprada.
+Por decisión del responsable, investigación UX, benchmarking, wireframes, marketing, costos, PPT y video corresponden al equipo y se gestionan fuera del repositorio de desarrollo. No son criterios de cierre de estas fases.
+## Cierre Fases 6 y 7 (2026-11-10)
 
-Guardar resultados genuinos en anexo: participante (anonimizado), dispositivo, tarea, completada/no, duración, errores, comentarios, cambios propuestos y evidencia del cambio. Los resultados siguen **pendientes** hasta que se realicen pruebas.
-
-## Checklist de presentación
-
-- [ ] Capturas de la competencia revisada, con fecha/URL.
-- [ ] Demostración de SEO on-page y árbol de categorías.
-- [ ] Video de 1–2 min mostrando compra y confirmación, como respaldo.
-- [ ] PPT con decisiones justificadas por keyword research, perfiles, entrevistas o testeo.
-- [ ] Modelo de marketing: objetivos, canales, presupuesto y proyecciones sin inventar datos medidos.
+- Fase 6: pruebas unitarias y PGlite cubren check-in, reportes y encuesta. Las migraciones `20261113100000_check_in_and_reports.sql`, `20261113106000_advanced_report.sql` y `20261113110000_event_survey.sql` están en el repositorio, sin aplicar a producción.
+- Playwright general: 71 aprobadas, 19 omitidas y 2 fallidas. Las omitidas dependen de sesión/fixtures o de `REAL_PURCHASE=1`. Las dos fallas fueron navegación a `/hackathons/` desde el menú en compra simulada de escritorio y falta del enlace .ics en un evento de pago dinámico; el recorrido de pago móvil y la suite de URLs sí pasaron.
+- Compra real E2E parcial: orden gratuita confirmada `209175c4-5f08-4b4c-a6f3-306d7f1f0628`; la prueba luego falló al leer el aviso de entrega porque el outbox remoto rechazó la plantilla. No registrar este intento como recorrido E2E completo ni repetirlo antes de resolver las migraciones pendientes.
+- Lint, TypeScript y build de producción pasan en el checkout de cierre. Lighthouse/PSI sigue pendiente por cuota disponible en cero y ausencia de runner local.
+- La auditoría SEO pública y sus limitaciones están en `docs/analisis/auditoria-seo.md`. La indexación se dejó apagada por autorización del responsable.
+- El responsable conserva la activación manual mínima en `docs/analisis/activacion.md`.
+- Alcance revisado de Fase 7: auditoría SEO, URLs, rendimiento y capturas del sitio final. No incluye investigación UX, benchmarking, wireframes, marketing, costos, PPT ni video.

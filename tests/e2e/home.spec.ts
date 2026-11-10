@@ -1,15 +1,32 @@
 import { expect, test } from '@playwright/test';
 
+async function expectStructuredDataMatchesRobots(page: import('@playwright/test').Page) {
+  const robots = await page.locator('meta[name="robots"]').first().getAttribute('content');
+  const structuredData = page.locator('script[type="application/ld+json"]');
+
+  if (robots?.includes('noindex')) {
+    await expect(structuredData).toHaveCount(0);
+  } else {
+    await expect(structuredData).not.toHaveCount(0);
+  }
+}
+
 test('home muestra la identidad demo del proyecto', async ({ page }) => {
   await page.goto('/');
 
   await expect(page).toHaveTitle('Boletos para eventos tecnológicos en El Salvador · Ticketera C3 · DEMO');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    'content',
+    'Boletos para eventos tecnológicos en El Salvador · Ticketera C3 · DEMO',
+  );
+  await expect(page.locator('meta[property="og:description"]')).not.toHaveAttribute('content', '');
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary');
   await expect(
     page.getByRole('heading', {
       name: 'Boletos para eventos tecnológicos en El Salvador',
     }),
   ).toBeVisible();
-  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
+  await expectStructuredDataMatchesRobots(page);
 });
 
 test('ficha de evento permite seleccionar una entrada con sus límites', async ({ page }) => {
@@ -17,7 +34,7 @@ test('ficha de evento permite seleccionar una entrada con sus límites', async (
 
   await expect(page.getByRole('heading', { name: 'Congreso demo de IA' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Elegí tus entradas' })).toBeVisible();
-  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
+  await expectStructuredDataMatchesRobots(page);
 
   const general = page.getByRole('spinbutton', { name: 'Cantidad de General' });
   await expect(general).toHaveAttribute('max', '4');

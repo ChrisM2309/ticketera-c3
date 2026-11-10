@@ -95,6 +95,18 @@ describe('organizer_check_in', () => {
     expect(result.rows[0].organizer_check_in).toBe('already_checked_in');
   });
 
+  it('dos solicitudes simultáneas solo registran una entrada', async () => {
+    await asRole(db, 'authenticated', organizerUser);
+    const results = await Promise.all([
+      db.query<{ organizer_check_in: string }>(`select public.organizer_check_in($1, $2)`, [eventId, ticketHash]),
+      db.query<{ organizer_check_in: string }>(`select public.organizer_check_in($1, $2)`, [eventId, ticketHash]),
+    ]);
+    expect(results.map((result) => result.rows[0].organizer_check_in).sort()).toEqual([
+      'already_checked_in',
+      'checked_in',
+    ]);
+  });
+
   it('otro organizador no puede escanear', async () => {
     await asRole(db, 'authenticated', otherUser);
     await expect(db.query(`select public.organizer_check_in($1, $2)`, [eventId, ticketHash])).rejects.toThrow();

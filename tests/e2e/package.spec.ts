@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-test('sin precio configurado la página dice Precio por definir', async ({ page }) => {
+test('la página muestra el precio anual configurado o que sigue por definir', async ({ page }) => {
   await page.goto('/para-empresas/');
   await expect(page.getByRole('heading', { level: 1, name: /Impulsa todos tus eventos/ })).toBeVisible();
-  await expect(page.getByText('Precio por definir')).toBeVisible();
+  const priceLine = await page.getByText('por año', { exact: true }).locator('..').textContent();
+  expect(priceLine?.trim()).toMatch(/^(?:Precio por definir|(?:US)?\$\s?[\d,.]+)\s+por año$/);
 });
 
 test('un visitante sin sesión ve los beneficios pero no el botón Contratar', async ({ page }) => {

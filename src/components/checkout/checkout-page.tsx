@@ -446,7 +446,10 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
           <button
             type="submit"
             disabled={isSubmitting}
-            className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
+            className={cn(
+              buttonVariants({ variant: 'compra', size: 'lg' }),
+              'w-full whitespace-normal px-2 text-center leading-5',
+            )}
           >
             {isSubmitting ? 'Creando orden…' : submitLabel(provisionalTotals.totalCents)}
           </button>

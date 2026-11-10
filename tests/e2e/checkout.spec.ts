@@ -428,6 +428,8 @@ test.describe('móvil de 375 px', () => {
     expect(box).not.toBeNull();
     expect(box!.height).toBeGreaterThanOrEqual(44);
     expect(box!.y + box!.height).toBeLessThanOrEqual(812);
+    const textoCabe = await boton.evaluate((element) => element.scrollWidth <= element.clientWidth);
+    expect(textoCabe).toBe(true);
 
     const sinScrollHorizontal = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
     expect(sinScrollHorizontal).toBe(true);
