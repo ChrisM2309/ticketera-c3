@@ -1,6 +1,7 @@
 import { cache } from 'react';
 
 import { createPublicClient } from '@/lib/supabase/public';
+import { getHomeFeaturedIds } from '@/features/featured/queries';
 
 import type { CartEvent } from '../checkout/cart';
 import { chooseHomeEvents } from './home';
@@ -221,7 +222,7 @@ export async function getHomeCatalog(now: Date = new Date()): Promise<HomeCatalo
     return { status: 'unavailable' };
   }
 
-  const [eventsResult, featuredResult, categoriesResult] = await Promise.all([
+  const [eventsResult, featuredIds, categoriesResult] = await Promise.all([
     client
       .from('events')
       .select(eventSelect)
@@ -229,10 +230,10 @@ export async function getHomeCatalog(now: Date = new Date()): Promise<HomeCatalo
       .gte('starts_at', now.toISOString())
       .order('starts_at', { ascending: true })
       .limit(30),
-    client.from('event_featured').select('event_id, position').order('position', { ascending: true }),
+    getHomeFeaturedIds(),
     client
       .from('categories')
-      .select('slug, name')
+      .select('id, slug, name')
       .eq('kind', 'event_type')
       .order('sort_order', { ascending: true }),
   ]);
@@ -247,7 +248,6 @@ export async function getHomeCatalog(now: Date = new Date()): Promise<HomeCatalo
 
   // Los destacados pueden caer fuera de los próximos 30; se piden aparte, solo si están publicados.
   // Si la tabla de destacados aún no existe en el proyecto, la portada sigue con los próximos eventos.
-  const featuredIds = featuredResult.error ? [] : (featuredResult.data ?? []).map((row) => row.event_id as string);
   let featuredEvents: CatalogEvent[] = [];
 
   if (featuredIds.length > 0) {
@@ -298,7 +298,7 @@ export const getCatalogListing = cache(async (): Promise<CatalogListing> => {
       .limit(CATALOG_EVENT_LIMIT),
     client
       .from('categories')
-      .select('slug, name, kind')
+      .select('id, slug, name, kind')
       .in('kind', ['event_type', 'topic', 'location'])
       .order('sort_order', { ascending: true }),
     client
@@ -315,7 +315,7 @@ export const getCatalogListing = cache(async (): Promise<CatalogListing> => {
   const byKind = (kind: string): CatalogCategory[] =>
     categories
       .filter((category) => category.kind === kind)
-      .map(({ slug, name }) => ({ slug, name }));
+      .map(({ id, slug, name }) => ({ id, slug, name }));
   const routes: CatalogRoute[] = ((routesResult.data ?? []) as RouteRow[]).map((row) => ({
     path: row.path,
     kind: row.kind,

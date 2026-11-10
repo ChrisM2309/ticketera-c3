@@ -45,6 +45,7 @@ export type CatalogEventDetail = Omit<CatalogEvent, 'ticketTypes' | 'topic'> & {
 };
 
 export type CatalogCategory = {
+  id?: string;
   slug: string;
   name: string;
 };

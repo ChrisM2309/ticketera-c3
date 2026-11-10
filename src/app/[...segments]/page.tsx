@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
+import { FeaturedBlock } from '@/components/catalog/featured-block';
 import { EventDetailPage } from '@/features/catalog/event-detail';
 import {
   filterCatalogEvents,
@@ -14,6 +15,7 @@ import {
   type SearchParams,
 } from '@/features/catalog/filters';
 import { CATALOG_EVENT_LIMIT, getCatalogListing, getEventDetail } from '@/features/catalog/queries';
+import { getCategoryFeaturedIds } from '@/features/featured/queries';
 import {
   isCatalogRouteIndexable,
   resolveCatalogRoute,
@@ -140,6 +142,11 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
   const filters = filtersForScope(parseCatalogFilters(await searchParams, locationSlugs), scope);
   const scopedEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, now);
   const events = filterCatalogEvents(listing.events, scope, filters, now);
+  const isTypeScope = scope.kind === 'event_type' || scope.kind === 'event_type_topic' || scope.kind === 'modality';
+  const featuredIds = isTypeScope && scope.eventType.id ? await getCategoryFeaturedIds(scope.eventType.id) : [];
+  const featuredSet = new Set(featuredIds);
+  const featuredEvents = listing.events.filter((event) => featuredSet.has(event.id));
+  const visibleEvents = events.filter((event) => !featuredSet.has(event.id));
   const subcategories = scopeSubcategories(scope, listing.taxonomy);
   const countLabel = events.length === 1 ? '1 evento' : `${events.length} eventos`;
 
@@ -171,6 +178,8 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
         </nav>
       ) : null}
 
+      {isTypeScope ? <FeaturedBlock events={featuredEvents} heading={`Destacados de ${scopeTitle(scope)}`} /> : null}
+
       <section aria-labelledby="resultados" className="flex flex-col gap-6">
         <CatalogFilters
           filters={filters}
@@ -192,15 +201,15 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
           </p>
         ) : null}
 
-        {events.length > 0 ? (
+        {visibleEvents.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {events.map((event) => (
+            {visibleEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
         ) : (
           <p className="rounded-lg bg-superficie-sutil p-6 text-texto-suave">
-            {scopedEvents.length === 0
+            {scopedEvents.length === 0 && featuredEvents.length === 0
               ? 'Todavía no hay eventos publicados aquí. Mirá otras categorías en el menú.'
               : 'Ningún evento coincide con estos filtros. Quitá alguno para ver más resultados.'}
           </p>
