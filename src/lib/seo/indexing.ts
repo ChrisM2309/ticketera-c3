@@ -59,3 +59,46 @@ export function robotsMetadata(options: { indexingEnabled: boolean; pageIndexabl
   const index = options.indexingEnabled && options.pageIndexable;
   return { index, follow: index };
 }
+
+type SitemapInput = {
+  indexingEnabled: boolean;
+  siteUrl: string;
+  catalogPaths: readonly string[];
+  eventPaths: readonly { path: string; updatedAt: Date }[];
+  organizerPaths: readonly string[];
+  blogPaths: readonly { path: string; updatedAt: Date }[];
+  now: Date;
+};
+
+function sitemapPath(path: string): string {
+  return path === '/' ? '/' : `/${path.replace(/^\/+|\/+$/g, '')}/`;
+}
+
+function isPrivateOrModality(path: string): boolean {
+  const normalized = sitemapPath(path);
+  if (privatePaths.some((privatePath) => normalized.startsWith(privatePath))) return true;
+  return ['gratis', 'virtual', 'presencial'].includes(normalized.split('/').filter(Boolean).at(-1) ?? '');
+}
+
+export function buildSitemapEntries(input: SitemapInput): MetadataRoute.Sitemap {
+  if (!input.indexingEnabled) return [];
+
+  const entries = new Map<string, MetadataRoute.Sitemap[number]>();
+  const add = (path: string, extra: Partial<MetadataRoute.Sitemap[number]> = {}) => {
+    const normalized = sitemapPath(path);
+    if (isPrivateOrModality(normalized)) return;
+    const url = new URL(normalized, input.siteUrl).toString();
+    if (!entries.has(url)) entries.set(url, { url, ...extra });
+  };
+
+  add('/');
+  for (const path of input.catalogPaths) add(path);
+  for (const event of input.eventPaths) add(event.path, { lastModified: event.updatedAt });
+  for (const path of input.organizerPaths) add(path);
+  for (const post of input.blogPaths) add(post.path, { lastModified: post.updatedAt });
+  add('/para-empresas/');
+  add('/privacidad/');
+  add('/terminos/');
+
+  return [...entries.values()];
+}

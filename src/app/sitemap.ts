@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next';
 
 import { getCatalogListing } from '@/features/catalog/queries';
+import { eventPath } from '@/features/catalog/paths';
 import { getSiteSettings } from '@/features/settings/settings';
-import { indexableCatalogPaths } from '@/lib/seo/indexing';
+import { buildSitemapEntries, indexableCatalogPaths } from '@/lib/seo/indexing';
 import { siteConfig } from '@/lib/site-config';
 
 /** Se regenera cada minuto, igual que las páginas del catálogo. */
@@ -16,10 +17,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const listing = await getCatalogListing();
-  const paths =
-    listing.status === 'ok'
-      ? ['/', ...indexableCatalogPaths(listing.taxonomy, listing.events, new Date())]
-      : ['/'];
+  const now = new Date();
+  const catalogPaths = listing.status === 'ok' ? indexableCatalogPaths(listing.taxonomy, listing.events, now) : [];
+  const eventPaths = listing.status === 'ok'
+    ? listing.events.filter((event) => new Date(event.startsAt) >= now).map((event) => ({
+      path: eventPath({ slug: event.slug, eventTypeSlug: event.eventType.slug, topicSlug: event.topic?.slug ?? null }),
+      updatedAt: new Date(event.startsAt),
+    }))
+    : [];
 
-  return paths.map((path) => ({ url: new URL(path, siteConfig.siteUrl).toString() }));
+  return buildSitemapEntries({ indexingEnabled: true, siteUrl: siteConfig.siteUrl, catalogPaths, eventPaths, organizerPaths: [], blogPaths: [], now });
 }
