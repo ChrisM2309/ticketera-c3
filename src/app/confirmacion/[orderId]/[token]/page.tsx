@@ -211,7 +211,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
             <h2 id="receipt-title" className="font-titulo text-xl font-bold">
               Comprobante
             </h2>
-            <div className="sm:w-56">
+            <div className="sm:shrink-0">
               <PrintButton label="Imprimir comprobante" />
             </div>
           </div>
