@@ -62,7 +62,7 @@ async function selectTickets(page: Page, event: typeof paidEvent | typeof freeEv
 async function fillBuyer(page: Page) {
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana.demo@example.test');
-  await page.getByRole('button', { name: 'Crear orden DEMO' }).click();
+  await page.getByRole('button', { name: /^(Pagar $.+ · pago de demostración|Confirmar registro gratuito)$/ }).click();
 }
 
 async function expectNoHorizontalScroll(page: Page) {

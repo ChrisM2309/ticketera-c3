@@ -83,7 +83,7 @@ test('checkout de invitado envía solo selección y muestra los importes verific
 
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
-  await page.getByRole('button', { name: 'Crear orden DEMO' }).click();
+  await page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' }).click();
 
   await expect(page.getByRole('heading', { name: 'Elegí el resultado del pago' })).toBeVisible();
   await expect(page.getByText('Total verificado')).toBeVisible();
@@ -114,7 +114,7 @@ test('checkout anuncia los errores de datos de comprador', async ({ page }) => {
   }, { key: cartStorageKey, value: storedCart });
   await page.reload();
 
-  await page.getByRole('button', { name: 'Crear orden DEMO' }).click();
+  await page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' }).click();
 
   await expect(page.getByRole('alert').filter({ hasText: 'Ingresá tu nombre completo.' })).toBeVisible();
   await expect(page.getByRole('alert').filter({ hasText: 'Ingresá un correo electrónico válido.' })).toBeVisible();
@@ -141,6 +141,11 @@ const freeCart = {
   items: [{ ticketTypeId: 'free', quantity: 2 }],
 };
 
+/** Nombre accesible del botón principal del checkout según el total (gratuito o pago de demostración). */
+function submitName(totalCents: number): string {
+  return totalCents === 0 ? 'Confirmar registro gratuito' : 'Pagar $47.25 · pago de demostración';
+}
+
 /** Crea la orden con la API simulada y deja la página en el paso de pago. */
 async function reachPaymentStep(page: Page, cart: typeof storedCart, totalCents: number) {
   await page.route('**/api/checkout/orders', async (route) => {
@@ -162,7 +167,7 @@ async function reachPaymentStep(page: Page, cart: typeof storedCart, totalCents:
   await page.reload();
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
-  await page.getByRole('button', { name: 'Crear orden DEMO' }).click();
+  await page.getByRole('button', { name: submitName(totalCents) }).click();
   await expect(page.getByRole('heading', { name: /Confirmá tu registro|Elegí el resultado del pago/ })).toBeVisible();
 }
 
@@ -247,4 +252,50 @@ test('un error del servidor se anuncia y el comprador puede reintentar', async (
 
   await page.getByRole('button', { name: 'Simular pago aprobado' }).click();
   await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
+});
+
+test.describe('móvil de 375 px', () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate(({ key, value }) => {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    }, { key: cartStorageKey, value: storedCart });
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Finalizá tu compra' })).toBeVisible();
+  });
+
+  test('subtotal, comisión y total se ven antes del botón de pago', async ({ page }) => {
+    const boton = page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' });
+    await expect(boton).toBeVisible();
+    const botonBox = await boton.boundingBox();
+    expect(botonBox).not.toBeNull();
+
+    for (const nombre of ['Subtotal', /^Comisión DEMO/, 'Total provisional']) {
+      const fila = page.locator('dt').filter({ hasText: nombre });
+      await expect(fila).toBeVisible();
+      const filaBox = await fila.boundingBox();
+      expect(filaBox).not.toBeNull();
+      expect(filaBox!.y + filaBox!.height).toBeLessThanOrEqual(botonBox!.y);
+    }
+
+    await expect(page.locator('dd').filter({ hasText: /^\$45$/ })).toBeVisible();
+    await expect(page.locator('dd').filter({ hasText: /^\$2\.25$/ })).toBeVisible();
+    await expect(page.locator('dd').filter({ hasText: /^\$47\.25$/ })).toBeVisible();
+  });
+
+  test('el botón de pago está dentro del primer scroll tras llenar los datos', async ({ page }) => {
+    await page.getByLabel('Nombre completo').fill('Ana DEMO');
+    await page.getByLabel('Correo electrónico').fill('ana@example.test');
+
+    const boton = page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' });
+    await expect(boton).toBeVisible();
+    const box = await boton.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(812);
+
+    const sinScrollHorizontal = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+    expect(sinScrollHorizontal).toBe(true);
+  });
 });

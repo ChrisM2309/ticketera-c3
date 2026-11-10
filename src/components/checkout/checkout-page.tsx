@@ -11,6 +11,7 @@ import {
   calculateCartTotals,
   parseCartSnapshot,
 } from '@/features/checkout/cart';
+import { submitLabel } from '@/features/checkout/labels';
 import { CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
@@ -217,19 +218,19 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start">
-      <section className="flex min-w-0 flex-col gap-6" aria-labelledby="checkout-title">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-6 md:px-6 md:pt-14">
+      <section className="flex min-w-0 flex-col gap-4 md:gap-6" aria-labelledby="checkout-title">
         <CheckoutSteps current="datos" free={provisionalTotals.totalCents === 0} />
-        <header className="flex flex-col gap-3">
-          <h1 id="checkout-title" className="font-titulo text-4xl font-bold leading-tight tracking-tight">
+        <header className="flex flex-col gap-2 md:gap-3">
+          <h1 id="checkout-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight md:text-4xl">
             Finalizá tu compra
           </h1>
-          <p className="max-w-2xl font-texto text-base leading-7 text-texto-suave">
+          <p className="max-w-2xl font-texto text-sm leading-6 text-texto-suave md:text-base md:leading-7">
             Completá tus datos para crear la orden. Este es un pago de demostración: no se cobrará dinero ni se pedirán datos de tarjeta.
           </p>
         </header>
 
-        <form onSubmit={submitOrder} className="flex flex-col gap-5 rounded-lg bg-superficie p-6 shadow-sm" noValidate>
+        <form onSubmit={submitOrder} className="flex flex-col gap-4 rounded-lg bg-superficie p-4 shadow-sm md:gap-5 md:p-6" noValidate>
           <div className="flex flex-col gap-2">
             <label htmlFor="buyer-name" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
               <Icon name="user" size={16} />
@@ -287,22 +288,20 @@ export function CheckoutPage() {
             </p>
           ) : null}
 
+          <CartSummary totals={provisionalTotals} commissionPercent={siteConfig.demoCommissionPercent} compact />
+
           <button
             type="submit"
             disabled={isSubmitting}
             className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
           >
-            {isSubmitting ? 'Creando orden…' : 'Crear orden DEMO'}
+            {isSubmitting ? 'Creando orden…' : submitLabel(provisionalTotals.totalCents)}
           </button>
+          <p className="text-center font-texto text-xs leading-5 text-texto-suave">
+            Revisaremos precios y disponibilidad antes de guardar la orden.
+          </p>
         </form>
       </section>
-
-      <aside className="flex flex-col gap-4 lg:sticky lg:top-6">
-        <CartSummary totals={provisionalTotals} commissionPercent={siteConfig.demoCommissionPercent} />
-        <p className="font-texto text-center text-xs leading-5 text-texto-suave">
-          Revisaremos precios y disponibilidad antes de guardar la orden.
-        </p>
-      </aside>
     </div>
   );
 }
