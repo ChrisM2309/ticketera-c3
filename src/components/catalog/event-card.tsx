@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { Icon } from '@/components/ui/icon';
 import { eventDateParts, modeLabel, priceLabel } from '@/features/catalog/format';
 import { coverImagePath, isIllustrativeCover } from '@/features/catalog/images';
 import { lineForEventType, type CatalogLine } from '@/features/catalog/lines';
+import { iconForEventType, toneForEventType } from '@/features/catalog/icons';
 import { eventPath } from '@/features/catalog/paths';
 import type { CatalogEvent } from '@/features/catalog/types';
 import { cn } from '@/lib/utils';
@@ -78,7 +80,10 @@ export function EventCard({ event, featured = false }: EventCardProps) {
             </Link>
           </h3>
           <div className="font-texto text-sm text-texto-suave">
-            <p>{event.eventType.name}</p>
+            <p className="flex items-center gap-2">
+              <Icon name={iconForEventType(event.eventType.slug)} size={16} tone={toneForEventType(event.eventType.slug)} />
+              <span>{event.eventType.name}</span>
+            </p>
             <p>{modeLabel(event.mode)}{event.location ? `, ${event.location.name}` : ''}</p>
             {event.organizer ? <p>{event.organizer.name}</p> : null}
           </div>

@@ -4,8 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
+import { lineTile } from '@/components/catalog/category-tile';
 import { NavLink } from '@/components/layout/nav-link';
 import { Icon } from '@/components/ui/icon';
+import { iconForEventType } from '@/features/catalog/icons';
+import { lineForEventType } from '@/features/catalog/lines';
 import type { CategoryGroup, MenuItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +19,19 @@ type CategoryNavProps = Readonly<{
 
 const disparador =
   'flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-sm px-3 text-sm font-medium text-texto-inverso underline-offset-4 hover:underline focus-visible:outline-3 [&::-webkit-details-marker]:hidden';
+
+/**
+ * Icono del tipo de evento en el menú, que se dibuja sobre navy: compite y conecta no alcanzan 3:1 como trazo
+ * sobre navy, así que el icono va sobre una pastilla del color de su línea (blanco sobre compite y conecta, navy sobre crea).
+ * Es decorativo: el nombre del tipo va siempre al lado.
+ */
+function TypeIcon({ slug }: Readonly<{ slug: string }>) {
+  return (
+    <span className={cn('inline-flex size-7 shrink-0 items-center justify-center rounded-sm', lineTile[lineForEventType(slug)])}>
+      <Icon name={iconForEventType(slug)} size={16} />
+    </span>
+  );
+}
 
 /**
  * Categorías en cuatro grupos desplegables (D-34).
@@ -102,7 +118,8 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
               <ul className="flex flex-col pb-2">
                 {grupo.items.map((categoria) => (
                   <li key={categoria.slug}>
-                    <NavLink href={categoria.href} active={pathname.startsWith(categoria.href)}>
+                    <NavLink href={categoria.href} active={pathname.startsWith(categoria.href)} className="gap-2">
+                      <TypeIcon slug={categoria.slug} />
                       {categoria.label}
                     </NavLink>
                   </li>
@@ -132,8 +149,9 @@ export function CategoryNav({ groups, accountLinks }: CategoryNavProps) {
                         <Link
                           href={categoria.href}
                           aria-current={actual ? 'page' : undefined}
-                          className="flex min-h-11 items-center rounded-sm px-3 font-texto text-sm font-medium text-texto underline-offset-4 hover:bg-superficie-sutil hover:underline aria-[current=page]:bg-superficie-sutil"
+                          className="flex min-h-11 items-center gap-2 rounded-sm px-3 font-texto text-sm font-medium text-texto underline-offset-4 hover:bg-superficie-sutil hover:underline aria-[current=page]:bg-superficie-sutil"
                         >
+                          <TypeIcon slug={categoria.slug} />
                           {categoria.label}
                         </Link>
                       </li>

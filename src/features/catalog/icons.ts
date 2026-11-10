@@ -1,4 +1,5 @@
-import type { IconName } from '@/components/ui/icon';
+import type { IconName, IconTone } from '@/components/ui/icon';
+import { lineForEventType } from '@/features/catalog/lines';
 
 /** Icono de cada uno de los 12 tipos de evento (slugs del Excel, ver categories.ts). */
 export const eventTypeIcon: Record<string, IconName> = {
@@ -27,6 +28,11 @@ export const topicIcon: Record<string, IconName> = {
 /** Icono del tipo de evento; `ticket` si el slug no existe. */
 export function iconForEventType(slug: string): IconName {
   return Object.hasOwn(eventTypeIcon, slug) ? eventTypeIcon[slug] : 'ticket';
+}
+
+/** Tono del icono del tipo: el color de su línea de C3 (compite, crea o conecta). Clasifica; el nombre del tipo siempre va al lado. */
+export function toneForEventType(slug: string): IconTone {
+  return lineForEventType(slug);
 }
 
 /** Icono por estado (de evento, orden o boleto); siempre se muestra junto al texto del estado. */
