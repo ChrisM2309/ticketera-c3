@@ -18,6 +18,12 @@ Interfaz `PaymentProvider` con `createPaymentAttempt(order)`, `confirmDemoPaymen
 4. **Reintento o doble click:** idempotencia, la confirmación no duplica boletos ni consume cupos dos veces.
 5. **Sin cupos:** bloquear compra en servidor y mostrar error recuperable.
 
+## Otros cobros DEMO de la Fase 4
+
+El destacado de un evento usa un selector de 1 a 30 días. El servidor lee `featured_daily_rate_cents`; si la cuenta tiene un paquete activo, aplica primero los días gratuitos restantes y después el porcentaje de descuento guardado en la instantánea del paquete. El organizador solo elige la fecha, los días y el resultado `approved` o `rejected`; nunca envía tarifa ni total.
+
+El paquete empresarial usa `package_annual_price_cents` y los beneficios DEMO de `site_settings`. La compra aprobada crea un paquete activo por 365 días; la rechazada crea `payment_failed`. No hay datos de tarjeta, cobro real ni proveedor externo. Mientras el responsable no configure el precio, la interfaz muestra «Precio por definir».
+
 ## Propuesta de interfaz
 
 `Modo demostración: aquí no se cobrará dinero ni se solicitará información bancaria.`

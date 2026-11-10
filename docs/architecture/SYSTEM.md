@@ -55,6 +55,12 @@ Un organizador solo puede tener acceso a eventos que creó/posee. No implementar
 
 **Alta de organizadores (P-7, CP-09):** la persona primero crea una cuenta de comprador. El administrador crea la organización en `/admin/organizadores/` y la vincula por correo con `admin_link_organizer`, que sube su perfil de `buyer` a `organizer`. No hay autoservicio ni aprobación de solicitudes en v1.
 
+### Destacados y paquete empresarial (Fase 4)
+
+El administrador gestiona destacados manuales y solicitudes pagadas desde `/admin/destacados/`. Un organizador solo puede solicitar el destacado de un evento propio y publicado desde `/panel/destacar/[eventId]/`; el servidor toma la tarifa diaria de `site_settings` y SQL calcula días, descuento y total. El pago es DEMO: no se solicitan tarjetas y un rechazo no activa el destacado ni consume días.
+
+`/para-empresas/` presenta los beneficios configurables y, para una cuenta vinculada a un organizador, el paquete anual con `SimulatedPaymentPanel`. `/panel/paquete/` muestra vigencia, saldo de eventos y días de destacado, historial y seguimientos. Las funciones de paquete verifican propietario o administrador dentro de funciones protegidas; RLS limita las lecturas.
+
 ## 5. Estados
 
 ```text
