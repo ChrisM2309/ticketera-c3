@@ -33,6 +33,8 @@ grant select on public.blog_posts, public.editorial_pages to anon, authenticated
 
 create policy blog_posts_public_read on public.blog_posts for select to anon, authenticated using (status = 'published');
 create policy editorial_pages_public_read on public.editorial_pages for select to anon, authenticated using (status = 'published');
+create policy blog_posts_admin_read on public.blog_posts for select to authenticated using (public.is_admin());
+create policy editorial_pages_admin_read on public.editorial_pages for select to authenticated using (public.is_admin());
 
 create or replace function public.admin_save_blog_post(
   p_id uuid, p_slug text, p_title text, p_description text, p_body_md text,
