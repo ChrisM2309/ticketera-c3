@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { PGlite } from '@electric-sql/pglite';
 
@@ -28,21 +30,39 @@ async function eventId(slug: string): Promise<string> {
   return result.rows[0].id;
 }
 
+type OrderOptions = { requestId?: string; phone?: string | null };
+
 async function createPendingOrderForEvent(
   eventSlug: string,
   items: Array<{ ticketTypeId: string; quantity: number }>,
+  options: OrderOptions = {},
 ) {
+  await asSuperuser(db);
   const event = await eventId(eventSlug);
+  const requestId = options.requestId ?? randomUUID();
+  const tokenHash = requestId.replaceAll('-', '').repeat(2);
   await asRole(db, 'service_role');
 
   return db.query<{ order_id: string; subtotal_cents: number; fee_cents: number; total_cents: number }>(
-    `select * from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6)`,
-    [event, JSON.stringify(items), 'Comprador DEMO', 'comprador@example.test', 'a'.repeat(64), 5],
+    `select * from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6, $7, $8)`,
+    [
+      event,
+      JSON.stringify(items),
+      'Comprador DEMO',
+      'comprador@example.test',
+      tokenHash,
+      5,
+      requestId,
+      options.phone ?? null,
+    ],
   );
 }
 
-async function createPendingOrder(items: Array<{ ticketTypeId: string; quantity: number }>) {
-  return createPendingOrderForEvent('congreso-demo-ia', items);
+async function createPendingOrder(
+  items: Array<{ ticketTypeId: string; quantity: number }>,
+  options: OrderOptions = {},
+) {
+  return createPendingOrderForEvent('congreso-demo-ia', items, options);
 }
 
 async function orderCounts() {
@@ -117,13 +137,15 @@ describe('create_pending_order', () => {
     await asRole(db, 'anon');
 
     await expect(
-      db.query(`select * from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6)`, [
+      db.query(`select * from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6, $7, $8)`, [
         event,
         JSON.stringify([{ ticketTypeId: general.id, quantity: 1 }]),
         'Comprador DEMO',
         'comprador@example.test',
         'b'.repeat(64),
         5,
+        randomUUID(),
+        null,
       ]),
     ).rejects.toThrow(/permission denied/);
   });
@@ -209,5 +231,84 @@ describe('create_pending_order', () => {
     );
 
     expect(items.rows).toEqual([{ unit_price_cents: general.price_cents, line_total_cents: general.price_cents }]);
+  });
+
+  it('el mismo request id devuelve la misma orden y una sola fila', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    const requestId = randomUUID();
+    const items = [{ ticketTypeId: general.id, quantity: 2 }];
+
+    const first = await createPendingOrder(items, { requestId });
+    const second = await createPendingOrder(items, { requestId });
+
+    expect(second.rows[0]).toEqual(first.rows[0]);
+    expect(await orderCounts()).toEqual({ orders: 1, items: 1 });
+  });
+
+  it('un request id con otro evento se rechaza', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    const otherEventTicket = await ticket('hackathon-demo-en-linea', 'Registro gratuito');
+    const requestId = randomUUID();
+
+    await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }], { requestId });
+
+    await expect(
+      createPendingOrderForEvent('hackathon-demo-en-linea', [{ ticketTypeId: otherEventTicket.id, quantity: 1 }], {
+        requestId,
+      }),
+    ).rejects.toThrow(/otro evento/i);
+
+    expect(await orderCounts()).toEqual({ orders: 1, items: 1 });
+  });
+
+  it('guarda el teléfono normalizado y acepta que falte', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+
+    const withPhone = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }], {
+      phone: '+50377771234',
+    });
+    const withoutPhone = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }]);
+
+    await asSuperuser(db);
+    const rows = await db.query<{ id: string; buyer_phone: string | null }>(
+      `select id, buyer_phone from public.orders where id in ($1, $2)`,
+      [withPhone.rows[0].order_id, withoutPhone.rows[0].order_id],
+    );
+    const phones = new Map(rows.rows.map((row) => [row.id, row.buyer_phone]));
+
+    expect(phones.get(withPhone.rows[0].order_id)).toBe('+50377771234');
+    expect(phones.get(withoutPhone.rows[0].order_id)).toBeNull();
+  });
+
+  it('un teléfono inválido se rechaza', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    const before = await orderCounts();
+
+    for (const phone of ['77771234', '+5037777123', '+50377771234a', '+50477771234']) {
+      await expect(createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }], { phone })).rejects.toThrow(
+        /teléfono/i,
+      );
+    }
+
+    expect(await orderCounts()).toEqual(before);
+  });
+
+  it('exige un request id', async () => {
+    const general = await ticket('congreso-demo-ia', 'General');
+    const event = await eventId('congreso-demo-ia');
+    await asRole(db, 'service_role');
+
+    await expect(
+      db.query(`select * from public.create_pending_order($1, $2::jsonb, $3, $4, $5, $6, $7, $8)`, [
+        event,
+        JSON.stringify([{ ticketTypeId: general.id, quantity: 1 }]),
+        'Comprador DEMO',
+        'comprador@example.test',
+        'a'.repeat(64),
+        5,
+        null,
+        null,
+      ]),
+    ).rejects.toThrow(/solicitud/i);
   });
 });

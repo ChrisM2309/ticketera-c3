@@ -12,7 +12,7 @@ import {
   parseCartSnapshot,
 } from '@/features/checkout/cart';
 import { submitLabel } from '@/features/checkout/labels';
-import { CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
+import { CHECKOUT_REQUEST_STORAGE_KEY, CHECKOUT_SESSION_STORAGE_KEY } from '@/features/checkout/order';
 import { siteConfig } from '@/lib/site-config';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +22,7 @@ import { CheckoutSteps, PaymentStep, type PendingOrder } from './payment-step';
 type FieldErrors = {
   buyerName?: string;
   buyerEmail?: string;
+  buyerPhone?: string;
   form?: string;
 };
 
@@ -29,6 +30,36 @@ type CreatedOrder = PendingOrder & {
   subtotalCents: number;
   feeCents: number;
 };
+
+/**
+ * Un request id por sesión de checkout y selección de entradas. Se reutiliza en los reintentos para que el
+ * servidor devuelva la misma orden en lugar de duplicarla; cambia si cambian el evento o las entradas.
+ */
+function getCheckoutRequestId(fingerprint: string): string {
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(CHECKOUT_REQUEST_STORAGE_KEY) ?? 'null') as unknown;
+
+    if (
+      isRecord(stored) &&
+      stored.fingerprint === fingerprint &&
+      typeof stored.requestId === 'string'
+    ) {
+      return stored.requestId;
+    }
+  } catch {
+    // Sin almacenamiento o con contenido ilegible se genera un request id nuevo.
+  }
+
+  const requestId = crypto.randomUUID();
+
+  try {
+    window.sessionStorage.setItem(CHECKOUT_REQUEST_STORAGE_KEY, JSON.stringify({ fingerprint, requestId }));
+  } catch {
+    // El reintento dentro de esta misma carga también debería reutilizarlo; sin almacenamiento no es posible.
+  }
+
+  return requestId;
+}
 
 function subscribeToCartStorage(onChange: () => void) {
   window.addEventListener('storage', onChange);
@@ -81,16 +112,19 @@ function readFieldErrors(value: unknown): FieldErrors | null {
     return {
       buyerName: typeof fromApi.buyerName === 'string' ? fromApi.buyerName : undefined,
       buyerEmail: typeof fromApi.buyerEmail === 'string' ? fromApi.buyerEmail : undefined,
+      buyerPhone: typeof fromApi.buyerPhone === 'string' ? fromApi.buyerPhone : undefined,
       form: typeof fromApi.items === 'string' || typeof fromApi.eventId === 'string'
         ? 'Las entradas cambiaron. Volvé al carrito para revisarlas.'
-        : undefined,
+        : typeof fromApi.requestId === 'string'
+          ? 'No pudimos validar la solicitud de compra. Recargá la página e intentá nuevamente.'
+          : undefined,
     };
   }
 
   return typeof value.error === 'string' ? { form: value.error } : null;
 }
 
-function validateBuyer(name: string, email: string): FieldErrors {
+function validateBuyer(name: string, email: string, phone: string): FieldErrors {
   const errors: FieldErrors = {};
 
   if (name.trim().length < 2 || name.trim().length > 120) {
@@ -99,6 +133,10 @@ function validateBuyer(name: string, email: string): FieldErrors {
 
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
     errors.buyerEmail = 'Ingresá un correo electrónico válido.';
+  }
+
+  if (phone.trim() && !/^(?:\+?503)?[0-9]{8}$/.test(phone.trim().replace(/[\s-]/g, ''))) {
+    errors.buyerPhone = 'Ingresá un teléfono de El Salvador de 8 dígitos.';
   }
 
   return errors;
@@ -113,6 +151,7 @@ export function CheckoutPage() {
   const snapshot = parseCartSnapshot(storedValue);
   const [buyerName, setBuyerName] = useState('');
   const [buyerEmail, setBuyerEmail] = useState('');
+  const [buyerPhone, setBuyerPhone] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
@@ -128,7 +167,7 @@ export function CheckoutPage() {
       return;
     }
 
-    const clientErrors = validateBuyer(buyerName, buyerEmail);
+    const clientErrors = validateBuyer(buyerName, buyerEmail, buyerPhone);
 
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
@@ -139,13 +178,19 @@ export function CheckoutPage() {
     setFieldErrors({});
 
     try {
+      const requestId = getCheckoutRequestId(JSON.stringify([snapshot.event.id, snapshot.items]));
       const response = await fetch('/api/checkout/orders', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           eventId: snapshot.event.id,
+          requestId,
           items: snapshot.items,
-          buyer: { name: buyerName.trim(), email: buyerEmail.trim() },
+          buyer: {
+            name: buyerName.trim(),
+            email: buyerEmail.trim(),
+            ...(buyerPhone.trim() ? { phone: buyerPhone.trim() } : {}),
+          },
         }),
       });
       const body: unknown = await response.json().catch(() => null);
@@ -164,6 +209,7 @@ export function CheckoutPage() {
 
       try {
         window.localStorage.removeItem(CART_STORAGE_KEY);
+        window.sessionStorage.removeItem(CHECKOUT_REQUEST_STORAGE_KEY);
         window.sessionStorage.setItem(
           CHECKOUT_SESSION_STORAGE_KEY,
           JSON.stringify({ orderId: order.orderId, checkoutToken: order.checkoutToken }),
@@ -278,6 +324,35 @@ export function CheckoutPage() {
             {fieldErrors.buyerEmail ? (
               <p id="buyer-email-error" role="alert" className="font-texto text-sm text-error">
                 {fieldErrors.buyerEmail}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="buyer-phone" className="inline-flex items-center gap-2 font-titulo text-sm font-semibold">
+              <Icon name="phone" size={16} />
+              Teléfono para WhatsApp (opcional)
+            </label>
+            <input
+              id="buyer-phone"
+              name="buyer-phone"
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              maxLength={20}
+              placeholder="7777 1234"
+              value={buyerPhone}
+              onChange={(input) => setBuyerPhone(input.target.value)}
+              aria-invalid={Boolean(fieldErrors.buyerPhone)}
+              aria-describedby={fieldErrors.buyerPhone ? 'buyer-phone-error buyer-phone-hint' : 'buyer-phone-hint'}
+              className={fieldClass}
+            />
+            <p id="buyer-phone-hint" className="font-texto text-xs leading-5 text-texto-suave">
+              Número de El Salvador de 8 dígitos. Solo lo guardamos con tu orden de demostración.
+            </p>
+            {fieldErrors.buyerPhone ? (
+              <p id="buyer-phone-error" role="alert" className="font-texto text-sm text-error">
+                {fieldErrors.buyerPhone}
               </p>
             ) : null}
           </div>

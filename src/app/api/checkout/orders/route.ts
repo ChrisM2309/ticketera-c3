@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import {
-  createCheckoutToken,
   getServerDemoCommissionPercent,
   hashCheckoutToken,
   parseOrderRequest,
 } from '@/features/checkout/order';
+import { deriveCheckoutToken, getCheckoutTokenSecret } from '@/features/checkout/token';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
@@ -36,13 +36,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ fieldErrors: parsed.fieldErrors }, { status: 400 });
   }
 
+  let checkoutToken: string;
+
+  try {
+    checkoutToken = deriveCheckoutToken(getCheckoutTokenSecret(), parsed.data.requestId);
+  } catch (error) {
+    console.error('Checkout DEMO sin secreto de token configurado.', error);
+    return orderError('El checkout DEMO no está configurado todavía. Intentá más tarde.', 503);
+  }
+
   const client = createServiceRoleClient();
 
   if (!client) {
     return orderError('El checkout DEMO no está configurado todavía. Intentá más tarde.', 503);
   }
 
-  const checkoutToken = createCheckoutToken();
   const { data, error } = await client.rpc('create_pending_order', {
     p_event_id: parsed.data.eventId,
     p_items: parsed.data.items,
@@ -50,6 +58,8 @@ export async function POST(request: Request) {
     p_buyer_email: parsed.data.buyerEmail,
     p_public_token_hash: hashCheckoutToken(checkoutToken),
     p_fee_percent: getServerDemoCommissionPercent(),
+    p_request_id: parsed.data.requestId,
+    p_buyer_phone: parsed.data.buyerPhone,
   });
 
   if (error) {
