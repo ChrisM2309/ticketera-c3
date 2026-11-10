@@ -6,6 +6,9 @@
  *   empresa@demo.c3    (rol organizer; ya es dueña de «Organizador DEMO Uno»)
  *   cliente@demo.c3    (rol buyer; cuenta compradora para probar /mis-boletos/ y /cuenta/)
  *
+ * Las cuentas de organizadores reales no se crean aquí: el administrador las vincula desde
+ * /admin/organizadores/ (función admin_link_organizer) y no se guarda ninguna contraseña en el repositorio.
+ *
  * Seguridad:
  * - Sin --apply no escribe nada: solo lee el estado actual.
  * - Las contraseñas se piden por teclado, sin mostrarse, y no se guardan ni se imprimen.
