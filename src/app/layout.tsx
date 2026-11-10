@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
+import { ConsentBanner } from '@/components/layout/consent-banner';
+import { PageViewTracker } from '@/components/layout/page-view-tracker';
 import { getSiteSettings } from '@/features/settings/settings';
 import { robotsMetadata } from '@/lib/seo/indexing';
 import { siteConfig } from '@/lib/site-config';
@@ -51,6 +53,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           {children}
         </main>
         <SiteFooter />
+        <PageViewTracker />
+        <ConsentBanner />
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabase, seedSql } from './helpers';
 
 const expectedTables = [
+  'analytics_events',
   'blog_posts',
   'business_packages',
   'categories',
