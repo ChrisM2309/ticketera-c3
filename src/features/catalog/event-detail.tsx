@@ -6,6 +6,7 @@ import { EventCard } from '@/components/catalog/event-card';
 import { MobileBuyBar } from '@/components/catalog/mobile-buy-bar';
 import { SpeakersList } from '@/components/catalog/speakers-list';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
+import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { modeLabel, priceFromLabel } from '@/features/catalog/format';
 import { coverImagePath, isIllustrativeCover, publicImagePath } from '@/features/catalog/images';
@@ -13,6 +14,7 @@ import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity, hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import type { CatalogEvent, CatalogEventDetail } from '@/features/catalog/types';
 import { siteConfig } from '@/lib/site-config';
+import { cn } from '@/lib/utils';
 
 type EventDetailPageProps = Readonly<{
   event: CatalogEventDetail;
@@ -253,6 +255,15 @@ export function EventDetailPage({ event, related }: EventDetailPageProps) {
             <p className="max-w-3xl whitespace-pre-line font-texto text-base leading-7 text-texto-suave">
               {event.description}
             </p>
+            {past ? null : (
+              <a
+                href={`/calendario/${event.id}/`}
+                className={cn(buttonVariants({ variant: 'secundario' }), 'w-fit')}
+              >
+                <Icon name="calendarPlus" />
+                Agregar al calendario
+              </a>
+            )}
           </section>
 
           {event.agenda ? (

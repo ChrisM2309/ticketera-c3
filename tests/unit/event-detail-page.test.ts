@@ -124,3 +124,20 @@ describe('ficha de evento: ponentes', () => {
     expect(html.indexOf('>Agenda<')).toBeLessThan(html.indexOf('>Ponentes<'));
   });
 });
+
+describe('ficha de evento: agregar al calendario', () => {
+  test('un evento próximo enlaza al archivo .ics', () => {
+    const html = render(event());
+
+    expect(html).toContain('href="/calendario/event-1/"');
+    expect(html).toContain('Agregar al calendario');
+  });
+
+  test('un evento finalizado no ofrece agregarlo al calendario', () => {
+    const html = render(
+      event({ startsAt: '2027-02-01T15:00:00Z', endsAt: '2027-02-01T18:00:00Z' }),
+    );
+
+    expect(html).not.toContain('/calendario/');
+  });
+});

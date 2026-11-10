@@ -12,6 +12,7 @@ export const privatePaths = [
   '/admin/',
   '/api/',
   '/buscar/',
+  '/calendario/',
   '/carrito/',
   '/checkout/',
   '/confirmacion/',

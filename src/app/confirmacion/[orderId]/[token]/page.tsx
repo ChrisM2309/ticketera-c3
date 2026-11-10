@@ -139,6 +139,15 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
             <dd>{formatUsd(confirmation.totalCents)}</dd>
           </div>
         </dl>
+        {confirmation.status === 'confirmed' ? (
+          <a
+            href={`/calendario/${confirmation.event.id}/`}
+            className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-fit print:hidden')}
+          >
+            <Icon name="calendarPlus" />
+            Agregar al calendario
+          </a>
+        ) : null}
       </section>
 
       {tickets.length > 0 ? (

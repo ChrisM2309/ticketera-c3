@@ -94,7 +94,7 @@ describe('reglas de robots', () => {
       rules: { userAgent: '*', allow: '/', disallow: privatePaths },
       sitemap: 'https://ticketera.example/sitemap.xml',
     });
-    expect(privatePaths).toEqual(expect.arrayContaining(['/carrito/', '/checkout/', '/mis-boletos/']));
+    expect(privatePaths).toEqual(expect.arrayContaining(['/calendario/', '/carrito/', '/checkout/', '/mis-boletos/']));
   });
 
   it('privatePaths no lista rutas inexistentes', () => {

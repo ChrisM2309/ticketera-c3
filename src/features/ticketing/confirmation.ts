@@ -18,6 +18,7 @@ export type OrderConfirmation = {
   /** Comprobante del pago de demostración (o del registro gratuito) de la orden. */
   receipt: Receipt;
   event: {
+    id: string;
     title: string;
     startsAt: string;
     mode: 'presencial' | 'virtual';
@@ -174,6 +175,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
         payment,
       }),
       event: {
+        id: order.event_id,
         title: event.title,
         startsAt: event.starts_at,
         mode: event.mode,
