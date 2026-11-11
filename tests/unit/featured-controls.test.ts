@@ -6,5 +6,6 @@ const controlsSource = readFileSync('src/components/catalog/featured-controls.ts
 describe('controles del destacado', () => {
   it('mantiene una superficie clara y contraste para las flechas sobre el marco navy', () => {
     expect(controlsSource).toContain('bg-superficie text-texto');
+    expect(controlsSource).toContain('bg-navy px-4 py-3');
   });
 });

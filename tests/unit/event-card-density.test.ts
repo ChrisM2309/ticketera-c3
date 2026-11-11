@@ -50,6 +50,7 @@ describe('densidad de EventCard', () => {
   it('refuerza visualmente el destacado con una elevación propia', () => {
     const card = EventCard({ event, featured: true });
 
-    expect(classesOf(card).join(' ')).toContain('shadow-xl');
+    expect(classesOf(card).join(' ')).toContain('rounded-none');
+    expect(classesOf(card).join(' ')).toContain('shadow-none');
   });
 });

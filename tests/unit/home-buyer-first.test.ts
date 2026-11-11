@@ -14,6 +14,7 @@ describe('composición buyer-first del Home', () => {
     expect(homeSource.indexOf('<SiteSearch')).toBeLessThan(heroEnd);
     expect(homeSource.indexOf('<DiscoveryShortcuts')).toBeLessThan(heroEnd);
     expect(homeSource).toContain('inputId="buscar-eventos-home"');
+    expect(homeSource).not.toContain('rounded-lg bg-navy p-2 shadow-md');
   });
 
   it('no presenta publicar en el hero y conserva la CTA contextual inferior', () => {

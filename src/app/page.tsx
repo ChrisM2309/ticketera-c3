@@ -83,7 +83,7 @@ export default async function Home() {
           <DiscoveryShortcuts />
         </div>
 
-        <div className="min-w-0 rounded-lg bg-navy p-2 shadow-md sm:p-3">
+        <div className="min-w-0">
           {featured.length > 0 ? (
             <FeaturedCarousel events={featured} />
           ) : (

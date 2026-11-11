@@ -47,7 +47,7 @@ export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-4 bg-navy px-4 py-3">
       <div className="flex items-center gap-2">
         <button
           type="button"

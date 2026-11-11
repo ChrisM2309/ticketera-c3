@@ -38,13 +38,16 @@ export function DiscoveryShortcuts() {
           <li key={shortcut.href}>
             <Link
               href={shortcut.href}
-              className="group flex min-h-20 h-full flex-col justify-between gap-2 rounded-md border border-borde-fuerte bg-superficie px-4 py-3 transition-colors hover:border-accion hover:bg-superficie-sutil focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accion"
+              title={shortcut.description}
+              className="group flex h-16 min-h-16 items-center gap-3 rounded-md border border-borde-fuerte bg-superficie px-3 py-2.5 transition-colors hover:border-accion hover:bg-superficie-sutil focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accion"
             >
-              <span className="flex items-center gap-2 font-titulo text-sm font-bold text-texto">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-superficie-sutil text-accion transition-colors group-hover:bg-superficie">
                 <Icon name={shortcut.icon} size={20} tone="accion" />
-                {shortcut.label}
               </span>
-              <span className="font-texto text-xs leading-5 text-texto-suave">{shortcut.description}</span>
+              <span className="min-w-0">
+                <span className="block font-titulo text-sm font-bold leading-tight text-texto">{shortcut.label}</span>
+                <span className="line-clamp-1 block font-texto text-xs leading-5 text-texto-suave">{shortcut.description}</span>
+              </span>
             </Link>
           </li>
         ))}
