@@ -33,7 +33,7 @@ export const discoveryShortcutLinks = [
 export function DiscoveryShortcuts() {
   return (
     <nav aria-label="Explorar eventos rápidamente">
-      <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-3">
         {discoveryShortcutLinks.map((shortcut) => (
           <li key={shortcut.href}>
             <Link
@@ -46,7 +46,7 @@ export function DiscoveryShortcuts() {
               </span>
               <span className="min-w-0">
                 <span className="block font-titulo text-sm font-bold leading-tight text-texto">{shortcut.label}</span>
-                <span className="line-clamp-1 block font-texto text-xs leading-5 text-texto-suave">{shortcut.description}</span>
+                <span className="line-clamp-1 font-texto text-xs leading-5 text-texto-suave">{shortcut.description}</span>
               </span>
             </Link>
           </li>

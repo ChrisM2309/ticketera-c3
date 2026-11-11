@@ -77,13 +77,13 @@ export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
             aria-label={`Mostrar destacado ${index + 1} de ${total}`}
             aria-current={index === indice ? 'true' : undefined}
             onClick={() => irA(index)}
-            className="inline-flex size-11 cursor-pointer items-center justify-center"
+            className="inline-flex size-11 cursor-pointer items-center justify-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-texto-inverso"
           >
             <span
               aria-hidden="true"
               className={cn(
                 'block h-2 rounded-pill bg-borde-fuerte transition-[width,background-color]',
-                index === indice ? 'w-6 bg-accion' : 'w-2',
+                index === indice ? 'w-6 bg-texto-inverso' : 'w-2',
               )}
             />
           </button>

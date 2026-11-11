@@ -27,7 +27,7 @@ export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
         tabIndex={0}
         role="region"
         aria-label="Destacados"
-        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth outline-offset-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-texto-inverso [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {events.map((event, index) => (
           <div

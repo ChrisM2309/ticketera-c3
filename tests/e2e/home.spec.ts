@@ -37,6 +37,30 @@ test('home muestra la identidad demo del proyecto', async ({ page }) => {
   await expectStructuredDataMatchesRobots(page);
 });
 
+test('home mantiene legibles los atajos y presenta destacados', async ({ page }) => {
+  await page.goto('/');
+
+  const shortcuts = page.getByRole('navigation', { name: 'Explorar eventos rápidamente' });
+  await expect(shortcuts).toBeVisible();
+
+  const links = shortcuts.getByRole('link');
+  await expect(links).toHaveCount(4);
+
+  for (let index = 0; index < 4; index += 1) {
+    const dimensions = await links.nth(index).evaluate((element) => ({
+      clientHeight: element.clientHeight,
+      clientWidth: element.clientWidth,
+      scrollHeight: element.scrollHeight,
+      scrollWidth: element.scrollWidth,
+    }));
+
+    expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight);
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  }
+
+  await expect(page.getByRole('region', { name: 'Destacados', exact: true })).toBeVisible();
+});
+
 test('ficha de evento permite seleccionar una entrada con sus límites', async ({ page }) => {
   await page.goto('/congresos/inteligencia-artificial/congreso-demo-ia/');
 

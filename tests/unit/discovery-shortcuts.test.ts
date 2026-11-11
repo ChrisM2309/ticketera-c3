@@ -28,6 +28,9 @@ describe('atajos de descubrimiento', () => {
   it('usa una presentación compacta y estable para no deformar la fila', () => {
     expect(shortcutsSource).toContain('min-h-16');
     expect(shortcutsSource).toContain('line-clamp-1');
+    expect(shortcutsSource).toContain('grid-cols-2 gap-3');
+    expect(shortcutsSource).not.toContain('line-clamp-1 block');
+    expect(shortcutsSource).not.toContain('md:grid-cols-4');
     expect(shortcutsSource).not.toContain('flex-col justify-between');
   });
 });

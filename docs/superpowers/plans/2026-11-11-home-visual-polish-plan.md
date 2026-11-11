@@ -71,4 +71,5 @@
 - [x] Ejecutar lint, typecheck y build.
 - [x] Ejecutar E2E a 375 px y 1280 px, sin scroll horizontal.
 - [x] Ejecutar `npx impeccable detect --json` sobre las superficies modificadas.
+- [x] Corregir la revisión visual: atajos en 2×2 sin desborde, foco interno del carrusel y contraste/foco de los indicadores.
 - [x] Revisar diff, actualizar documentación, commit y push al PR abierto.
