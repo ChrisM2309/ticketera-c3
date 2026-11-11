@@ -109,9 +109,12 @@ export function createWompiClient(config: WompiConfig, options: { fetchImpl?: Fe
     async getTransaction(transactionId: string): Promise<TransactionInfo> {
       const payload = (await authorized(
         `${WOMPI_API_URL}/TransaccionCompra/${encodeURIComponent(transactionId)}`,
-      )) as { esAprobada?: unknown; montoOriginal?: unknown };
+      )) as { esAprobada?: unknown; monto?: unknown; montoOriginal?: unknown };
 
-      return { approved: payload.esAprobada === true, amount: payload.montoOriginal };
+      // En la práctica `monto` trae el importe en dólares (ej. 10.5); `montoOriginal` puede venir null.
+      const amount = payload.monto ?? payload.montoOriginal;
+
+      return { approved: payload.esAprobada === true, amount };
     },
   };
 }

@@ -67,6 +67,11 @@ describe('cliente de Wompi', () => {
     await expect(client.getTransaction('tx 1')).resolves.toEqual({ approved: true, amount: 15 });
     expect(fetchImpl.mock.calls[1][0]).toBe(`${WOMPI_API_URL}/TransaccionCompra/tx%201`);
 
+    // Forma real observada en sandbox: el importe va en `monto` y `montoOriginal` llega null.
+    const real = fakeFetch(() => json(200, { esAprobada: true, monto: 10.5, montoOriginal: null }));
+    const realClient = createWompiClient(config, { fetchImpl: real as unknown as typeof fetch });
+    await expect(realClient.getTransaction('tx-real')).resolves.toEqual({ approved: true, amount: 10.5 });
+
     const notApproved = fakeFetch(() => json(200, { esAprobada: false, montoOriginal: 15 }));
     const other = createWompiClient(config, { fetchImpl: notApproved as unknown as typeof fetch });
     await expect(other.getTransaction('tx-2')).resolves.toMatchObject({ approved: false });
