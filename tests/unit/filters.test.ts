@@ -107,7 +107,7 @@ describe('lectura de filtros desde la URL', () => {
         { ciudad: 'zzz', modalidad: 'hibrido', precio: 'gratis', fecha: 'anio' },
         ['san-salvador'],
       ),
-    ).toEqual({ ciudad: null, modalidad: null, precio: 'gratis', fecha: null });
+    ).toEqual({ tema: null, ciudad: null, modalidad: null, precio: 'gratis', fecha: null });
   });
 
   it('usa el primer valor cuando el parámetro se repite', () => {
@@ -196,4 +196,18 @@ describe('rutas de modalidad y precio del árbol', () => {
   it('filtra por precio gratuito con la ruta /gratis/', () => {
     expect(ids('/congresos/cloud/gratis/')).toEqual(['a']);
   });
+});
+
+it('filtra por tema válido y combina con ciudad sin cambiar el alcance', () => {
+  const filters = parseCatalogFilters({ tema: 'cloud', ciudad: 'san-salvador' }, ['san-salvador'], ['cloud', 'python']);
+  expect(filters.tema).toBe('cloud');
+  expect(ids('/congresos/', filters)).toEqual(['a', 'd']);
+  expect(parseCatalogFilters({ tema: 'inventado' }, [], ['cloud']).tema).toBeNull();
+  expect(ids('/hackathons/', { ...noCatalogFilters, tema: 'cloud' })).toEqual([]);
+});
+
+it('prioriza eventos del mismo tema sin duplicar ni recomendar el comprado', async () => {
+  const { rankRelatedEvents } = await import('../../src/features/catalog/home');
+  const input = [event('a', { topic: { slug: 'python' } }), event('b'), event('c'), event('d')];
+  expect(rankRelatedEvents(input, { eventId: 'c', topicSlug: 'cloud' }).map((item) => item.id)).toEqual(['b', 'd', 'a']);
 });

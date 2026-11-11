@@ -47,6 +47,6 @@ export async function createSubjectPaymentLink(input: {
     return { ok: true, redirectUrl: link.url, linkId: link.linkId };
   } catch (cause) {
     console.error('Wompi: no se creó el enlace de pago.', cause instanceof WompiError ? cause.code : 'desconocido');
-    return { ok: false, message: 'No pudimos crear el enlace de pago. Intentá nuevamente.' };
+    return { ok: false, message: 'No pudimos crear el enlace de pago. Intenta nuevamente.' };
   }
 }

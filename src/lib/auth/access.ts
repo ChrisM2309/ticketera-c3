@@ -139,11 +139,11 @@ export function parseLoginInput(input: { email: unknown; password: unknown }): L
   const errors: LoginFieldErrors = {};
 
   if (email.length < 5 || email.length > 254 || !emailPattern.test(email)) {
-    errors.email = 'Ingresá un correo electrónico válido.';
+    errors.email = 'Ingresa un correo electrónico válido.';
   }
 
   if (password.length === 0 || password.length > 256) {
-    errors.password = 'Ingresá tu contraseña.';
+    errors.password = 'Ingresa tu contraseña.';
   }
 
   if (errors.email || errors.password) {
@@ -154,8 +154,8 @@ export function parseLoginInput(input: { email: unknown; password: unknown }): L
 }
 
 export const sessionErrorMessages: Record<SessionErrorCode, string> = {
-  'sesion-expirada': 'Tu sesión venció. Ingresá de nuevo para continuar.',
-  'sin-rol': 'Tu cuenta no tiene acceso a esta zona. Si crees que es un error, escribí a la organización del sitio.',
+  'sesion-expirada': 'Tu sesión venció. Ingresa de nuevo para continuar.',
+  'sin-rol': 'Tu cuenta no tiene acceso a esta zona. Si crees que es un error, escribe a la organización del sitio.',
 };
 
 export function readSessionError(value: unknown): SessionErrorCode | null {

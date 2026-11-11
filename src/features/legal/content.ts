@@ -58,7 +58,7 @@ export const privacySections: LegalSection[] = [
     id: 'contacto',
     title: 'Contacto',
     paragraphs: [
-      'Escríbenos al contacto de demostración que aparece al pie de cada página (contacto@ticketera.example). Es un dato ficticio con fines demostrativos.',
+      'Escríbenos a competitivecodingclub.sv@gmail.com, el contacto del equipo indicado al pie de página.',
     ],
   },
   {

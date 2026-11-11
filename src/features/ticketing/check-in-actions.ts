@@ -2,7 +2,8 @@
 
 import { requireRole } from '@/lib/auth/require-role';
 
-import { hashScannedCode, normalizeScannedCode, type CheckInResult } from './check-in';
+import { normalizeScannedCode, type CheckInResult } from './check-in';
+import { hashScannedCode } from './check-in-token';
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { SurveyForm } from '@/components/checkout/survey-form';
-import { hashCheckoutToken } from '@/features/checkout/order';
+import { hashCheckoutToken } from '@/features/checkout/order-token';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {

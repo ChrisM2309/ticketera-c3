@@ -19,6 +19,7 @@ type ReportRow = {
   checked_in: number;
   subtotal_cents: number;
   fee_cents: number;
+  organizer_fee_cents: number;
   event_ended: boolean;
   survey_count: number;
   survey_average: number | null;
@@ -65,7 +66,8 @@ export default async function EventReportPage({ params }: { params: Promise<{ id
     { label: 'Con ingreso', value: String(report.checked_in) },
     { label: 'No-show', value: formatNoShow(noShow) },
     { label: 'Ventas (subtotal)', value: usd.format(report.subtotal_cents / 100) },
-    { label: 'Comisión', value: usd.format(report.fee_cents / 100) },
+    { label: 'Comisión del organizador', value: usd.format(report.organizer_fee_cents / 100) },
+    { label: 'Comisiones históricas al comprador', value: usd.format(report.fee_cents / 100) },
   ];
 
   return (

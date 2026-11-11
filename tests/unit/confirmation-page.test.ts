@@ -16,6 +16,8 @@ import type { OrderConfirmation } from '../../src/features/ticketing/confirmatio
 const loadOrderConfirmation = vi.hoisted(() => vi.fn());
 
 const resolveOrderAccount = vi.hoisted(() => vi.fn());
+const getEventDetail = vi.hoisted(() => vi.fn());
+vi.mock('../../src/features/catalog/queries', () => ({ getEventDetail }));
 
 vi.mock('../../src/features/ticketing/confirmation', () => ({ loadOrderConfirmation }));
 vi.mock('../../src/features/ticketing/claim', () => ({ resolveOrderAccount }));
@@ -32,6 +34,7 @@ function confirmationFixture(overrides: Partial<OrderConfirmation> = {}): OrderC
 
   return {
     orderId,
+    publicCode: 'TC3-1042',
     status: 'confirmed',
     subtotalCents: 2000,
     feeCents: 100,
@@ -66,6 +69,8 @@ describe('página de confirmación', () => {
   beforeEach(() => {
     loadOrderConfirmation.mockReset();
     resolveOrderAccount.mockReset();
+    getEventDetail.mockReset();
+    getEventDetail.mockResolvedValue({ status: 'unavailable' });
     resolveOrderAccount.mockResolvedValue({ signedIn: false, saved: false });
   });
 
@@ -80,8 +85,9 @@ describe('página de confirmación', () => {
 
     const html = await renderPage();
 
-    expect(html).toContain('Comprobante simulado: no corresponde a un cobro real');
+    expect(html).toContain('Comprobante de prueba: no corresponde a un cobro real');
     expect(html).toContain('Imprimir comprobante');
+    expect(html.match(/TC3-1042/g)).toHaveLength(2);
     expect(html).toContain('Referencia de pago');
     expect(html).toContain('Aprobado (simulado)');
     expect(html).toContain('Boleto enviado a e***@example.test · Simulado');
@@ -130,7 +136,7 @@ describe('página de confirmación', () => {
     const html = await renderPage();
 
     expect(html).toContain('Rechazado (simulado)');
-    expect(html).toContain('Comprobante simulado: no corresponde a un cobro real');
+    expect(html).toContain('Comprobante de prueba: no corresponde a un cobro real');
     expect(html).not.toContain('Boleto enviado');
     expect(html).not.toContain('Tus boletos');
     expect(html).not.toContain('/calendario/');
@@ -167,4 +173,30 @@ describe('página de confirmación', () => {
     expect(html).not.toContain('Guardamos esta compra en tu cuenta');
     expect(html).not.toContain('Crea una cuenta para ver tus boletos');
   });
+});
+
+
+test('invita a solicitar suscripción sin afirmar que ya existe', async () => {
+  loadOrderConfirmation.mockResolvedValue({ status: 'ok', confirmation: confirmationFixture() });
+  resolveOrderAccount.mockResolvedValue({ signedIn: false, saved: false });
+  const html = await renderPage();
+  expect(html).toContain('newsletter');
+  expect(html).toContain('mailto:competitivecodingclub.sv@gmail.com');
+  expect(html).not.toContain('Ya estás suscrito');
+});
+
+test('recomienda hasta tres eventos públicos distintos del comprado', async () => {
+  loadOrderConfirmation.mockResolvedValue({ status: 'ok', confirmation: confirmationFixture() });
+  resolveOrderAccount.mockResolvedValue({ signedIn: false, saved: false });
+  const eventCard = (id: string) => ({
+    id, slug: id, title: `Relacionado ${id}`, startsAt: '2027-05-01T18:00:00Z',
+    mode: 'virtual', venue: null, imagePath: null, eventType: { slug: 'congresos', name: 'Congresos' },
+    topic: null, location: null, organizer: null, speakers: [], ticketTypes: [{ priceCents: 0, isActive: true }],
+  });
+  getEventDetail.mockResolvedValue({ status: 'ok', event: { id: eventId }, related: [eventCard(eventId), eventCard('uno'), eventCard('dos'), eventCard('tres'), eventCard('cuatro')] });
+  const html = await renderPage();
+  expect(html).toContain('Relacionado uno');
+  expect(html).toContain('Relacionado tres');
+  expect(html).not.toContain('Relacionado cuatro');
+  expect(html).not.toContain(`Relacionado ${eventId}`);
 });

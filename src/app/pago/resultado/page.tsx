@@ -29,13 +29,13 @@ export default async function PaymentResultPage({ searchParams }: PageProps) {
   const client = createServiceRoleClient();
 
   if (!orderParam || !uuidPattern.test(orderParam) || !client) {
-    return <ResultShell title="No encontramos la orden" text="Revisá el enlace o volvé al sitio." />;
+    return <ResultShell title="No encontramos la orden" text="Revisa el enlace o vuelve al sitio." />;
   }
 
   const { data: order } = await client.from('orders').select('id, status, created_at').eq('id', orderParam).maybeSingle();
 
   if (!order) {
-    return <ResultShell title="No encontramos la orden" text="Revisá el enlace o volvé al sitio." />;
+    return <ResultShell title="No encontramos la orden" text="Revisa el enlace o vuelve al sitio." />;
   }
 
   const expired = await expirePendingOrderIfOverdue(client, order as { id: string; status: string; created_at: string }, new Date());
@@ -70,7 +70,7 @@ export default async function PaymentResultPage({ searchParams }: PageProps) {
     return (
       <ResultShell
         title="Esperando la confirmación de Wompi (DEMO)"
-        text="Si ya pagaste, la confirmación puede tardar unos minutos. Actualizá esta página para ver el estado."
+        text="Si ya pagaste, la confirmación puede tardar unos minutos. Actualiza esta página para ver el estado."
       >
         <Link href={`/pago/resultado/?orden=${order.id}`} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
           Actualizar estado
@@ -82,7 +82,7 @@ export default async function PaymentResultPage({ searchParams }: PageProps) {
   return (
     <ResultShell
       title="El pago no se completó (DEMO)"
-      text="No se emitieron boletos. Podés volver al evento y hacer una compra nueva."
+      text="No se emitieron boletos. Puedes volver al evento y hacer una compra nueva."
     >
       <Link href="/" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
         Volver al sitio

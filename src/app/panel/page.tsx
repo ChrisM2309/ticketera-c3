@@ -11,6 +11,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
 import { cn } from '@/lib/utils';
+import { ArchiveEventForm } from '@/components/organizers/archive-event-form';
 
 export const metadata: Metadata = {
   title: 'Panel del organizador DEMO',
@@ -108,7 +109,7 @@ export default async function PanelPage() {
 
       {organizers.length === 0 ? (
         <p className="rounded-lg bg-superficie p-6 font-texto text-base leading-7 text-texto-suave">
-          Tu cuenta todavía no está asociada a un organizador. Pedí a la administración que la vincule.
+          Tu cuenta todavía no está asociada a un organizador. Pide a la administración que la vincule.
         </p>
       ) : (
         organizers.map((organizer) => {
@@ -155,11 +156,21 @@ export default async function PanelPage() {
                         </span>
                       </span>
                     </div>
-                    {event.status === 'published' ? (
-                      <Link href={`/panel/destacar/${event.id}/`} className={buttonVariants({ variant: 'secundario' })}>
-                        Destacar
-                      </Link>
-                    ) : null}
+                    <div className="flex flex-wrap gap-2">
+                      {event.status !== 'archived' ? (
+                        <>
+                          <Link href={`/panel/eventos/${event.id}/editar/`} className={buttonVariants({ variant: 'secundario' })}>
+                            Editar
+                          </Link>
+                          <ArchiveEventForm eventId={event.id} title={event.title} />
+                        </>
+                      ) : <span className="font-texto text-sm text-texto-suave">Archivado</span>}
+                      {event.status === 'published' ? (
+                        <Link href={`/panel/destacar/${event.id}/`} className={buttonVariants({ variant: 'secundario' })}>
+                          Destacar
+                        </Link>
+                      ) : null}
+                    </div>
                   </li>
                   ))}
                 </ul>

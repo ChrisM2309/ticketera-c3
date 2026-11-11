@@ -95,3 +95,9 @@ export function isIllustrativeCover(event: { imagePath: string | null }): boolea
   const imagePath = publicImagePath(event.imagePath);
   return imagePath === null || imagePath.startsWith('/images/stock/');
 }
+
+/** Un solo respaldo local si falla la portada; evita bucles cuando falla el propio respaldo. */
+export function fallbackCoverPath(event: { id: string; eventType: { slug: string } }, current: string): string | null {
+  const fallback = illustrationForEvent({ eventId: event.id, typeSlug: event.eventType.slug }).src;
+  return current === fallback ? null : fallback;
+}

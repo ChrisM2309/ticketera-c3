@@ -30,7 +30,7 @@ export async function startPackagePaymentAction(): Promise<PackagePaymentStart> 
   if (error) return { ok: false, message: error.message };
 
   const row = (Array.isArray(data) ? data[0] : data) as { package_id: string; price_cents: number } | undefined;
-  if (!row) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+  if (!row) return { ok: false, message: 'No pudimos iniciar el pago. Intenta nuevamente.' };
 
   const link = await createSubjectPaymentLink({
     subject: { kind: 'package', id: row.package_id },
@@ -41,13 +41,13 @@ export async function startPackagePaymentAction(): Promise<PackagePaymentStart> 
   if (!link.ok) return { ok: false, message: link.message };
 
   const service = createServiceRoleClient();
-  if (!service) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+  if (!service) return { ok: false, message: 'No pudimos iniciar el pago. Intenta nuevamente.' };
 
   const saved = await service
     .from('business_packages')
     .update({ wompi_link_id: link.linkId, wompi_link_url: link.redirectUrl })
     .eq('id', row.package_id);
-  if (saved.error) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+  if (saved.error) return { ok: false, message: 'No pudimos iniciar el pago. Intenta nuevamente.' };
 
   revalidatePath('/para-empresas/');
   revalidatePath('/panel/paquete/');

@@ -31,9 +31,9 @@ export type OrganizerLinkResult =
   | { valid: false; errors: OrganizerLinkErrors };
 
 export const slugErrorMessage =
-  'Usá minúsculas, números y guiones simples (por ejemplo: comunidad-tech-sv), hasta 80 caracteres.';
+  'Usa minúsculas, números y guiones simples (por ejemplo: comunidad-tech-sv), hasta 80 caracteres.';
 export const unknownOwnerMessage = 'No existe una cuenta con ese correo. La persona debe registrarse primero.';
-export const slugTakenMessage = 'Ese identificador de URL ya está en uso. Probá con otro.';
+export const slugTakenMessage = 'Ese identificador de URL ya está en uso. Prueba con otro.';
 
 function asRecord(input: unknown): Record<string, unknown> {
   return typeof input === 'object' && input !== null && !Array.isArray(input) ? (input as Record<string, unknown>) : {};
@@ -52,7 +52,7 @@ export function validateOrganizerLink(input: unknown): OrganizerLinkResult {
   const errors: OrganizerLinkErrors = {};
 
   if (name.length < organizerNameMinLength || name.length > organizerNameMaxLength) {
-    errors.name = `Ingresá el nombre de la organización (de ${organizerNameMinLength} a ${organizerNameMaxLength} caracteres).`;
+    errors.name = `Ingresa el nombre de la organización (de ${organizerNameMinLength} a ${organizerNameMaxLength} caracteres).`;
   }
 
   if (slug.length > organizerSlugMaxLength || !slugPattern.test(slug)) {
@@ -64,7 +64,7 @@ export function validateOrganizerLink(input: unknown): OrganizerLinkResult {
   }
 
   if (ownerEmail.length > ownerEmailMaxLength || !emailPattern.test(ownerEmail)) {
-    errors.ownerEmail = 'Ingresá el correo electrónico de la cuenta que será dueña.';
+    errors.ownerEmail = 'Ingresa el correo electrónico de la cuenta que será dueña.';
   }
 
   if (Object.keys(errors).length > 0) {

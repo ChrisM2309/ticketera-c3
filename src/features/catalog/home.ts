@@ -37,3 +37,10 @@ export function chooseHomeEvents(input: {
 
   return { featured, upcoming, free };
 }
+
+/** Prefiere el mismo tema sin duplicar la ficha actual y conserva el orden por fecha. */
+export function rankRelatedEvents(events: readonly CatalogEvent[], input: { eventId: string; topicSlug: string | null }): CatalogEvent[] {
+  const seen = new Set([input.eventId]);
+  const unique = events.filter((event) => { if (seen.has(event.id)) return false; seen.add(event.id); return true; });
+  return unique.sort((a, b) => Number(Boolean(input.topicSlug && b.topic?.slug === input.topicSlug)) - Number(Boolean(input.topicSlug && a.topic?.slug === input.topicSlug))).slice(0, 3);
+}

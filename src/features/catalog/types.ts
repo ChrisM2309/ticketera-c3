@@ -36,6 +36,7 @@ export type CatalogEvent = {
 
 export type CatalogEventDetail = Omit<CatalogEvent, 'ticketTypes' | 'topic'> & {
   description: string;
+  includesCertificate: boolean;
   agenda: string | null;
   endsAt: string | null;
   imagePath: string | null;

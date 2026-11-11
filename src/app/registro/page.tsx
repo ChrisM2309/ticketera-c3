@@ -6,7 +6,7 @@ import { safeNextPath } from '@/lib/auth/access';
 
 export const metadata: Metadata = {
   title: 'Crear cuenta DEMO',
-  description: 'Creá una cuenta opcional de comprador en Ticketera C3 DEMO para ver tus boletos.',
+  description: 'Crea una cuenta opcional de comprador en Ticketera C3 DEMO para ver tus boletos.',
   robots: { index: false, follow: false },
 };
 
@@ -30,8 +30,8 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
           Crear cuenta
         </h1>
         <p className="font-texto text-base leading-7 text-texto-suave">
-          Opcional y de demostración: con una cuenta ves tus boletos en un solo lugar. Para comprar no la necesitás,
-          podés seguir como invitado.
+          Opcional y de demostración: con una cuenta ves tus boletos en un solo lugar. Para comprar no la necesitas,
+          puedes seguir como invitado.
         </p>
       </header>
 

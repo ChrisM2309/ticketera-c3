@@ -73,7 +73,7 @@ test('ficha de evento permite seleccionar una entrada con sus límites', async (
   await page.goto('/congresos/inteligencia-artificial/congreso-demo-ia/');
 
   await expect(page.getByRole('heading', { name: 'Congreso demo de IA' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Elegí tus entradas' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Elige tus entradas' })).toBeVisible();
   await expectStructuredDataMatchesRobots(page);
 
   const general = page.getByRole('spinbutton', { name: 'Cantidad de General' });

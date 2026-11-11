@@ -1,6 +1,6 @@
 import { after, NextResponse } from 'next/server';
 
-import { hashCheckoutToken } from '@/features/checkout/order';
+import { hashCheckoutToken } from '@/features/checkout/order-token';
 import { parseConfirmRequest } from '@/features/checkout/payment';
 import { deliverTicketEmail } from '@/features/ticketing/email/deliver-ticket-email';
 import {
@@ -49,13 +49,13 @@ export async function POST(request: Request, { params }: RouteContext) {
   const parsed = parseConfirmRequest(input);
 
   if (!parsed.valid) {
-    return orderError('No pudimos procesar la confirmación. Intentá nuevamente.', 400);
+    return orderError('No pudimos procesar la confirmación. Intenta nuevamente.', 400);
   }
 
   const client = createServiceRoleClient();
 
   if (!client) {
-    return orderError('El checkout no está configurado todavía. Intentá más tarde.', 503);
+    return orderError('El checkout no está configurado todavía. Intenta más tarde.', 503);
   }
 
   const publicTokenHash = hashCheckoutToken(parsed.data.checkoutToken);
@@ -68,7 +68,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     .maybeSingle();
 
   if (orderResult.error) {
-    return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
+    return orderError('No pudimos confirmar la orden. Intenta nuevamente.', 500);
   }
 
   if (!orderResult.data) {
@@ -82,7 +82,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   const itemsResult = await client.from('order_items').select('quantity').eq('order_id', orderId);
 
   if (itemsResult.error) {
-    return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
+    return orderError('No pudimos confirmar la orden. Intenta nuevamente.', 500);
   }
 
   const quantity = (itemsResult.data ?? []).reduce((sum, item) => sum + (item.quantity as number), 0);
@@ -108,13 +108,13 @@ export async function POST(request: Request, { params }: RouteContext) {
       return orderError(error.message, 400);
     }
 
-    return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
+    return orderError('No pudimos confirmar la orden. Intenta nuevamente.', 500);
   }
 
   const confirmed = (Array.isArray(data) ? data[0] : undefined) as ConfirmedOrder | undefined;
 
   if (!confirmed) {
-    return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
+    return orderError('No pudimos confirmar la orden. Intenta nuevamente.', 500);
   }
 
   if (confirmed.result_status === 'confirmed' && !confirmed.result_already_processed) {

@@ -6,6 +6,8 @@ describe('siteConfig', () => {
   it('exposes the academic demo identity and USD currency', () => {
     expect(siteConfig.demoLabel).toBe('DEMO');
     expect(siteConfig.currency).toBe('USD');
+    expect(siteConfig.description).toContain('Descubre');
+    expect(siteConfig.description).toContain('encuentra');
     expect(siteConfig.demoCommissionPercent).toBe(5);
   });
 });

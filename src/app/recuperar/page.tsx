@@ -5,7 +5,7 @@ import { Icon } from '@/components/ui/icon';
 
 export const metadata: Metadata = {
   title: 'Recuperar contraseña DEMO',
-  description: 'Pedí un enlace para cambiar la contraseña de tu cuenta de Ticketera C3 DEMO.',
+  description: 'Pide un enlace para cambiar la contraseña de tu cuenta de Ticketera C3 DEMO.',
   robots: { index: false, follow: false },
 };
 
@@ -18,7 +18,7 @@ export default function RecuperarPage() {
           Recuperar contraseña
         </h1>
         <p className="font-texto text-base leading-7 text-texto-suave">
-          Escribí el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.
+          Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.
         </p>
       </header>
 

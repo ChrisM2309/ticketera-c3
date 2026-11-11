@@ -28,7 +28,7 @@ beforeEach(async () => {
     [eventId],
   );
   const orderId = await createOrderFixture(db, eventId);
-  await db.query(`update public.orders set status = 'confirmed', confirmed_at = now(), subtotal_cents = 8000, fee_cents = 400, total_cents = 8400 where id = $1`, [orderId]);
+  await db.query(`update public.orders set status = 'confirmed', confirmed_at = now(), subtotal_cents = 8000, fee_cents = 400, total_cents = 8400, organizer_fee_cents = 530 where id = $1`, [orderId]);
   await db.query(`update public.tickets set checked_in_at = now() where order_id = $1`, [orderId]);
 });
 
@@ -43,6 +43,7 @@ describe('organizer_event_report', () => {
       checked_in: 1,
       subtotal_cents: 8000,
       fee_cents: 400,
+      organizer_fee_cents: 530,
       event_ended: true,
       survey_count: 0,
       survey_average: null,
@@ -68,7 +69,7 @@ describe('organizer_event_report', () => {
     await asRole(db, 'authenticated', ownerId);
     const allowed = await db.query(`select * from public.organizer_event_report($1)`, [eventId]);
     expect(Object.keys(allowed.rows[0] as Record<string, unknown>).sort()).toEqual([
-      'checked_in', 'event_ended', 'fee_cents', 'issued', 'subtotal_cents', 'survey_average', 'survey_count',
+      'checked_in', 'event_ended', 'fee_cents', 'issued', 'organizer_fee_cents', 'subtotal_cents', 'survey_average', 'survey_count',
     ]);
   });
 });

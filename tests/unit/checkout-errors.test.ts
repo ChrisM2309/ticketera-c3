@@ -32,7 +32,7 @@ describe('checkoutErrorView', () => {
       });
     }
 
-    expect(checkoutErrorView('El checkout DEMO no está configurado todavía. Intentá más tarde.', 503).action).toBe('retry');
+    expect(checkoutErrorView('El checkout DEMO no está configurado todavía. Intenta más tarde.', 503).action).toBe('retry');
   });
 
   test('un código desconocido nunca expone el mensaje técnico', () => {

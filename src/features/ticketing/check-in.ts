@@ -1,14 +1,8 @@
-import { hashTicketQrToken } from './qr';
-
 export type CheckInResult = 'checked_in' | 'already_checked_in' | 'not_found' | 'wrong_event';
 
 export function normalizeScannedCode(input: string): string | null {
   const code = input.trim();
   return /^[A-Za-z0-9_-]+$/.test(code) ? code : null;
-}
-
-export function hashScannedCode(code: string): string {
-  return hashTicketQrToken(code);
 }
 
 export function checkInMessage(result: CheckInResult): { tone: 'success' | 'warning' | 'error'; text: string } {

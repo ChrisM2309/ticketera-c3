@@ -122,9 +122,9 @@ function readFieldErrors(value: unknown): FieldErrors | null {
       buyerEmail: typeof fromApi.buyerEmail === 'string' ? fromApi.buyerEmail : undefined,
       buyerPhone: typeof fromApi.buyerPhone === 'string' ? fromApi.buyerPhone : undefined,
       form: typeof fromApi.items === 'string' || typeof fromApi.eventId === 'string'
-        ? 'Las entradas cambiaron. Volvé al carrito para revisarlas.'
+        ? 'Las entradas cambiaron. Vuelve al carrito para revisarlas.'
         : typeof fromApi.requestId === 'string'
-          ? 'No pudimos validar la solicitud de compra. Recargá la página e intentá nuevamente.'
+          ? 'No pudimos validar la solicitud de compra. Recarga la página e intenta nuevamente.'
           : undefined,
     };
   }
@@ -140,15 +140,15 @@ function validateBuyer(name: string, email: string, phone: string): FieldErrors 
   const errors: FieldErrors = {};
 
   if (name.trim().length < 2 || name.trim().length > 120) {
-    errors.buyerName = 'Ingresá tu nombre completo.';
+    errors.buyerName = 'Ingresa tu nombre completo.';
   }
 
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
-    errors.buyerEmail = 'Ingresá un correo electrónico válido.';
+    errors.buyerEmail = 'Ingresa un correo electrónico válido.';
   }
 
   if (phone.trim() && !/^(?:\+?503)?[0-9]{8}$/.test(phone.trim().replace(/[\s-]/g, ''))) {
-    errors.buyerPhone = 'Ingresá un teléfono de El Salvador de 8 dígitos.';
+    errors.buyerPhone = 'Ingresa un teléfono de El Salvador de 8 dígitos.';
   }
 
   return errors;
@@ -294,7 +294,7 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
         <header className="flex flex-col gap-3">
           <h1 className="font-titulo text-4xl font-bold leading-tight tracking-tight">Todavía no agregaste entradas.</h1>
           <p className="max-w-xl font-texto text-base leading-7 text-texto-suave">
-            Volvé al carrito para elegir un evento y continuar con tus datos de compra.
+            Vuelve al carrito para elegir un evento y continuar con tus datos de compra.
           </p>
         </header>
         <Link href="/carrito/" className={buttonVariants({ variant: 'compra', size: 'lg' })}>
@@ -311,12 +311,12 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
         <CheckoutSteps current="datos" free={provisionalTotals.totalCents === 0} />
         <header className="flex flex-col gap-2 md:gap-3">
           <h1 id="checkout-title" className="font-titulo text-2xl font-bold leading-tight tracking-tight md:text-4xl">
-            Finalizá tu compra
+            Finaliza tu compra
           </h1>
           <p className="max-w-2xl font-texto text-sm leading-6 text-texto-suave md:text-base md:leading-7">
-            <span className="md:hidden">Pago de demostración: no se cobra dinero ni se piden datos de tarjeta.</span>
+            <span className="md:hidden">Pago de prueba con Wompi: no se cobra dinero real.</span>
             <span className="hidden md:inline">
-              Completá tus datos para crear la orden. Este es un pago de demostración: no se cobrará dinero ni se pedirán datos de tarjeta.
+              Completa tus datos para crear la orden. El pago se realiza en Wompi en modo de prueba, sin cobro real.
             </span>
           </p>
         </header>

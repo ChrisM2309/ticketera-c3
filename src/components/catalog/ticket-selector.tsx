@@ -50,10 +50,10 @@ export function TicketSelector({ event, disabled }: TicketSelectorProps) {
     <section aria-labelledby="entradas" className="flex flex-col gap-3 rounded-lg bg-superficie p-4 shadow-sm sm:gap-5 sm:p-5">
       <div className="flex flex-col gap-2">
         <h2 id="entradas" className="font-titulo text-xl font-bold sm:text-2xl">
-          Elegí tus entradas
+          Elige tus entradas
         </h2>
         <p className="hidden font-texto text-sm leading-6 text-texto-suave sm:block">
-          Seleccioná cantidades del mismo evento. El precio final y los cupos se verifican al continuar.
+          Selecciona cantidades del mismo evento. El precio final y los cupos se verifican al continuar.
         </p>
       </div>
 

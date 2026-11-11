@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 export const CHECKOUT_SESSION_STORAGE_KEY = 'ticketera-c3-checkout-v1';
 export const CHECKOUT_REQUEST_STORAGE_KEY = 'ticketera-c3-checkout-request';
 
@@ -80,23 +78,23 @@ export function parseOrderRequest(input: unknown): OrderRequestResult {
   }
 
   if (!uuidPattern.test(requestId)) {
-    fieldErrors.requestId = 'La solicitud de compra no es válida. Recargá la página.';
+    fieldErrors.requestId = 'La solicitud de compra no es válida. Recarga la página.';
   }
 
   if (items.length === 0 || items.length > 10 || !items.every(isOrderItem)) {
-    fieldErrors.items = 'Revisá las entradas seleccionadas.';
+    fieldErrors.items = 'Revisa las entradas seleccionadas.';
   }
 
   if (buyerName.length < 2 || buyerName.length > 120) {
-    fieldErrors.buyerName = 'Ingresá tu nombre completo.';
+    fieldErrors.buyerName = 'Ingresa tu nombre completo.';
   }
 
   if (buyerEmail.length < 5 || buyerEmail.length > 254 || !emailPattern.test(buyerEmail)) {
-    fieldErrors.buyerEmail = 'Ingresá un correo electrónico válido.';
+    fieldErrors.buyerEmail = 'Ingresa un correo electrónico válido.';
   }
 
   if (rawPhone && !buyerPhone) {
-    fieldErrors.buyerPhone = 'Ingresá un teléfono de El Salvador de 8 dígitos.';
+    fieldErrors.buyerPhone = 'Ingresa un teléfono de El Salvador de 8 dígitos.';
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -114,10 +112,6 @@ export function parseOrderRequest(input: unknown): OrderRequestResult {
       buyerPhone,
     },
   };
-}
-
-export function hashCheckoutToken(token: string): string {
-  return createHash('sha256').update(token, 'utf8').digest('hex');
 }
 
 export function getServerDemoCommissionPercent(env: Environment = process.env): number {

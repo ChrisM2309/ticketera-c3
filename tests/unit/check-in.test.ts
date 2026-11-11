@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { hashTicketQrToken } from '@/features/ticketing/qr';
-import { checkInMessage, hashScannedCode, normalizeScannedCode } from '@/features/ticketing/check-in';
+import { checkInMessage, normalizeScannedCode } from '@/features/ticketing/check-in';
+import { hashScannedCode } from '@/features/ticketing/check-in-token';
 
 describe('check-in', () => {
   it('recorta el código QR y acepta un token válido', () => {

@@ -73,6 +73,7 @@ export async function publishEventAction(_previous: PublishState, formData: Form
     p_topic_id: data.topicId,
     p_location_id: data.locationId,
     p_speakers: data.speakers,
+    p_includes_certificate: data.includesCertificate,
     p_ticket_types: data.ticketTypes.map((ticket) => ({
       name: ticket.name,
       price_cents: ticket.priceCents,
@@ -89,4 +90,59 @@ export async function publishEventAction(_previous: PublishState, formData: Form
   }
 
   redirect('/panel/?evento=en-revision');
+}
+
+export async function updateEventAction(_previous: PublishState, formData: FormData): Promise<PublishState> {
+  const eventId = String(formData.get('eventId') ?? '');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(eventId)) {
+    return { message: 'No encontramos el evento que quieres editar.' };
+  }
+  const account = await requireRole('organizer', '/panel/');
+  const raw = readPublishForm(formData);
+  // La edición conserva los tipos de entrada y precios actuales; el parser común valida el resto.
+  raw.tickets = [{ name: 'Entrada conservada', price: '0', quantity: '1', maxPerOrder: '1' }];
+  const parsed = parsePublishInput(raw, new Date());
+
+  if (!parsed.valid) {
+    return { message: 'Revisa los campos marcados.', fieldErrors: parsed.fieldErrors, values: valuesFrom(formData) };
+  }
+
+  const data = parsed.data;
+  const { error } = await account.client.rpc('organizer_update_event_details', {
+    p_event_id: eventId,
+    p_details: {
+      title: data.title,
+      description: data.description,
+      agenda: data.agenda,
+      mode: data.mode,
+      venue: data.venue,
+      location_id: data.locationId,
+      event_type_id: data.eventTypeId,
+      topic_id: data.topicId,
+      image_path: data.imageUrl,
+      starts_at: data.startsAt,
+      ends_at: data.endsAt,
+      speakers: data.speakers,
+      includes_certificate: data.includesCertificate,
+    },
+  });
+
+  if (error) {
+    return { message: error.code === '42501' ? 'No tienes permiso para editar este evento.' : 'No pudimos guardar los cambios. Intenta nuevamente.', values: valuesFrom(formData) };
+  }
+
+  redirect('/panel/?evento=actualizado');
+}
+
+export async function archiveEventAction(formData: FormData): Promise<void> {
+  const eventId = String(formData.get('eventId') ?? '');
+  const account = await requireRole('organizer', '/panel/');
+
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(eventId)) {
+    redirect('/panel/?evento=no-encontrado');
+  }
+
+  const { error } = await account.client.rpc('organizer_archive_event', { p_event_id: eventId });
+  if (error) redirect('/panel/?evento=no-archivado');
+  redirect('/panel/?evento=archivado');
 }

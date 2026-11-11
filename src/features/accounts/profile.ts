@@ -29,7 +29,7 @@ export function validateProfile(input: unknown): ProfileResult {
   const errors: ProfileErrors = {};
 
   if (displayName.length < displayNameMinLength || displayName.length > displayNameMaxLength) {
-    errors.displayName = `Ingresá tu nombre (de ${displayNameMinLength} a ${displayNameMaxLength} caracteres).`;
+    errors.displayName = `Ingresa tu nombre (de ${displayNameMinLength} a ${displayNameMaxLength} caracteres).`;
   }
 
   if (university.length > universityMaxLength) {

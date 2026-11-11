@@ -1,8 +1,20 @@
 # Política de checkout y pago DEMO
 
-> **Actualización 2026-11-11 (D-66, D-67):** las compras de **entradas con importe** ya no usan la simulación de esta página. Pagan con **Wompi El Salvador en modo de prueba (sandbox)**: el servidor crea un enlace de pago, el comprador completa la transacción de prueba en Wompi, el webhook confirma la orden y emite los boletos, y la página de resultado (`/pago/resultado/`) muestra el estado sin secretos. Las compras gratuitas no cambian. Las secciones siguientes que describen el panel simulado aplican solo a destacados y paquete de organizadores, pendientes de migrar. Plan: `docs/superpowers/plans/2026-11-11-wompi-sandbox.md`.
+> **Actualización 2026-11-11 (D-66 a D-68):** el responsable informa que Wompi El Salvador en modo de prueba (sandbox) ya está activado. El código usa Wompi para entradas con importe y también para destacados y paquetes; las compras gratuitas no cambian. La activación remota, sus migraciones y la prueba de $0.01 no se comprobaron independientemente durante esta actualización. Las secciones siguientes describen el diseño histórico del simulador, no la integración vigente. Plan: `docs/superpowers/plans/2026-11-11-wompi-sandbox.md`.
 
-## Qué exige cada fuente
+## Integración Wompi ya trabajada
+
+El trabajo anterior está integrado en el repositorio: entradas con Wompi sandbox (`1c936ef`, PR #41 y #43), corrección de lectura del importe (`cb7a15d`) y pagos de destacados y paquetes (`e7ebbd6`, PR #44). Las migraciones correspondientes están versionadas en `20261115100000_wompi_payments.sql` y `20261116100000_wompi_featured_package.sql`.
+
+El servidor crea enlaces de pago y recibe el webhook. Antes de confirmar, comprueba la firma, consulta Wompi y valida el estado, el importe y que la transacción sea sandbox. Las compras gratuitas no pasan por la pasarela. Los resultados distintos de la aprobación reconocida quedan pendientes hasta caducar; un pago aprobado que ya no pueda completar la compra requiere revisión manual. Las credenciales y la clave de cifrado son exclusivamente del servidor.
+
+La activación informada por el responsable no equivale a una nueva comprobación de despliegue en esta revisión: no se inspeccionaron las variables de Vercel ni se ejecutó una transacción. No hay que volver a activar Wompi como parte de los cambios de presentación.
+
+**Verificación local 2026-11-11:** `npx vitest run tests/unit/wompi-core.test.ts tests/unit/wompi-client.test.ts tests/unit/wompi-reference.test.ts tests/db/wompi-payments.test.ts tests/db/wompi-featured-package.test.ts`: 46 pruebas aprobadas en 5 archivos. Cubren, entre otros, validación y cliente, emisión idempotente de boletos, destacados y paquetes, y permisos. Son pruebas locales; no acreditan una transacción remota.
+
+## Antecedentes históricos del simulador
+
+### Qué exigía cada fuente
 
 - **Rúbrica oficial del profesor:** wireframe del carrito/pasarela de pago y confirmación; no especifica pago real, SDK, integración API ni sandbox externo.
 - **Guía de construcción del equipo:** sí solicita carrito y checkout funcionales, 'pasarela en modo prueba (sandbox)' y al menos tres compras de prueba, incluida una gratuita.

@@ -76,7 +76,7 @@ test('checkout de invitado envía solo selección y muestra los importes verific
   }, { key: cartStorageKey, value: storedCart });
   await page.reload();
 
-  await expect(page.getByRole('heading', { name: 'Finalizá tu compra' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Finaliza tu compra' })).toBeVisible();
   await expect(page.getByLabel('Nombre completo')).toBeVisible();
   await expect(page.getByLabel('Correo electrónico')).toBeVisible();
   await expect(page.getByLabel('Nombre completo')).toHaveAttribute('required', '');
@@ -117,8 +117,8 @@ test('checkout anuncia los errores de datos de comprador', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' }).click();
 
-  await expect(page.getByRole('alert').filter({ hasText: 'Ingresá tu nombre completo.' })).toBeVisible();
-  await expect(page.getByRole('alert').filter({ hasText: 'Ingresá un correo electrónico válido.' })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Ingresa tu nombre completo.' })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Ingresa un correo electrónico válido.' })).toBeVisible();
 });
 
 const orderId = '44444444-4444-4444-8444-444444444444';
@@ -169,7 +169,7 @@ async function reachPaymentStep(page: Page, cart: typeof storedCart, totalCents:
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
   await page.getByRole('button', { name: submitName(totalCents) }).click();
-  await expect(page.getByRole('heading', { level: 1, name: /Confirmá tu registro|Pago de demostración/ })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: /Confirma tu registro|Pago de demostración/ })).toBeVisible();
 }
 
 /** Recorre el panel de pago simulado: resumen, resultado elegido y confirmación. */
@@ -246,7 +246,7 @@ test('el comprador recorre los pasos y ve el comprobante aprobado', async ({ pag
   await expect(notice).toBeVisible();
   await expect(page.getByRole('radio')).toHaveCount(2);
   await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
-  await expect(page.getByRole('alert').filter({ hasText: 'Elegí el resultado que quieres simular.' })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Elige el resultado que quieres simular.' })).toBeVisible();
   await page.getByRole('radio', { name: /^Simular pago aprobado/ }).check();
   await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
 
@@ -317,7 +317,7 @@ test('un error del servidor se anuncia y el comprador puede reintentar', async (
       contentType: 'application/json',
       body: JSON.stringify(
         attempts === 1
-          ? { error: 'No pudimos confirmar la orden. Intentá nuevamente.' }
+          ? { error: 'No pudimos confirmar la orden. Intenta nuevamente.' }
           : { orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] },
       ),
     });
@@ -344,7 +344,7 @@ test('un error 503 muestra Reintentar y el reintento funciona', async ({ page })
       contentType: 'application/json',
       body: JSON.stringify(
         decisions.length === 1
-          ? { error: 'El checkout DEMO no está configurado todavía. Intentá más tarde.' }
+          ? { error: 'El checkout DEMO no está configurado todavía. Intenta más tarde.' }
           : { orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] },
       ),
     });
@@ -396,7 +396,7 @@ test.describe('móvil de 375 px', () => {
       window.localStorage.setItem(key, JSON.stringify(value));
     }, { key: cartStorageKey, value: storedCart });
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Finalizá tu compra' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Finaliza tu compra' })).toBeVisible();
   });
 
   test('subtotal, comisión y total se ven antes del botón de pago', async ({ page }) => {

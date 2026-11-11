@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { hashCheckoutToken } from '@/features/checkout/order';
+import { hashCheckoutToken } from '@/features/checkout/order-token';
 import { eventPath } from '@/features/catalog/paths';
 import { buildReceipt, type Receipt } from '@/features/checkout/payment-flow';
 import { siteConfig } from '@/lib/site-config';
@@ -12,6 +12,7 @@ export type ConfirmationTicket = RecoveredTicket;
 
 export type OrderConfirmation = {
   orderId: string;
+  publicCode: string;
   status: 'pending' | 'confirmed' | 'failed';
   subtotalCents: number;
   feeCents: number;
@@ -59,7 +60,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
 
   const orderResult = await client
     .from('orders')
-    .select('id, event_id, status, subtotal_cents, fee_cents, total_cents, buyer_name, confirmed_at')
+    .select('id, public_code, event_id, status, subtotal_cents, fee_cents, total_cents, buyer_name, confirmed_at')
     .eq('id', orderId)
     .eq('public_token_hash', hashCheckoutToken(checkoutToken))
     .maybeSingle();
@@ -74,6 +75,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
 
   const order = orderResult.data as {
     id: string;
+    public_code: string;
     event_id: string;
     status: OrderConfirmation['status'];
     subtotal_cents: number;
@@ -169,6 +171,7 @@ export async function loadOrderConfirmation(orderId: string, checkoutToken: stri
     status: 'ok',
     confirmation: {
       orderId: order.id,
+      publicCode: order.public_code,
       status: order.status,
       subtotalCents: order.subtotal_cents,
       feeCents: order.fee_cents,

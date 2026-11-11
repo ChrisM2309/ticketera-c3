@@ -74,10 +74,10 @@ export default async function Home() {
       <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pt-12 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center md:px-6 md:pt-16">
         <div className="flex flex-col gap-6">
           <h1 className="max-w-2xl font-titulo text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
-            Encontrá tu próximo evento tecnológico
+            Encuentra tu próximo evento tecnológico
           </h1>
           <p className="max-w-xl text-lg leading-relaxed text-texto-suave">
-            Descubrí congresos, hackathons y workshops en El Salvador. Buscá por tema, ciudad o modalidad y elegí cómo participar.
+            Descubre congresos, hackathons y workshops en El Salvador. Busca por tema, ciudad o modalidad y elige cómo participar.
           </p>
           <SiteSearch inputId="buscar-eventos-home" searchLabel="Buscar eventos desde la portada" className="md:max-w-xl" />
           <DiscoveryShortcuts />
@@ -119,7 +119,7 @@ export default async function Home() {
       <section aria-labelledby="categorias" className="mx-auto w-full max-w-6xl px-4 md:px-6">
         <div className="mb-8">
           <h2 id="categorias" className="font-titulo text-3xl font-bold">
-            Explorá por tipo de evento
+            Explora por tipo de evento
           </h2>
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
@@ -134,7 +134,7 @@ export default async function Home() {
           <div className="max-w-2xl">
             <h2 className="font-titulo text-2xl font-bold">¿Organizás un evento?</h2>
             <p className="mt-2">
-              Proponé tu evento y lo revisamos antes de publicarlo.
+              Propón tu evento y lo revisamos antes de publicarlo.
             </p>
           </div>
           <Link href="/panel/eventos/nuevo/" className={buttonVariants({ variant: 'compra' })}>

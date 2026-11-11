@@ -34,10 +34,12 @@ export function CartSummary({
           <dt className="text-texto-suave">Subtotal</dt>
           <dd className="font-semibold tabular-nums">{formatUsd(totals.subtotalCents)}</dd>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <dt className="text-texto-suave">Comisión DEMO ({commissionPercent} % · supuesto)</dt>
-          <dd className="font-semibold tabular-nums">{formatUsd(totals.commissionCents)}</dd>
-        </div>
+        {totals.commissionCents > 0 ? (
+          <div className="flex items-center justify-between gap-4">
+            <dt className="text-texto-suave">Comisión de la orden anterior ({commissionPercent} %)</dt>
+            <dd className="font-semibold tabular-nums">{formatUsd(totals.commissionCents)}</dd>
+          </div>
+        ) : null}
         <div className={cn('flex items-center justify-between gap-4 border-t border-borde text-base', compact ? 'pt-2' : 'pt-3')}>
           <dt className="font-titulo font-bold">{totalLabel}</dt>
           <dd className="font-titulo font-bold tabular-nums">{formatUsd(totals.totalCents)}</dd>

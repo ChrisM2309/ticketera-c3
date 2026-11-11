@@ -13,7 +13,7 @@ export type ProfileState = {
   values?: { displayName: string; university: string; marketingOptIn: boolean };
 };
 
-const saveFailedMessage = 'No pudimos guardar tus cambios. Intentá nuevamente.';
+const saveFailedMessage = 'No pudimos guardar tus cambios. Intenta nuevamente.';
 
 /**
  * Guarda el perfil de la cuenta con sesión. La sesión y el rol se validan en el servidor, y la actualización

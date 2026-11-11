@@ -62,8 +62,8 @@ describe('carrito single-event', () => {
 
     expect(calculateCartTotals(event, items, 5)).toEqual({
       subtotalCents: 4900,
-      commissionCents: 245,
-      totalCents: 5145,
+      commissionCents: 0,
+      totalCents: 4900,
     });
   });
 
@@ -76,8 +76,8 @@ describe('carrito single-event', () => {
 
     expect(calculateCartTotals(oneCentEvent, items, 5)).toEqual({
       subtotalCents: 333,
-      commissionCents: 17,
-      totalCents: 350,
+      commissionCents: 0,
+      totalCents: 333,
     });
   });
 

@@ -166,8 +166,8 @@ describe('validación del acceso', () => {
     expect(parseLoginInput({ email: 'no-es-correo', password: '' })).toEqual({
       valid: false,
       errors: {
-        email: 'Ingresá un correo electrónico válido.',
-        password: 'Ingresá tu contraseña.',
+        email: 'Ingresa un correo electrónico válido.',
+        password: 'Ingresa tu contraseña.',
       },
     });
   });
@@ -175,11 +175,11 @@ describe('validación del acceso', () => {
   it('rechaza entradas que no son texto o exceden el límite', () => {
     expect(parseLoginInput({ email: undefined, password: 'x' })).toMatchObject({
       valid: false,
-      errors: { email: 'Ingresá un correo electrónico válido.' },
+      errors: { email: 'Ingresa un correo electrónico válido.' },
     });
     expect(parseLoginInput({ email: 'a@b.test', password: 'x'.repeat(257) })).toMatchObject({
       valid: false,
-      errors: { password: 'Ingresá tu contraseña.' },
+      errors: { password: 'Ingresa tu contraseña.' },
     });
   });
 });

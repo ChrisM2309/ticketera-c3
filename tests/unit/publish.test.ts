@@ -93,6 +93,7 @@ describe('parsePublishInput', () => {
         startsAt: '2027-09-02T00:00:00.000Z',
         endsAt: null,
         speakers: [],
+        includesCertificate: false,
         ticketTypes: [{ name: 'General', priceCents: 1000, quantityTotal: 50, maxPerOrder: 4 }],
       },
     });

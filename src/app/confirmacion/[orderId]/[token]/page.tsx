@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
 
 import { ShareButton } from '@/components/catalog/share-button';
+import { EventCard } from '@/components/catalog/event-card';
+import { getEventDetail } from '@/features/catalog/queries';
 import { AccountPrompt } from '@/components/checkout/account-prompt';
 import { PrintButton } from '@/components/checkout/print-button';
 import { SimulatedDelivery } from '@/components/checkout/simulated-delivery';
@@ -86,6 +88,9 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
   const { confirmation } = result;
   // Con sesión, la compra de invitado con el mismo correo se guarda en la cuenta.
   const account = await resolveOrderAccount(orderId, token);
+  const slug = confirmation.event.url ? new URL(confirmation.event.url).pathname.split('/').filter(Boolean).at(-1) : undefined;
+  const detail = confirmation.status === 'confirmed' && slug ? await getEventDetail(slug) : null;
+  const related = detail?.status === 'ok' && detail.event.id === confirmation.event.id ? detail.related.filter((item) => item.id !== confirmation.event.id).slice(0, 3) : [];
   const date = eventDateParts(confirmation.event.startsAt);
   const tickets = await Promise.all(
     confirmation.tickets.map(async (ticket, index) => ({
@@ -98,7 +103,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14">
       <header className="flex flex-col gap-3">
-        <p className="font-texto text-sm text-texto-suave">Compra DEMO: no se cobró dinero ni se pidieron datos de tarjeta.</p>
+        <p className="font-texto text-sm text-texto-suave">Compra DEMO: el pago se procesó en modo de prueba, sin cobro real.</p>
         <h1 className="flex items-center gap-3 font-titulo text-4xl font-bold leading-tight tracking-tight">
           <Icon name={statusIcon[confirmation.status]} size={24} tone={statusTone[confirmation.status]} />
           {statusTitle[confirmation.status]}
@@ -135,7 +140,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
               <Icon name="ticket" size={16} />
               Número de orden
             </dt>
-            <dd className="break-all">{confirmation.orderId}</dd>
+            <dd className="break-all">{confirmation.publicCode}</dd>
           </div>
           <div>
             <dt className={termClass}>
@@ -222,12 +227,12 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
             </div>
           </div>
           <p className="font-texto text-sm text-texto-suave">
-            Comprobante simulado: no corresponde a un cobro real ni se pidieron datos de tarjeta.
+            Comprobante de prueba: no corresponde a un cobro real.
           </p>
           <dl className="grid gap-3 font-texto text-sm sm:grid-cols-2">
             <div>
               <dt className={termClass}>Número de orden</dt>
-              <dd className="break-all">{confirmation.receipt.orderNumber}</dd>
+              <dd className="break-all">{confirmation.publicCode}</dd>
             </div>
             <div>
               <dt className={termClass}>Método</dt>
@@ -256,10 +261,10 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
               <dt className={termClass}>Subtotal</dt>
               <dd className="tabular-nums">{formatUsd(confirmation.receipt.subtotalCents)}</dd>
             </div>
-            <div>
-              <dt className={termClass}>Comisión DEMO</dt>
+            {confirmation.receipt.feeCents > 0 ? <div>
+              <dt className={termClass}>Comisión de la orden anterior</dt>
               <dd className="tabular-nums">{formatUsd(confirmation.receipt.feeCents)}</dd>
-            </div>
+            </div> : null}
             <div>
               <dt className={termClass}>Total</dt>
               <dd className="font-semibold tabular-nums">{formatUsd(confirmation.receipt.totalCents)}</dd>
@@ -283,6 +288,11 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
           </Link>
         </section>
       ) : null}
+
+      {confirmation.status === 'confirmed' ? <section className="flex flex-col gap-4 print:hidden">
+        {related.length ? <><h2 className="font-titulo text-xl font-bold">Otros eventos para ti</h2><div className="grid gap-4 sm:grid-cols-2">{related.map((event) => <EventCard key={event.id} event={event} />)}</div></> : null}
+        <p className="font-texto text-sm">¿Quieres recibir novedades? <a href="mailto:competitivecodingclub.sv@gmail.com?subject=Suscripci%C3%B3n%20al%20newsletter" className="underline underline-offset-4">Solicita información sobre el newsletter</a>.</p>
+      </section> : null}
 
       <AccountPrompt variant="confirmation" signedIn={account.signedIn} next={`/confirmacion/${orderId}/${token}/`} />
 

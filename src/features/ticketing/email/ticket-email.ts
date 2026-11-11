@@ -60,7 +60,7 @@ export function buildTicketEmail(input: TicketEmailInput): TicketEmail {
     `Fecha: ${when}`,
     `Entradas: ${count}`,
     '',
-    `Consultá tus boletos y sus códigos QR aquí: ${input.confirmationUrl}`,
+    `Consulta tus boletos y sus códigos QR aquí: ${input.confirmationUrl}`,
     '',
     'Ticketera C3 · DEMO',
   ].join('\n');

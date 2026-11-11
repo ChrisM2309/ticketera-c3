@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 
 import {
   getServerDemoCommissionPercent,
-  hashCheckoutToken,
   parseOrderRequest,
 } from '@/features/checkout/order';
+import { hashCheckoutToken } from '@/features/checkout/order-token';
 import { deriveCheckoutToken, getCheckoutTokenSecret } from '@/features/checkout/token';
 import { readOptionalSession } from '@/lib/auth/optional-session';
 import { createServiceRoleClient } from '@/lib/supabase/server';
@@ -48,13 +48,13 @@ export async function POST(request: Request) {
     checkoutToken = deriveCheckoutToken(getCheckoutTokenSecret(), parsed.data.requestId);
   } catch (error) {
     console.error('Checkout DEMO sin secreto de token configurado.', error);
-    return orderError('El checkout DEMO no está configurado todavía. Intentá más tarde.', 503);
+    return orderError('El checkout DEMO no está configurado todavía. Intenta más tarde.', 503);
   }
 
   const client = createServiceRoleClient();
 
   if (!client) {
-    return orderError('El checkout DEMO no está configurado todavía. Intentá más tarde.', 503);
+    return orderError('El checkout DEMO no está configurado todavía. Intenta más tarde.', 503);
   }
 
   // El dueño de la orden sale solo de la sesión de las cookies. Un `buyerUserId` en el cuerpo se ignora; el
@@ -82,13 +82,13 @@ export async function POST(request: Request) {
       return orderError(error.message, 400);
     }
 
-    return orderError('No pudimos crear la orden. Intentá nuevamente.', 500);
+    return orderError('No pudimos crear la orden. Intenta nuevamente.', 500);
   }
 
   const created = Array.isArray(data) ? (data[0] as CreatedOrder | undefined) : undefined;
 
   if (!created) {
-    return orderError('No pudimos crear la orden. Intentá nuevamente.', 500);
+    return orderError('No pudimos crear la orden. Intenta nuevamente.', 500);
   }
 
   return NextResponse.json(

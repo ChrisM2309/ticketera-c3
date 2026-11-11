@@ -2,7 +2,7 @@
 
 import { useActionState, useState, type ChangeEvent } from 'react';
 
-import { publishEventAction, type PublishState } from '@/features/organizers/actions';
+import { publishEventAction, updateEventAction, type PublishState } from '@/features/organizers/actions';
 import {
   maxSpeakerNameLength,
   maxSpeakerRoleLength,
@@ -20,6 +20,8 @@ type PublishEventFormProps = {
   eventTypes: FormOption[];
   topics: FormOption[];
   locations: FormOption[];
+  eventId?: string;
+  initialValues?: Record<string, string>;
 };
 
 const initialState: PublishState = {};
@@ -40,9 +42,10 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
-export function PublishEventForm({ eventTypes, topics, locations }: PublishEventFormProps) {
-  const [state, formAction, isPending] = useActionState(publishEventAction, initialState);
-  const [values, setValues] = useState<Record<string, string>>({ mode: 'presencial' });
+export function PublishEventForm({ eventTypes, topics, locations, eventId, initialValues }: PublishEventFormProps) {
+  const action = eventId ? updateEventAction : publishEventAction;
+  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [values, setValues] = useState<Record<string, string>>({ mode: 'presencial', ...initialValues });
   const errors: PublishFieldErrors = state.fieldErrors ?? {};
   const isVirtual = (values.mode ?? 'presencial') === 'virtual';
 
@@ -51,11 +54,12 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
   }
 
   function valueOf(name: string) {
-    return values[name] ?? state.values?.[name] ?? '';
+    return state.values?.[name] ?? values[name] ?? '';
   }
 
   return (
     <form action={formAction} className="flex flex-col gap-8 rounded-lg bg-superficie p-6 shadow-sm" noValidate>
+      {eventId ? <input type="hidden" name="eventId" value={eventId} /> : null}
       {state.message ? (
         <p role="alert" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-error">
           {state.message}
@@ -154,6 +158,11 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
           </div>
         </div>
       </fieldset>
+
+      <label className="flex items-center gap-2 font-texto text-sm">
+        <input type="checkbox" name="includesCertificate" defaultChecked={state.values?.includesCertificate ? state.values.includesCertificate === 'on' : initialValues?.includesCertificate === 'on'} />
+        Este evento incluye certificado
+      </label>
 
       <fieldset className="flex flex-col gap-5">
         <legend className="font-titulo text-xl font-bold">Fecha y lugar</legend>
@@ -302,6 +311,11 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
         ))}
       </fieldset>
 
+      {eventId ? (
+        <p className="rounded-md bg-superficie-sutil p-4 font-texto text-sm leading-6 text-texto-suave">
+          Los tipos de entrada, precios y cupos se conservan para proteger las órdenes y boletos existentes.
+        </p>
+      ) : (
       <fieldset className="flex flex-col gap-5">
         <legend className="font-titulo text-xl font-bold">Tipos de entrada</legend>
         <p className="font-texto text-sm leading-6 text-texto-suave">
@@ -366,13 +380,14 @@ export function PublishEventForm({ eventTypes, topics, locations }: PublishEvent
           </div>
         ))}
       </fieldset>
+      )}
 
       <button
         type="submit"
         disabled={isPending}
         className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
       >
-        {isPending ? 'Enviando…' : 'Enviar para revisión'}
+        {isPending ? 'Guardando…' : eventId ? 'Guardar cambios' : 'Enviar para revisión'}
       </button>
     </form>
   );

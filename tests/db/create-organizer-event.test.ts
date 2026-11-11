@@ -186,3 +186,92 @@ describe('create_organizer_event', () => {
     ).rejects.toThrow(/row-level security/);
   });
 });
+
+describe('gestión de eventos por el organizador', () => {
+  async function detailsFor(eventTypeId: string, locationId: string) {
+    return {
+      title: 'Evento actualizado',
+      description: 'Descripción suficiente después de editar.',
+      agenda: 'Agenda revisada',
+      mode: 'presencial',
+      venue: 'Auditorio actualizado',
+      location_id: locationId,
+      event_type_id: eventTypeId,
+      topic_id: null,
+      image_path: null,
+      starts_at: '2027-10-01T18:00:00Z',
+      ends_at: null,
+      speakers: [{ name: 'Ponente actualizado', role: 'Invitado' }],
+      includes_certificate: true,
+    };
+  }
+
+  it('el propietario edita datos, y el cambio de un evento publicado lo devuelve a revisión sin cambiar sus entradas', async () => {
+    const owner = await createUser(db, 'organizer');
+    const organizerId = await createOrganizer(db, owner, 'organizador-edita');
+    const created = await createEventAs(owner, organizerId, { slug: 'evento-para-editar-g1' });
+    const eventId = created.rows[0].id;
+    const eventTypeId = await categoryId('event_type', 'congresos');
+    const locationId = await categoryId('location', 'san-salvador');
+
+    await asSuperuser(db);
+    await db.query(`update public.events set status = 'published' where id = $1`, [eventId]);
+    const ticketRows = await db.query(`select id, name, price_cents, quantity_total from public.ticket_types where event_id = $1 order by name`, [eventId]);
+    await asRole(db, 'authenticated', owner);
+    const result = await db.query<{ status: string }>(
+      `select public.organizer_update_event_details($1, $2::jsonb) as status`,
+      [eventId, JSON.stringify(await detailsFor(eventTypeId, locationId))],
+    );
+
+    expect(result.rows[0].status).toBe('pending');
+    const event = await db.query<{ title: string; status: string; includes_certificate: boolean }>(
+      `select title, status, includes_certificate from public.events where id = $1`, [eventId],
+    );
+    const afterTickets = await db.query(`select id, name, price_cents, quantity_total from public.ticket_types where event_id = $1 order by name`, [eventId]);
+    expect(event.rows[0]).toEqual({ title: 'Evento actualizado', status: 'pending', includes_certificate: true });
+    expect(afterTickets.rows).toEqual(ticketRows.rows);
+  });
+
+  it('el organizador archiva sin eliminar el evento ni sus entradas', async () => {
+    const owner = await createUser(db, 'organizer');
+    const organizerId = await createOrganizer(db, owner, 'organizador-archiva');
+    const created = await createEventAs(owner, organizerId, { slug: 'evento-para-archivar-h2' });
+    const eventId = created.rows[0].id;
+    await asRole(db, 'authenticated', owner);
+
+    await db.query(`select public.organizer_archive_event($1)`, [eventId]);
+    const event = await db.query<{ status: string }>(`select status from public.events where id = $1`, [eventId]);
+    const tickets = await db.query(`select id from public.ticket_types where event_id = $1`, [eventId]);
+    expect(event.rows).toEqual([{ status: 'archived' }]);
+    expect(tickets.rows).toHaveLength(2);
+  });
+
+  it('un organizador ajeno no puede editar ni archivar el evento', async () => {
+    const owner = await createUser(db, 'organizer');
+    const stranger = await createUser(db, 'organizer');
+    const organizerId = await createOrganizer(db, owner, 'organizador-propietario-i3');
+    const created = await createEventAs(owner, organizerId, { slug: 'evento-protegido-i3' });
+    const eventTypeId = await categoryId('event_type', 'congresos');
+    const locationId = await categoryId('location', 'san-salvador');
+    await asRole(db, 'authenticated', stranger);
+
+    await expect(db.query(
+      `select public.organizer_update_event_details($1, $2::jsonb)`,
+      [created.rows[0].id, JSON.stringify(await detailsFor(eventTypeId, locationId))],
+    )).rejects.toThrow(/permiso/);
+    await expect(db.query(`select public.organizer_archive_event($1)`, [created.rows[0].id])).rejects.toThrow(/permiso/);
+  });
+});
+
+it('crea un evento con certificado declarado por el propietario', async () => {
+  const owner = await createUser(db, 'organizer');
+  const organizerId = await createOrganizer(db, owner, 'organizador-certificado');
+  const typeId = await categoryId('event_type', 'congresos');
+  await asRole(db, 'authenticated', owner);
+  const result = await db.query<{ id: string }>(`select public.create_organizer_event(
+    $1, 'evento-certificado', 'Evento de prueba', 'Descripción suficiente', null,
+    'virtual', null, null, '2027-09-01T18:00:00Z'::timestamptz, null,
+    $2, null, null, $3::jsonb, '[]'::jsonb, true) as id`, [organizerId, typeId, ticketTypes]);
+  const row = await db.query<{ includes_certificate: boolean }>('select includes_certificate from public.events where id = $1', [result.rows[0].id]);
+  expect(row.rows[0].includes_certificate).toBe(true);
+});

@@ -107,7 +107,7 @@ export function ProfileForm({ initial, consentedOn }: ProfileFormProps) {
           </label>
         </div>
         <p id="profile-marketing-hint" className={hintClass}>
-          Es opcional y está desactivado por defecto. Podés cambiarlo cuando quieras.
+          Es opcional y está desactivado por defecto. Puedes cambiarlo cuando quieras.
           {consentedOn && !state.saved ? ` Consentimiento registrado el ${consentedOn}.` : ''}
         </p>
       </div>

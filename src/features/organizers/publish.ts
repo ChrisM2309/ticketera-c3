@@ -11,7 +11,7 @@ export type PublishMode = (typeof publishModes)[number];
 export const maxTicketTypes = 4;
 
 /** Filas fijas del formulario y límites que repite la base (events_speakers_check). */
-export const speakerFormRows = 6;
+export const speakerFormRows = 8;
 export const maxSpeakers = 8;
 export const maxSpeakerNameLength = 80;
 export const maxSpeakerRoleLength = 120;
@@ -36,6 +36,7 @@ export type PublishData = {
   startsAt: string;
   endsAt: string | null;
   speakers: Speaker[];
+  includesCertificate: boolean;
   ticketTypes: TicketTypeInput[];
 };
 
@@ -293,6 +294,7 @@ export function parsePublishInput(input: Record<string, unknown>, now: Date): Pu
       startsAt,
       endsAt,
       speakers,
+      includesCertificate: input.includesCertificate === true,
       ticketTypes,
     },
   };
