@@ -1,20 +1,19 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
-import type { PaymentDecision } from '@/features/checkout/payment';
+import { createSubjectPaymentLink } from '@/features/checkout/wompi/create-link';
 import { requireRole } from '@/lib/auth/require-role';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 import { validateFeaturedRequest } from './request';
 
-export type FeaturedRequestActionResult = { ok: boolean; message?: string; analyticsEvent?: 'featured_purchased' };
+export type FeaturedPaymentStart = { ok: true; redirectUrl: string } | { ok: false; message: string };
 
-export async function requestFeaturedAction(formData: FormData): Promise<FeaturedRequestActionResult> {
+/**
+ * Inicia la compra de un destacado: crea la solicitud en espera de pago y devuelve el enlace de Wompi.
+ * El destacado no se activa aquí: lo hace el webhook cuando Wompi aprueba el pago, y después lo revisa el administrador.
+ */
+export async function startFeaturedPaymentAction(formData: FormData): Promise<FeaturedPaymentStart> {
   const account = await requireRole('organizer', '/panel/');
-  const decision = formData.get('decision');
-  if (decision !== 'approved' && decision !== 'rejected') {
-    return { ok: false, message: 'Elegí el resultado del pago simulado.' };
-  }
 
   const input = validateFeaturedRequest(
     { eventId: formData.get('eventId'), startsOn: formData.get('startsOn'), days: formData.get('days') },
@@ -22,15 +21,37 @@ export async function requestFeaturedAction(formData: FormData): Promise<Feature
   );
   if (!input.valid) return { ok: false, message: Object.values(input.errors)[0] ?? 'La solicitud no es válida.' };
 
-  const { error } = await account.client.rpc('request_paid_featured', {
+  const { data, error } = await account.client.rpc('start_paid_featured', {
     p_event_id: input.data.eventId,
     p_starts_on: input.data.startsOn,
     p_days: input.data.days,
-    p_decision: decision as PaymentDecision,
   });
   if (error) return { ok: false, message: error.message };
 
-  revalidatePath('/panel/');
-  revalidatePath('/panel/destacar/[eventId]', 'page');
-  return { ok: true, analyticsEvent: decision === 'approved' ? 'featured_purchased' : undefined };
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { placement_id: string; total_cents: number; event_title: string }
+    | undefined;
+  if (!row) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+
+  // Cubierto por completo por el paquete empresas: no hay pago, ya quedó pendiente de revisión.
+  if (row.total_cents === 0) return { ok: true, redirectUrl: '/panel/?destacado=solicitado' };
+
+  const link = await createSubjectPaymentLink({
+    subject: { kind: 'featured', id: row.placement_id },
+    totalCents: row.total_cents,
+    productName: `Destacado: ${row.event_title}`,
+    redirectPath: '/panel/?pago=destacado',
+  });
+  if (!link.ok) return { ok: false, message: link.message };
+
+  const service = createServiceRoleClient();
+  if (!service) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+
+  const saved = await service
+    .from('featured_placements')
+    .update({ wompi_link_id: link.linkId, wompi_link_url: link.redirectUrl })
+    .eq('id', row.placement_id);
+  if (saved.error) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+
+  return { ok: true, redirectUrl: link.redirectUrl };
 }

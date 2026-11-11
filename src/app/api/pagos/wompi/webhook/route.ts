@@ -3,8 +3,10 @@ import { after, NextResponse } from 'next/server';
 import { hashCheckoutToken } from '@/features/checkout/order';
 import { createWompiClient, WompiError } from '@/features/checkout/wompi/client';
 import { readWompiConfig } from '@/features/checkout/wompi/config';
+import { parsePaymentReference } from '@/features/checkout/wompi/reference';
 import { verifyWompiSignature } from '@/features/checkout/wompi/signature';
 import { decideSettlement, type OrderStatus, type WebhookFacts } from '@/features/checkout/wompi/settle';
+import { settleFeaturedOrPackage, loadFeaturedOrPackage } from '@/features/checkout/wompi/subjects';
 import { decryptCheckoutToken, readTokenEncryptionKey } from '@/features/checkout/wompi/token-crypto';
 import { deliverTicketEmail } from '@/features/ticketing/email/deliver-ticket-email';
 import { readTicketEmailEvent, scheduleConfirmedOrderNotifications } from '@/features/ticketing/confirmed-order';
@@ -12,8 +14,6 @@ import { createTicketId, deriveTicketQrToken, hashTicketQrToken } from '@/featur
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
-
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** Campos del cuerpo del webhook (docs.wompi.sv/webhook/definicion-webhook). Sin datos del comprador. */
 function parseWebhook(payload: unknown): WebhookFacts | null {
@@ -40,9 +40,9 @@ function parseWebhook(payload: unknown): WebhookFacts | null {
 }
 
 /**
- * Webhook de Wompi. Ninguna confirmación depende solo del cuerpo: la firma se valida con el cuerpo crudo y
- * la transacción se vuelve a consultar en la API antes de decidir. Responde 401 si la firma no cuadra y 5xx
- * solo cuando conviene que Wompi reintente.
+ * Webhook de Wompi para entradas, destacados y paquetes. Ninguna confirmación depende solo del cuerpo: la firma
+ * se valida con el cuerpo crudo y la transacción se vuelve a consultar en la API antes de decidir.
+ * 401 si la firma no cuadra; 5xx solo cuando conviene que Wompi reintente.
  */
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -64,30 +64,43 @@ export async function POST(request: Request) {
   const facts = parseWebhook(payload);
   if (!facts) return NextResponse.json({ error: 'Cuerpo no válido.' }, { status: 400 });
 
-  const client = createServiceRoleClient();
-  const encryptionKey = readTokenEncryptionKey(process.env.CHECKOUT_TOKEN_ENCRYPTION_KEY);
-  if (!client || !encryptionKey) return NextResponse.json({ error: 'No configurado.' }, { status: 503 });
+  const subject = parsePaymentReference(facts.reference);
+  if (!subject) return NextResponse.json({ status: 'ignored' });
 
-  if (!uuidPattern.test(facts.reference)) {
-    return NextResponse.json({ status: 'ignored' });
+  const client = createServiceRoleClient();
+  if (!client) return NextResponse.json({ error: 'No configurado.' }, { status: 503 });
+
+  // Carga del estado de la compra. Órdenes con su token y datos; destacados y paquetes solo su estado.
+  let status: OrderStatus;
+  let totalCents: number;
+  let order: Record<string, unknown> | null = null;
+
+  if (subject.kind === 'order') {
+    const { data, error } = await client
+      .from('orders')
+      .select('id, event_id, status, total_cents, buyer_name, buyer_email, buyer_phone, checkout_token_encrypted')
+      .eq('id', subject.id)
+      .maybeSingle();
+    if (error) return NextResponse.json({ error: 'Reintentar.' }, { status: 500 });
+    if (!data) return NextResponse.json({ status: 'ignored' });
+
+    order = data as Record<string, unknown>;
+    status = order.status as OrderStatus;
+    totalCents = order.total_cents as number;
+  } else {
+    const loaded = await loadFeaturedOrPackage(client, subject);
+    if (!loaded) return NextResponse.json({ status: 'ignored' });
+    status = loaded.status;
+    totalCents = loaded.totalCents;
   }
 
-  const { data: order, error: orderError } = await client
-    .from('orders')
-    .select('id, event_id, status, total_cents, buyer_name, buyer_email, buyer_phone, checkout_token_encrypted')
-    .eq('id', facts.reference)
-    .maybeSingle();
-
-  if (orderError) return NextResponse.json({ error: 'Reintentar.' }, { status: 500 });
-  if (!order) return NextResponse.json({ status: 'ignored' });
-
-  // Registro de auditoría: deduplica por transacción y resultado. No decide nada por sí solo.
+  // Auditoría: deduplica por transacción y resultado. No decide nada por sí sola.
   const audit = await client.from('payment_webhook_events').upsert(
     {
       provider: 'wompi',
       transaction_id: facts.transactionId,
       result_code: facts.resultCode,
-      order_id: order.id,
+      order_id: subject.kind === 'order' ? subject.id : null,
     },
     { onConflict: 'provider,transaction_id,result_code', ignoreDuplicates: true },
   );
@@ -106,9 +119,9 @@ export async function POST(request: Request) {
   }
 
   const decision = decideSettlement({
-    orderId: order.id as string,
-    orderStatus: order.status as OrderStatus,
-    totalCents: order.total_cents as number,
+    orderId: facts.reference,
+    orderStatus: status,
+    totalCents,
     webhook: facts,
     verified: { approved: transaction.approved, amount: transaction.amount, productive: app.productive },
   });
@@ -121,24 +134,40 @@ export async function POST(request: Request) {
   }
 
   if (decision.action === 'review') {
-    // Pago aprobado sin orden pendiente: no se emiten boletos automáticamente. Queda para revisión manual.
-    console.error(`Webhook de Wompi para revisión manual: ${decision.reason} (orden ${order.id}, transacción ${facts.transactionId}).`);
+    // Pago aprobado sin compra pendiente: no se activa nada automáticamente. Queda para revisión manual.
+    console.error(`Webhook de Wompi para revisión manual: ${decision.reason} (referencia ${facts.reference}, transacción ${facts.transactionId}).`);
     return NextResponse.json({ status: 'review' });
   }
 
   // decision.action === 'approve'
-  if (!order.checkout_token_encrypted) {
+  if (subject.kind !== 'order') {
+    const settled = await settleFeaturedOrPackage(client, subject, facts.transactionId);
+    if (settled.ok) return NextResponse.json({ status: 'settled' });
+
+    if (settled.code === '23505' || settled.code === '22023') {
+      console.error(`Webhook de Wompi aprobado sin activar (${settled.message}). Referencia ${facts.reference}.`);
+      return NextResponse.json({ status: 'review' });
+    }
+    return NextResponse.json({ error: 'Reintentar.' }, { status: 500 });
+  }
+
+  const encryptionKey = readTokenEncryptionKey(process.env.CHECKOUT_TOKEN_ENCRYPTION_KEY);
+  if (!encryptionKey) return NextResponse.json({ error: 'No configurado.' }, { status: 503 });
+
+  const orderId = subject.id;
+  const encrypted = order?.checkout_token_encrypted as string | null | undefined;
+  if (!encrypted) {
     console.error('Webhook de Wompi: la orden no tiene el token de checkout cifrado.');
     return NextResponse.json({ error: 'Reintentar.' }, { status: 500 });
   }
 
-  const checkoutToken = decryptCheckoutToken(order.checkout_token_encrypted as string, encryptionKey);
+  const checkoutToken = decryptCheckoutToken(encrypted, encryptionKey);
   if (!checkoutToken) {
     console.error('Webhook de Wompi: no se pudo descifrar el token de checkout.');
     return NextResponse.json({ error: 'Reintentar.' }, { status: 500 });
   }
 
-  const { data: items, error: itemsError } = await client.from('order_items').select('quantity').eq('order_id', order.id);
+  const { data: items, error: itemsError } = await client.from('order_items').select('quantity').eq('order_id', orderId);
   if (itemsError) return NextResponse.json({ error: 'Reintentar.' }, { status: 500 });
 
   const quantity = (items ?? []).reduce((sum, item) => sum + (item.quantity as number), 0);
@@ -148,7 +177,7 @@ export async function POST(request: Request) {
   });
 
   const { data, error } = await client.rpc('confirm_order', {
-    p_order_id: order.id,
+    p_order_id: orderId,
     p_public_token_hash: hashCheckoutToken(checkoutToken),
     p_payment_outcome: 'wompi_approved',
     p_idempotency_key: `wompi:${facts.transactionId}`,
@@ -159,7 +188,7 @@ export async function POST(request: Request) {
     // Validación de negocio (cupos, evento no disponible): el pago está aprobado y no hay boletos.
     // Se deja para revisión manual en lugar de reintentar indefinidamente.
     if (error.code === '22023') {
-      console.error(`Webhook de Wompi: aprobado sin emitir boletos (${error.message}). Orden ${order.id}.`);
+      console.error(`Webhook de Wompi: aprobado sin emitir boletos (${error.message}). Orden ${orderId}.`);
       return NextResponse.json({ status: 'review' });
     }
     return NextResponse.json({ error: 'Reintentar.' }, { status: 500 });
@@ -177,14 +206,18 @@ export async function POST(request: Request) {
   }
 
   const now = new Date();
-  const event = await readTicketEmailEvent(client, order.event_id as string);
+  const eventId = order?.event_id as string;
+  const email = order?.buyer_email as string;
+  const buyerName = (order?.buyer_name as string | null) ?? '';
+  const phone = (order?.buyer_phone as string | null) ?? null;
+  const event = await readTicketEmailEvent(client, eventId);
 
   await scheduleConfirmedOrderNotifications(client, {
-    orderId: order.id as string,
-    eventId: order.event_id as string,
-    email: order.buyer_email as string,
-    buyerName: (order.buyer_name as string | null) ?? '',
-    phone: (order.buyer_phone as string | null) ?? null,
+    orderId,
+    eventId,
+    email,
+    buyerName,
+    phone,
     quantity,
     checkoutToken,
     now,
@@ -193,10 +226,10 @@ export async function POST(request: Request) {
   if (event) {
     after(() =>
       deliverTicketEmail({
-        orderId: order.id as string,
+        orderId,
         checkoutToken,
-        email: order.buyer_email as string,
-        buyerName: (order.buyer_name as string | null) ?? '',
+        email,
+        buyerName,
         eventTitle: event.title,
         eventStartsAt: event.startsAt,
         ticketCount: quantity,

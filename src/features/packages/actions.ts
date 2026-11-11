@@ -2,16 +2,17 @@
 
 import { revalidatePath } from 'next/cache';
 
-import type { PaymentDecision } from '@/features/checkout/payment';
+import { createSubjectPaymentLink } from '@/features/checkout/wompi/create-link';
 import { requireRole } from '@/lib/auth/require-role';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
-export type PackageActionResult = { ok: boolean; message?: string; analyticsEvent?: 'package_purchased' };
+export type PackagePaymentStart = { ok: true; redirectUrl: string } | { ok: false; message: string };
 
-export async function purchaseBusinessPackageAction(decision: PaymentDecision): Promise<PackageActionResult> {
-  if (decision !== 'approved' && decision !== 'rejected') {
-    return { ok: false, message: 'Elegí el resultado del pago simulado.' };
-  }
-
+/**
+ * Inicia la compra del paquete anual: crea el paquete en espera de pago y devuelve el enlace de Wompi.
+ * El paquete se activa cuando el webhook recibe la aprobación de Wompi.
+ */
+export async function startPackagePaymentAction(): Promise<PackagePaymentStart> {
   const account = await requireRole('organizer', '/para-empresas/');
   const organizersResult = await account.client
     .from('organizers')
@@ -25,19 +26,32 @@ export async function purchaseBusinessPackageAction(decision: PaymentDecision): 
     return { ok: false, message: 'Tu cuenta todavía no está asociada a un organizador.' };
   }
 
-  const { error } = await account.client.rpc('purchase_business_package', {
-    p_organizer_id: organizer.id,
-    p_decision: decision,
-  });
+  const { data, error } = await account.client.rpc('start_package_purchase', { p_organizer_id: organizer.id });
+  if (error) return { ok: false, message: error.message };
 
-  if (error) {
-    return { ok: false, message: error.message };
-  }
+  const row = (Array.isArray(data) ? data[0] : data) as { package_id: string; price_cents: number } | undefined;
+  if (!row) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+
+  const link = await createSubjectPaymentLink({
+    subject: { kind: 'package', id: row.package_id },
+    totalCents: row.price_cents,
+    productName: 'Paquete anual para empresas',
+    redirectPath: '/panel/paquete/?pago=paquete',
+  });
+  if (!link.ok) return { ok: false, message: link.message };
+
+  const service = createServiceRoleClient();
+  if (!service) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+
+  const saved = await service
+    .from('business_packages')
+    .update({ wompi_link_id: link.linkId, wompi_link_url: link.redirectUrl })
+    .eq('id', row.package_id);
+  if (saved.error) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
 
   revalidatePath('/para-empresas/');
   revalidatePath('/panel/paquete/');
-  revalidatePath('/panel/');
-  return { ok: true, analyticsEvent: decision === 'approved' ? 'package_purchased' : undefined };
+  return { ok: true, redirectUrl: link.redirectUrl };
 }
 
 export async function requestPackageFollowupAction(formData: FormData): Promise<void> {

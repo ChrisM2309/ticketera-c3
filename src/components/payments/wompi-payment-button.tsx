@@ -9,18 +9,37 @@ import { cn } from '@/lib/utils';
 
 type SummaryLine = { label: string; amountCents: number };
 
+export type PaymentStart = { ok: true; redirectUrl: string } | { ok: false; message: string };
+
 type WompiPaymentButtonProps = Readonly<{
-  orderId: string;
-  checkoutToken: string;
   amountCents: number;
   summary: readonly SummaryLine[];
+  /** Crea el enlace de pago en el servidor y devuelve la URL de Wompi. */
+  start: () => Promise<PaymentStart>;
 }>;
 
+/** Inicio del pago de una orden de entradas (usado por el checkout). */
+export async function startOrderPayment(orderId: string, checkoutToken: string): Promise<PaymentStart> {
+  try {
+    const response = await fetch(`/api/checkout/orders/${orderId}/pago/`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ checkoutToken }),
+    });
+    const body = (await response.json().catch(() => null)) as { redirectUrl?: unknown; error?: unknown } | null;
+
+    if (response.ok && typeof body?.redirectUrl === 'string') return { ok: true, redirectUrl: body.redirectUrl };
+    return { ok: false, message: typeof body?.error === 'string' ? body.error : 'No pudimos iniciar el pago. Intentá nuevamente.' };
+  } catch {
+    return { ok: false, message: 'No pudimos iniciar el pago. Revisá tu conexión e intentá nuevamente.' };
+  }
+}
+
 /**
- * Pago con Wompi El Salvador en modo de prueba. El servidor crea el enlace y el navegador solo sigue la
+ * Botón de pago con Wompi El Salvador en modo de prueba. El servidor crea el enlace y el navegador solo sigue la
  * URL que devuelve. No hay campos de tarjeta ni decisiones de pago en el navegador.
  */
-export function WompiPaymentButton({ orderId, checkoutToken, amountCents, summary }: WompiPaymentButtonProps) {
+export function WompiPaymentButton({ amountCents, summary, start }: WompiPaymentButtonProps) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -31,22 +50,15 @@ export function WompiPaymentButton({ orderId, checkoutToken, amountCents, summar
     setMessage(null);
 
     try {
-      const response = await fetch(`/api/checkout/orders/${orderId}/pago/`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ checkoutToken }),
-      });
-      const body = (await response.json().catch(() => null)) as { redirectUrl?: unknown; error?: unknown } | null;
+      const result = await start();
 
-      if (response.ok && typeof body?.redirectUrl === 'string') {
-        window.location.assign(body.redirectUrl);
+      if (result.ok) {
+        window.location.assign(result.redirectUrl);
         return;
       }
 
-      // Un error no marca la compra como exitosa: la orden sigue pendiente y el comprador puede reintentar.
-      setMessage(typeof body?.error === 'string' ? body.error : 'No pudimos iniciar el pago. Intentá nuevamente.');
-    } catch {
-      setMessage('No pudimos iniciar el pago. Revisá tu conexión e intentá nuevamente.');
+      // Un error no marca la compra como exitosa: queda en espera y se puede reintentar.
+      setMessage(result.message);
     } finally {
       setPending(false);
     }

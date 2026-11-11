@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { FeaturedRequestForm } from '@/components/organizers/featured-request-form';
-import { requestFeaturedAction } from '@/features/featured/request-actions';
+import { startFeaturedPaymentAction } from '@/features/featured/request-actions';
 import { getSiteSettings } from '@/features/settings/settings';
 import { organizerHomePath } from '@/lib/auth/access';
 import { requireRole } from '@/lib/auth/require-role';
@@ -41,7 +41,7 @@ export default async function FeaturedRequestPage({ params }: Props) {
         eventTitle={eventResult.data.title}
         dailyRateCents={settings.featuredDailyRateCents}
         minDate={todayInElSalvador()}
-        action={requestFeaturedAction}
+        action={startFeaturedPaymentAction}
       />
     </main>
   );
