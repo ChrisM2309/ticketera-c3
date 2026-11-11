@@ -5,7 +5,8 @@ export type Block = { type: 'h2' | 'h3' | 'p'; inline: Inline[] } | { type: 'ul'
 
 function parseInline(source: string): Inline[] {
   const result: Inline[] = [];
-  const pattern = /(\*\*[^*]+\*\*|\[[^\]]+\]\(https:\/\/[^)\s]+\))/g;
+  const safeHref = '(?:https:\\/\\/[^)\\s]+|\\/(?!\\/)[a-z0-9-]+(?:\\/[a-z0-9-]+)*\\/?)';
+  const pattern = new RegExp(`(\\*\\*[^*]+\\*\\*|\\[[^\\]]+\\]\\(${safeHref}\\))`, 'g');
   let cursor = 0;
   for (const match of source.matchAll(pattern)) {
     const index = match.index ?? 0;
@@ -13,7 +14,7 @@ function parseInline(source: string): Inline[] {
     const token = match[0];
     if (token.startsWith('**')) result.push({ t: 'strong', v: token.slice(2, -2) });
     else {
-      const link = /^\[([^\]]+)\]\((https:\/\/[^)\s]+)\)$/.exec(token);
+      const link = new RegExp(`^\\[([^\\]]+)\\]\\((${safeHref})\\)$`).exec(token);
       if (link) result.push({ t: 'link', href: link[2], v: link[1] });
       else result.push({ t: 'text', v: token });
     }

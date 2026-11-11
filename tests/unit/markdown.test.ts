@@ -20,6 +20,10 @@ describe('markdown editorial seguro', () => {
     expect(parseMarkdown('[sitio](https://example.com)')[0]).toMatchObject({ inline: [{ t: 'link', href: 'https://example.com', v: 'sitio' }] });
   });
 
+  it('un enlace interno seguro se conserva', () => {
+    expect(parseMarkdown('[charlas](/charlas/)')[0]).toMatchObject({ inline: [{ t: 'link', href: '/charlas/', v: 'charlas' }] });
+  });
+
   it('un enlace http o //otro.com se vuelve texto', () => {
     expect(parseMarkdown('[http](http://example.com)')[0]).toMatchObject({ inline: [{ t: 'text' }] });
     expect(parseMarkdown('[otro](//otro.com)')[0]).toMatchObject({ inline: [{ t: 'text' }] });

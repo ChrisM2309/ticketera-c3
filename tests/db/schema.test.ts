@@ -74,6 +74,17 @@ const catalogMigrationSql = readFileSync(
   join(import.meta.dirname, '..', '..', 'supabase', 'migrations', '20261118100000_demo_catalog_content.sql'),
   'utf8',
 );
+const editorialEnrichmentMigrationSql = readFileSync(
+  join(import.meta.dirname, '..', '..', 'supabase', 'migrations', '20261119100000_editorial_blog_enrichment.sql'),
+  'utf8',
+);
+const demoBlogSlugs = [
+  'beneficios-networking-eventos-tecnologicos',
+  'como-aprovechar-hackathon',
+  'elegir-evento-tecnologico',
+  'tomar-notas-charla-tecnologica',
+  'romper-hielo-networking',
+];
 
 let db: PGlite;
 
@@ -213,26 +224,30 @@ describe('migraciones y seed', () => {
     expect(result.rows[0]).toEqual({ sin_foto: 0, sin_ponentes: 0, sin_entradas: 0, pasados: 9 });
   });
 
-  it('publica los tres artículos SEO del demo', async () => {
-    const result = await db.query<{ total: number; sin_keyword: number; cuerpo_corto: number }>(
+  it('publica cinco artículos SEO con keyword, autor y portada local', async () => {
+    const result = await db.query<{ total: number; sin_keyword: number; sin_autor: number; sin_portada: number; cuerpo_corto: number }>(
       `select count(*)::int as total,
          count(*) filter (where keyword is null)::int as sin_keyword,
+         count(*) filter (where author_name is null or char_length(author_name) < 2)::int as sin_autor,
+         count(*) filter (where cover_image_path is null or cover_image_path not like '/images/%')::int as sin_portada,
          count(*) filter (where char_length(body_md) < 200)::int as cuerpo_corto
        from public.blog_posts
        where slug = any($1::text[]) and status = 'published'`,
-      [['beneficios-networking-eventos-tecnologicos', 'como-aprovechar-hackathon', 'elegir-evento-tecnologico']],
+      [demoBlogSlugs],
     );
     const slugs = await db.query<{ slug: string }>(
       `select slug from public.blog_posts where slug = any($1::text[]) and status = 'published' order by slug`,
-      [['beneficios-networking-eventos-tecnologicos', 'como-aprovechar-hackathon', 'elegir-evento-tecnologico']],
+      [demoBlogSlugs],
     );
 
     expect(slugs.rows.map((row) => row.slug)).toEqual([
       'beneficios-networking-eventos-tecnologicos',
       'como-aprovechar-hackathon',
       'elegir-evento-tecnologico',
+      'romper-hielo-networking',
+      'tomar-notas-charla-tecnologica',
     ]);
-    expect(result.rows[0]).toEqual({ total: 3, sin_keyword: 0, cuerpo_corto: 0 });
+    expect(result.rows[0]).toEqual({ total: 5, sin_keyword: 0, sin_autor: 0, sin_portada: 0, cuerpo_corto: 0 });
   });
 
   it('da al menos un tipo de entrada a cada evento del seed', async () => {
@@ -257,6 +272,7 @@ describe('migraciones y seed', () => {
 
   it('volver a ejecutar la migración y el seed no duplica filas ni cambia el catálogo previo', async () => {
     await db.exec(catalogMigrationSql);
+    await db.exec(editorialEnrichmentMigrationSql);
     await db.exec(seedSql);
 
     const result = await db.query<{
@@ -276,7 +292,7 @@ describe('migraciones y seed', () => {
          (select count(*)::int from public.blog_posts) as articulos`,
     );
 
-    expect(result.rows[0]).toEqual({ categorias: 29, eventos: 74, entradas: 88, organizadores: 9, rutas: 128, articulos: 3 });
+    expect(result.rows[0]).toEqual({ categorias: 29, eventos: 74, entradas: 88, organizadores: 9, rutas: 128, articulos: 5 });
     const oldEvents = await db.query<{ title: string }>(
       `select title from public.events where slug in ('congreso-demo-ia', 'hackathon-demo-en-linea', 'feria-demo-tecnologia') order by slug`,
     );

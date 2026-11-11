@@ -39,7 +39,7 @@ export function organizationJsonLd(org: { name: string; description: string; pat
   };
 }
 
-export function articleJsonLd(post: { title: string; description: string; path: string; publishedAt: string; updatedAt: string }, siteUrl: string): object {
+export function articleJsonLd(post: { title: string; description: string; path: string; publishedAt: string; updatedAt: string; author?: string | null; image?: string | null }, siteUrl: string): object {
   return {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -48,5 +48,7 @@ export function articleJsonLd(post: { title: string; description: string; path: 
     url: absoluteUrl(post.path, siteUrl),
     datePublished: new Date(post.publishedAt).toISOString(),
     dateModified: new Date(post.updatedAt).toISOString(),
+    ...(post.author ? { author: { '@type': 'Person', name: post.author } } : {}),
+    ...(post.image ? { image: new URL(post.image, siteUrl).toString() } : {}),
   };
 }
