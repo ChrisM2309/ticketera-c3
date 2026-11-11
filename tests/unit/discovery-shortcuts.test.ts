@@ -21,15 +21,15 @@ describe('atajos de descubrimiento', () => {
     ]);
   });
 
-  it('explica que «Cerca de mí» usa la ubicación demo disponible', () => {
-    expect(discoveryShortcutLinks.at(-1)?.description).toContain('San Salvador');
+  it('usa solo icono y título, sin subtítulo adicional', () => {
+    expect(shortcutsSource).not.toContain('description');
+    expect(shortcutsSource).not.toContain('title={shortcut.description}');
+    expect(shortcutsSource).not.toContain('line-clamp-1');
   });
 
   it('usa una presentación compacta y estable para no deformar la fila', () => {
     expect(shortcutsSource).toContain('min-h-16');
-    expect(shortcutsSource).toContain('line-clamp-1');
     expect(shortcutsSource).toContain('grid-cols-2 gap-3');
-    expect(shortcutsSource).not.toContain('line-clamp-1 block');
     expect(shortcutsSource).not.toContain('md:grid-cols-4');
     expect(shortcutsSource).not.toContain('flex-col justify-between');
   });
