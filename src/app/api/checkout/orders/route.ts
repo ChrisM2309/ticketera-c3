@@ -61,6 +61,10 @@ export async function POST(request: Request) {
   // único dato del cuerpo es `asGuest`, que solo sirve para NO ligar la compra a la cuenta.
   const session = isGuestRequest(input) ? null : await readOptionalSession();
 
+  // Respaldo de la caducidad: cierra compras vencidas (30 min) aunque pg_cron no esté habilitado.
+  const expired = await client.rpc('expire_pending_purchases');
+  if (expired.error) console.error('Caducidad de compras pendientes: no se ejecutó.', expired.error.message);
+
   const { data, error } = await client.rpc('create_pending_order', {
     p_event_id: parsed.data.eventId,
     p_items: parsed.data.items,
