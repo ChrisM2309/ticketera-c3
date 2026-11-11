@@ -1,5 +1,7 @@
 # Política de checkout y pago DEMO
 
+> **Actualización 2026-11-11 (D-66, D-67):** las compras de **entradas con importe** ya no usan la simulación de esta página. Pagan con **Wompi El Salvador en modo de prueba (sandbox)**: el servidor crea un enlace de pago, el comprador completa la transacción de prueba en Wompi, el webhook confirma la orden y emite los boletos, y la página de resultado (`/pago/resultado/`) muestra el estado sin secretos. Las compras gratuitas no cambian. Las secciones siguientes que describen el panel simulado aplican solo a destacados y paquete de organizadores, pendientes de migrar. Plan: `docs/superpowers/plans/2026-11-11-wompi-sandbox.md`.
+
 ## Qué exige cada fuente
 
 - **Rúbrica oficial del profesor:** wireframe del carrito/pasarela de pago y confirmación; no especifica pago real, SDK, integración API ni sandbox externo.

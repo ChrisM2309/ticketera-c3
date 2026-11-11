@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
-import { SimulatedPaymentPanel } from '@/components/payments/simulated-payment-panel';
+import { WompiPaymentButton } from '@/components/payments/wompi-payment-button';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
 import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
-import type { PaymentDecision } from '@/features/checkout/payment';
 import { receiptStatusLabel } from '@/features/checkout/payment-flow';
 import { siteConfig } from '@/lib/site-config';
 import { trackEvent } from '@/lib/analytics/track';
@@ -151,16 +150,15 @@ export function PaymentStep({ order }: PaymentStepProps) {
   const [isConfirming, setIsConfirming] = useState(false);
   // La referencia evita un segundo envío antes de que el botón se deshabilite.
   const inFlight = useRef(false);
-  const lastDecision = useRef<PaymentDecision | null>(null);
   const isFree = order.totalCents === 0;
 
-  /** Pide la confirmación al servidor (misma API y clave de idempotencia para pago y registro gratuito). */
-  async function requestConfirmation(decision: PaymentDecision | null): Promise<ConfirmOutcome> {
+  /** Confirma una compra gratuita. Las compras con importe se confirman solo desde el webhook de Wompi. */
+  async function requestConfirmation(): Promise<ConfirmOutcome> {
     try {
       const response = await fetch(`/api/checkout/orders/${order.orderId}/confirm/`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ checkoutToken: order.checkoutToken, decision }),
+        body: JSON.stringify({ checkoutToken: order.checkoutToken }),
       });
       const body: unknown = await response.json().catch(() => null);
 
@@ -191,7 +189,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
     setErrorView(null);
 
     try {
-      const outcome = await requestConfirmation(null);
+      const outcome = await requestConfirmation();
 
       if (!outcome.ok) {
         setErrorView(outcome.view);
@@ -204,27 +202,9 @@ export function PaymentStep({ order }: PaymentStepProps) {
     }
   }
 
-  async function confirmPayment(decision: PaymentDecision) {
-    lastDecision.current = decision;
-    setErrorView(null);
-
-    const outcome = await requestConfirmation(decision);
-
-    if (outcome.ok) {
-      if (outcome.confirmed) trackEvent('purchase_confirmed', { path: window.location.pathname });
-      return { ok: true };
-    }
-
-    setErrorView(outcome.view);
-    // El aviso con su acción lo muestra este paso; el mensaje vacío evita que el panel repita otro.
-    return { ok: false, message: '' };
-  }
-
-  /** «Reintentar» repite la misma confirmación (misma orden y clave de idempotencia): no duplica boletos. */
+  /** «Reintentar» repite la confirmación gratuita (misma orden y clave): no duplica boletos. */
   async function retryConfirmation() {
-    const decision = isFree ? null : lastDecision.current;
-
-    if (inFlight.current || (!isFree && !decision)) {
+    if (inFlight.current || !isFree) {
       return;
     }
 
@@ -233,7 +213,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
     setErrorView(null);
 
     try {
-      const outcome = await requestConfirmation(decision);
+      const outcome = await requestConfirmation();
 
       if (!outcome.ok) {
         setErrorView(outcome.view);
@@ -339,13 +319,14 @@ export function PaymentStep({ order }: PaymentStepProps) {
               retrying={isConfirming}
             />
           ) : null}
-          <SimulatedPaymentPanel
+          <WompiPaymentButton
+            orderId={order.orderId}
+            checkoutToken={order.checkoutToken}
             amountCents={order.totalCents}
             summary={[
               { label: 'Subtotal', amountCents: order.subtotalCents },
               { label: `Comisión DEMO (${siteConfig.demoCommissionPercent} %)`, amountCents: order.feeCents },
             ]}
-            onDecision={confirmPayment}
           />
         </>
       )}
