@@ -11,7 +11,7 @@ type FeaturedControlsProps = Readonly<{
 }>;
 
 const botonClase =
-  'inline-flex size-11 cursor-pointer items-center justify-center rounded-pill border-2 border-borde-fuerte text-texto transition-colors hover:bg-superficie-sutil disabled:cursor-default disabled:opacity-40';
+  'inline-flex size-11 cursor-pointer items-center justify-center rounded-pill border-2 border-borde-fuerte bg-superficie text-texto transition-colors hover:bg-superficie-sutil focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accion disabled:cursor-default disabled:opacity-40';
 
 /** Flechas y puntos del carrusel de destacados. Solo cambian la posición del desplazamiento. */
 export function FeaturedControls({ total, listId }: FeaturedControlsProps) {

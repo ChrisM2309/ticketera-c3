@@ -92,8 +92,8 @@
 - Modify: `docs/superpowers/plans/implementation-backlog.md`
 - Modify: `.superpowers/sdd/2026-11-11-home-buyer-first-plan/progress.md`
 
-- [ ] Ejecutar `npm.cmd exec -- vitest run tests/unit/filters.test.ts tests/unit/discovery-shortcuts.test.ts tests/unit/navigation.test.ts tests/unit/wireframes.test.ts`.
-- [ ] Ejecutar `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run build` y `npm.cmd test -- --run`.
-- [ ] Ejecutar E2E buyer-first relevante y revisar Home a 1280 px y 375 px; no debe haber scroll horizontal.
-- [ ] Ejecutar `npx impeccable detect --json` sobre archivos UI modificados y revisar el resultado.
-- [ ] Hacer revisión independiente, actualizar documentación y ledger, commit y push de la rama que alimenta el PR abierto.
+- [x] Ejecutar `npm.cmd exec -- vitest run tests/unit/filters.test.ts tests/unit/discovery-shortcuts.test.ts tests/unit/navigation.test.ts tests/unit/wireframes.test.ts`.
+- [x] Ejecutar `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run build` y `npm.cmd test -- --run`.
+- [x] Ejecutar E2E buyer-first relevante y revisar Home a 1280 px y 375 px; no debe haber scroll horizontal.
+- [x] Ejecutar `npx impeccable detect --json` sobre archivos UI modificados y revisar el resultado.
+- [x] Hacer revisión independiente, actualizar documentación y ledger, commit y push de la rama que alimenta el PR abierto.

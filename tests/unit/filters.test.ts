@@ -170,6 +170,7 @@ describe('filtrado del catálogo', () => {
   it('limita este fin de semana al sábado y domingo próximos en El Salvador', () => {
     const viernes = new Date('2027-03-05T18:00:00Z');
     const weekendEvents = [
+      event('viernes-futuro', { startsAt: '2027-03-05T19:00:00Z' }),
       event('sabado', { startsAt: '2027-03-06T16:00:00Z' }),
       event('domingo', { startsAt: '2027-03-07T16:00:00Z' }),
       event('lunes', { startsAt: '2027-03-08T16:00:00Z' }),

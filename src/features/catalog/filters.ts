@@ -131,8 +131,14 @@ function matchesFilters(event: CatalogEvent, filters: CatalogFilters, now: Date)
     const eventTime = new Date(event.startsAt).getTime();
     const nowKey = localDateKey(now);
     const eventKey = localDateKey(new Date(event.startsAt));
+    const eventDay = new Date(`${eventKey}T12:00:00Z`).getUTCDay();
 
-    if (eventTime < now.getTime() || eventKey < nowKey || eventKey > weekendEndKey(nowKey)) {
+    if (
+      eventTime < now.getTime() ||
+      (eventDay !== 0 && eventDay !== 6) ||
+      eventKey < nowKey ||
+      eventKey > weekendEndKey(nowKey)
+    ) {
       return false;
     }
   } else if (

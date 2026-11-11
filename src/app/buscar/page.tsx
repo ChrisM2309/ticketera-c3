@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
 import { SiteSearch } from '@/components/layout/site-search';
-import { filterCatalogEventsByFilters, parseCatalogFilters } from '@/features/catalog/filters';
+import { filterCatalogEventsByFilters, hasActiveFilters, noCatalogFilters, parseCatalogFilters } from '@/features/catalog/filters';
 import { getCatalogListing } from '@/features/catalog/queries';
 import { parseSearchQuery, searchCatalogEvents } from '@/features/catalog/search';
 import { getSiteSettings } from '@/features/settings/settings';
@@ -28,10 +29,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const now = new Date();
   const filters = listing.status === 'ok'
     ? parseCatalogFilters(params, listing.taxonomy.locations.map((location) => location.slug))
-    : null;
+    : noCatalogFilters;
   const filteredEvents = listing.status === 'ok'
     ? searchCatalogEvents(filterCatalogEventsByFilters(upcomingEvents(listing.events, now.getTime()), filters, now), query)
     : [];
+  const hasFilters = filters ? hasActiveFilters(filters) : false;
 
   return (
     <section aria-labelledby="buscar-title" className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 md:px-6">
@@ -39,7 +41,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <h1 id="buscar-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
           {query ? `Resultados para «${query}»` : 'Todos los eventos'}
         </h1>
-        <SiteSearch defaultValue={query} />
+         <SiteSearch defaultValue={query} inputId="buscar-eventos-pagina" searchLabel="Buscar en el catálogo" />
       </header>
 
       {listing.status === 'unavailable' ? (
@@ -49,13 +51,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       ) : (
         <>
           <CatalogFilters
-            filters={filters!}
+            filters={filters}
             locations={listing.taxonomy.locations}
             showCiudad
             clearHref="/buscar/"
             query={query}
           />
-          <SearchResults query={query} events={filteredEvents} truncated={listing.truncated} />
+          <SearchResults query={query} events={filteredEvents} truncated={listing.truncated} hasFilters={hasFilters} />
         </>
       )}
     </section>
@@ -71,16 +73,26 @@ type SearchResultsProps = Readonly<{
   query: string;
   events: ReturnType<typeof searchCatalogEvents>;
   truncated: boolean;
+  hasFilters: boolean;
 }>;
 
-function SearchResults({ query, events, truncated }: SearchResultsProps) {
+function SearchResults({ query, events, truncated, hasFilters }: SearchResultsProps) {
   if (events.length === 0) {
     return (
-      <p role="status" className="rounded-lg bg-superficie p-6 font-texto text-base leading-7 text-texto-suave">
-        {query
-          ? `No encontramos eventos para «${query}». Prueba con otra ciudad, tema o palabra.`
-          : 'Todavía no hay eventos publicados.'}
-      </p>
+      <div role="status" className="rounded-lg bg-superficie p-6 font-texto text-base leading-7 text-texto-suave">
+        <p>
+          {query
+            ? `No encontramos eventos para «${query}». Prueba con otra ciudad, tema o palabra.`
+            : hasFilters
+              ? 'Ningún evento coincide con estos filtros. Probá quitar alguno para ver más resultados.'
+              : 'Todavía no hay eventos publicados.'}
+        </p>
+        {!query && hasFilters ? (
+          <Link href="/buscar/" className="mt-3 inline-flex min-h-11 items-center font-titulo font-semibold text-enlace underline-offset-4 hover:underline">
+            Quitar filtros
+          </Link>
+        ) : null}
+      </div>
     );
   }
 

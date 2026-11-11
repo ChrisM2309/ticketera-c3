@@ -13,6 +13,7 @@ describe('composición buyer-first del Home', () => {
     expect(homeSource.indexOf('<DiscoveryShortcuts')).toBeGreaterThan(-1);
     expect(homeSource.indexOf('<SiteSearch')).toBeLessThan(heroEnd);
     expect(homeSource.indexOf('<DiscoveryShortcuts')).toBeLessThan(heroEnd);
+    expect(homeSource).toContain('inputId="buscar-eventos-home"');
   });
 
   it('no presenta publicar en el hero y conserva la CTA contextual inferior', () => {
@@ -22,5 +23,13 @@ describe('composición buyer-first del Home', () => {
     expect(publishInHero).toBe(false);
     expect(homeSource).toContain('¿Organizás un evento?');
     expect(homeSource).toContain('href="/panel/eventos/nuevo/"');
+  });
+
+  it('explica cuando un filtro válido no devuelve coincidencias', () => {
+    const searchSource = readFileSync('src/app/buscar/page.tsx', 'utf8');
+
+    expect(searchSource).toContain('hasActiveFilters');
+    expect(searchSource).toContain('Ningún evento coincide con estos filtros');
+    expect(searchSource).toContain('Quitar filtros');
   });
 });

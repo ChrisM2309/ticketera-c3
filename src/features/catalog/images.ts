@@ -92,5 +92,6 @@ export function coverImagePath(event: {
 
 /** Verdadero cuando la portada es una ilustración y no una foto del evento: se debe indicar en pantalla. */
 export function isIllustrativeCover(event: { imagePath: string | null }): boolean {
-  return publicImagePath(event.imagePath) === null;
+  const imagePath = publicImagePath(event.imagePath);
+  return imagePath === null || imagePath.startsWith('/images/stock/');
 }

@@ -79,7 +79,7 @@ export default async function Home() {
           <p className="max-w-xl text-lg leading-relaxed text-texto-suave">
             Descubrí congresos, hackathons y workshops en El Salvador. Buscá por tema, ciudad o modalidad y elegí cómo participar.
           </p>
-          <SiteSearch className="md:max-w-xl" />
+          <SiteSearch inputId="buscar-eventos-home" searchLabel="Buscar eventos desde la portada" className="md:max-w-xl" />
           <DiscoveryShortcuts />
         </div>
 

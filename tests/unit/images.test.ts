@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { coverImagePath, publicImagePath } from '../../src/features/catalog/images';
+import { coverImagePath, isIllustrativeCover, publicImagePath } from '../../src/features/catalog/images';
 
 describe('publicImagePath', () => {
   it('acepta rutas locales y enlaces HTTPS', () => {
@@ -33,5 +33,11 @@ describe('coverImagePath', () => {
     expect(coverImagePath({ imagePath: null, eventType: { slug: 'congresos' } })).toBe(
       '/images/stock/stock-salon-evento-01.jpg',
     );
+  });
+});
+
+describe('isIllustrativeCover', () => {
+  it('marca fotos locales de stock como imagen de referencia DEMO', () => {
+    expect(isIllustrativeCover({ imagePath: '/images/stock/stock-auditorio-01.jpg' })).toBe(true);
   });
 });
