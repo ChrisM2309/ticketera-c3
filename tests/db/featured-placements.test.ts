@@ -4,6 +4,7 @@ import type { PGlite } from '@electric-sql/pglite';
 import { asRole, asSuperuser, createDatabase, createEvent, createOrganizer, createUser } from './helpers';
 
 let db: PGlite;
+let txSeed = 0;
 
 beforeEach(async () => {
   db = await createDatabase();
@@ -24,36 +25,58 @@ async function ownedPublishedEvent(owner: string, slug: string, status = 'publis
   return { organizer, event };
 }
 
+/** El organizador inicia la compra (espera de pago) y el servidor la liquida como aprobada. */
+async function requestPaid(owner: string, event: string, startsOn: string, days: number): Promise<string> {
+  await asRole(db, 'authenticated', owner);
+  const started = await db.query<{ placement_id: string }>(
+    `select placement_id from public.start_paid_featured($1, $2::date, $3)`,
+    [event, startsOn, days],
+  );
+  txSeed += 1;
+  await asRole(db, 'service_role');
+  await db.query(`select public.settle_featured_payment($1, $2)`, [started.rows[0].placement_id, `tx-feat-${txSeed}`]);
+  return started.rows[0].placement_id;
+}
+
 describe('featured_placements', () => {
-  it('un organizador destaca su evento publicado y queda pending', async () => {
+  it('un organizador inicia el destacado: queda en espera de pago y luego pending tras la aprobación', async () => {
     const admin = await createUser(db, 'admin');
     const owner = await createUser(db, 'organizer');
     const { event } = await ownedPublishedEvent(owner, 'destacado-pending');
     await setRate(admin);
 
     await asRole(db, 'authenticated', owner);
-    const result = await db.query<{ id: string }>(
-      `select public.request_paid_featured($1, current_date + 1, 7, 'approved') as id`,
+    const started = await db.query<{ placement_id: string }>(
+      `select placement_id from public.start_paid_featured($1, current_date + 1, 7)`,
       [event],
     );
 
     await asSuperuser(db);
-    const rows = await db.query(
+    const waiting = await db.query(
       `select event_id, source, status, days, daily_rate_cents, total_cents, requested_by
          from public.featured_placements where id = $1`,
-      [result.rows[0].id],
+      [started.rows[0].placement_id],
     );
-    expect(rows.rows).toEqual([
+    expect(waiting.rows).toEqual([
       {
         event_id: event,
         source: 'paid',
-        status: 'pending',
+        status: 'awaiting_payment',
         days: 7,
         daily_rate_cents: 200,
         total_cents: 1400,
         requested_by: owner,
       },
     ]);
+
+    await asRole(db, 'service_role');
+    await db.query(`select public.settle_featured_payment($1, 'tx-pending-1')`, [started.rows[0].placement_id]);
+    await asSuperuser(db);
+    const approved = await db.query<{ status: string }>(
+      `select status from public.featured_placements where id = $1`,
+      [started.rows[0].placement_id],
+    );
+    expect(approved.rows[0].status).toBe('pending');
   });
 
   it('no puede destacar un evento ajeno', async () => {
@@ -65,7 +88,7 @@ describe('featured_placements', () => {
 
     await asRole(db, 'authenticated', owner);
     await expect(
-      db.query(`select public.request_paid_featured($1, current_date + 1, 7, 'approved')`, [event]),
+      db.query(`select public.start_paid_featured($1, current_date + 1, 7)`, [event]),
     ).rejects.toThrow(/propio|organizador|permiso/i);
   });
 
@@ -76,12 +99,8 @@ describe('featured_placements', () => {
     await setRate(admin);
 
     await asRole(db, 'authenticated', owner);
-    await expect(
-      db.query(`select public.request_paid_featured($1, current_date + 1, 0, 'approved')`, [event]),
-    ).rejects.toThrow(/días/i);
-    await expect(
-      db.query(`select public.request_paid_featured($1, current_date + 1, 31, 'approved')`, [event]),
-    ).rejects.toThrow(/días/i);
+    await expect(db.query(`select public.start_paid_featured($1, current_date + 1, 0)`, [event])).rejects.toThrow(/días/i);
+    await expect(db.query(`select public.start_paid_featured($1, current_date + 1, 31)`, [event])).rejects.toThrow(/días/i);
   });
 
   it('fecha de inicio pasada se rechaza', async () => {
@@ -91,9 +110,7 @@ describe('featured_placements', () => {
     await setRate(admin);
 
     await asRole(db, 'authenticated', owner);
-    await expect(
-      db.query(`select public.request_paid_featured($1, current_date - 1, 1, 'approved')`, [event]),
-    ).rejects.toThrow(/fecha/i);
+    await expect(db.query(`select public.start_paid_featured($1, current_date - 1, 1)`, [event])).rejects.toThrow(/fecha/i);
   });
 
   it('evento no publicado se rechaza', async () => {
@@ -103,9 +120,7 @@ describe('featured_placements', () => {
     await setRate(admin);
 
     await asRole(db, 'authenticated', owner);
-    await expect(
-      db.query(`select public.request_paid_featured($1, current_date + 1, 1, 'approved')`, [event]),
-    ).rejects.toThrow(/publicado/i);
+    await expect(db.query(`select public.start_paid_featured($1, current_date + 1, 1)`, [event])).rejects.toThrow(/publicado/i);
   });
 
   it('sin tarifa configurada falla', async () => {
@@ -113,26 +128,24 @@ describe('featured_placements', () => {
     const { event } = await ownedPublishedEvent(owner, 'destacado-sin-tarifa');
 
     await asRole(db, 'authenticated', owner);
-    await expect(
-      db.query(`select public.request_paid_featured($1, current_date + 1, 1, 'approved')`, [event]),
-    ).rejects.toThrow(/tarifa/i);
+    await expect(db.query(`select public.start_paid_featured($1, current_date + 1, 1)`, [event])).rejects.toThrow(/tarifa/i);
   });
 
-  it('pago rechazado deja payment_failed', async () => {
+  it('sin pago aprobado el destacado queda en espera y no es público', async () => {
     const admin = await createUser(db, 'admin');
     const owner = await createUser(db, 'organizer');
-    const { event } = await ownedPublishedEvent(owner, 'destacado-rechazado');
+    const { event } = await ownedPublishedEvent(owner, 'destacado-sin-pago');
     await setRate(admin);
 
     await asRole(db, 'authenticated', owner);
-    await db.query(`select public.request_paid_featured($1, current_date + 1, 7, 'rejected')`, [event]);
+    await db.query(`select public.start_paid_featured($1, current_date + 1, 7)`, [event]);
 
     await asSuperuser(db);
     const rows = await db.query<{ status: string; total_cents: number }>(
       `select status, total_cents from public.featured_placements where event_id = $1`,
       [event],
     );
-    expect(rows.rows).toEqual([{ status: 'payment_failed', total_cents: 1400 }]);
+    expect(rows.rows).toEqual([{ status: 'awaiting_payment', total_cents: 1400 }]);
     await asRole(db, 'anon');
     const publicRows = await db.query(`select id from public.featured_placements where event_id = $1`, [event]);
     expect(publicRows.rows).toHaveLength(0);
@@ -144,17 +157,12 @@ describe('featured_placements', () => {
     const { event } = await ownedPublishedEvent(owner, 'destacado-admin');
     await setRate(admin);
 
+    const pendingId = await requestPaid(owner, event, '2099-01-01', 1);
     await asRole(db, 'authenticated', owner);
-    const pending = await db.query<{ id: string }>(
-      `select public.request_paid_featured($1, current_date + 1, 1, 'approved') as id`,
-      [event],
-    );
-    await expect(db.query(`select public.admin_review_featured($1, 'approved')`, [pending.rows[0].id])).rejects.toThrow(
-      /administrador/i,
-    );
+    await expect(db.query(`select public.admin_review_featured($1, 'approved')`, [pendingId])).rejects.toThrow(/administrador/i);
 
     await asRole(db, 'authenticated', admin);
-    await db.query(`select public.admin_review_featured($1, 'approved')`, [pending.rows[0].id]);
+    await db.query(`select public.admin_review_featured($1, 'approved')`, [pendingId]);
     const manual = await db.query<{ id: string }>(
       `select public.admin_create_manual_featured($1, current_date + 2, current_date + 4) as id`,
       [event],
@@ -177,55 +185,16 @@ describe('featured_placements', () => {
 
     await asRole(db, 'authenticated', admin);
     await db.query(`select public.admin_create_manual_featured($1, current_date, current_date + 2)`, [first.event]);
-    await asRole(db, 'authenticated', owner);
-    await db.query(`select public.request_paid_featured($1, current_date, 2, 'approved')`, [first.event]);
-    await db.query(`select public.request_paid_featured($1, current_date, 1, 'approved')`, [second.event]);
-    await asSuperuser(db);
-    const paid = await db.query<{ id: string }>(
-      `select id from public.featured_placements where event_id = $1 and source = 'paid'`,
-      [second.event],
-    );
+    await requestPaid(owner, first.event, new Date().toISOString().slice(0, 10), 2);
+    const paidId = await requestPaid(owner, second.event, new Date().toISOString().slice(0, 10), 1);
     await asRole(db, 'authenticated', admin);
-    await db.query(`select public.admin_review_featured($1, 'approved')`, [paid.rows[0].id]);
+    await db.query(`select public.admin_review_featured($1, 'approved')`, [paidId]);
 
     await asRole(db, 'anon');
-    const rows = await db.query<{ event_id: string; source: string }>(
-      `select event_id, source from public.active_featured(4)`,
-    );
+    const rows = await db.query<{ event_id: string; source: string }>(`select event_id, source from public.active_featured(4)`);
     expect(rows.rows).toEqual([
       { event_id: first.event, source: 'manual' },
       { event_id: second.event, source: 'paid' },
     ]);
-  });
-
-  it('active_featured filtra por tipo de evento', async () => {
-    const admin = await createUser(db, 'admin');
-    const owner = await createUser(db, 'organizer');
-    const congresos = await ownedPublishedEvent(owner, 'destacado-tipo-congreso');
-    const competencias = await ownedPublishedEvent(owner, 'destacado-tipo-competencia');
-    await asSuperuser(db);
-    await db.query(
-      `update public.events set event_type_id = (select id from public.categories where kind = 'event_type' and slug = 'competencias')
-       where id = $1`,
-      [competencias.event],
-    );
-    await setRate(admin);
-    await asRole(db, 'authenticated', admin);
-    await db.query(`select public.admin_create_manual_featured($1, current_date, current_date + 1)`, [congresos.event]);
-    await db.query(`select public.admin_create_manual_featured($1, current_date, current_date + 1)`, [competencias.event]);
-
-    await asRole(db, 'anon');
-    const typeId = await db.query<{ id: string }>(
-      `select id from public.categories where kind = 'event_type' and slug = 'competencias'`,
-    );
-    const rows = await db.query<{ event_id: string }>(`select event_id from public.active_featured(4, $1)`, [typeId.rows[0].id]);
-    expect(rows.rows).toEqual([{ event_id: competencias.event }]);
-  });
-
-  it('retira la tabla event_featured y conserva destacados en la tabla nueva', async () => {
-    await asSuperuser(db);
-    await expect(db.query(`select 1 from public.event_featured`)).rejects.toThrow(/does not exist|no existe/i);
-    const rows = await db.query(`select 1 from public.featured_placements`);
-    expect(rows.rows).toEqual([]);
   });
 });

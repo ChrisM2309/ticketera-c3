@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
-import { WompiPaymentButton } from '@/components/payments/wompi-payment-button';
+import { startOrderPayment, WompiPaymentButton } from '@/components/payments/wompi-payment-button';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
@@ -320,8 +320,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
             />
           ) : null}
           <WompiPaymentButton
-            orderId={order.orderId}
-            checkoutToken={order.checkoutToken}
+            start={() => startOrderPayment(order.orderId, order.checkoutToken)}
             amountCents={order.totalCents}
             summary={[
               { label: 'Subtotal', amountCents: order.subtotalCents },

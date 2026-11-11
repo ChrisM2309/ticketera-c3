@@ -2,18 +2,17 @@
 
 import { useMemo, useState } from 'react';
 
-import { SimulatedPaymentPanel } from '@/components/payments/simulated-payment-panel';
+import { type PaymentStart, WompiPaymentButton } from '@/components/payments/wompi-payment-button';
 import { formatUsd } from '@/features/catalog/format';
 import { provisionalFeaturedTotal } from '@/features/featured/pricing';
-import type { FeaturedRequestActionResult } from '@/features/featured/request-actions';
-import { trackEvent } from '@/lib/analytics/track';
+import type { FeaturedPaymentStart } from '@/features/featured/request-actions';
 
 type Props = {
   eventId: string;
   eventTitle: string;
   dailyRateCents: number | null;
   minDate: string;
-  action: (formData: FormData) => Promise<FeaturedRequestActionResult>;
+  action: (formData: FormData) => Promise<FeaturedPaymentStart>;
 };
 
 export function FeaturedRequestForm({ eventId, eventTitle, dailyRateCents, minDate, action }: Props) {
@@ -28,15 +27,12 @@ export function FeaturedRequestForm({ eventId, eventTitle, dailyRateCents, minDa
     return <p className="rounded-lg bg-superficie-sutil p-4 font-texto text-base text-texto">Tarifa por definir. El envío está deshabilitado.</p>;
   }
 
-  async function submit(decision: 'approved' | 'rejected') {
+  async function start(): Promise<PaymentStart> {
     const formData = new FormData();
     formData.set('eventId', eventId);
     formData.set('startsOn', startsOn);
     formData.set('days', String(days));
-    formData.set('decision', decision);
-    const result = await action(formData);
-    if (result.ok && result.analyticsEvent) trackEvent(result.analyticsEvent, { path: '/panel/destacar/' });
-    return result;
+    return action(formData);
   }
 
   return (
@@ -50,10 +46,10 @@ export function FeaturedRequestForm({ eventId, eventTitle, dailyRateCents, minDa
         </label>
       </div>
       <p className="font-texto text-base text-texto">Total provisional: <strong>{formatUsd(total)}</strong>. La tarifa es {formatUsd(dailyRateCents)} por día.</p>
-      <SimulatedPaymentPanel
+      <WompiPaymentButton
+        start={start}
         amountCents={total}
         summary={[{ label: `Destacado: ${eventTitle}`, amountCents: total }]}
-        onDecision={submit}
       />
     </div>
   );

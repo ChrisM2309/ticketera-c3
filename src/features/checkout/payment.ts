@@ -1,9 +1,3 @@
-/**
- * Decisión de pago DEMO de la simulación interna. Sigue vigente solo en destacados y paquete de empresas
- * (compras de organizadores, pendientes de migrar a Wompi). Las compras de entradas ya no la usan.
- */
-export type PaymentDecision = 'approved' | 'rejected';
-
 /** Resultado que recibe la RPC `confirm_order` (ver supabase/migrations). */
 export type PaymentOutcome = 'free' | 'demo_approved' | 'demo_rejected' | 'wompi_approved';
 
