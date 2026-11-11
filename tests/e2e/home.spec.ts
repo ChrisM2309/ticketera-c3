@@ -11,6 +11,14 @@ async function expectStructuredDataMatchesRobots(page: import('@playwright/test'
   }
 }
 
+test('publica el favicon del sitio', async ({ request }) => {
+  const response = await request.get('/favicon.ico');
+
+  expect(response.ok()).toBe(true);
+  expect(response.headers()['content-type']).toMatch(/image\/x-icon|image\/vnd\.microsoft\.icon/);
+  expect((await response.body()).length).toBeGreaterThan(0);
+});
+
 test('home muestra la identidad demo del proyecto', async ({ page }) => {
   await page.goto('/');
 
