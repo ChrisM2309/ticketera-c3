@@ -25,16 +25,18 @@ type CatalogFiltersProps = Readonly<{
   locations: readonly CatalogCategory[];
   showCiudad: boolean;
   clearHref: string;
+  query?: string;
 }>;
 
 /** Filtros con GET: la búsqueda queda en la URL y el formulario funciona sin JavaScript. */
-export function CatalogFilters({ filters, locations, showCiudad, clearHref }: CatalogFiltersProps) {
+export function CatalogFilters({ filters, locations, showCiudad, clearHref, query }: CatalogFiltersProps) {
   return (
     <form
       method="get"
       aria-label="Filtrar eventos"
       className="grid gap-4 rounded-lg bg-superficie p-5 sm:grid-cols-2 lg:grid-cols-4"
     >
+      {query ? <input type="hidden" name="q" value={query} readOnly /> : null}
       {showCiudad ? (
         <div className="flex flex-col gap-2">
           <FilterLabel htmlFor="filtro-ciudad" icon="mapPin">
@@ -81,6 +83,7 @@ export function CatalogFilters({ filters, locations, showCiudad, clearHref }: Ca
           <option value="">Todas las fechas</option>
           <option value="semana">Próximos 7 días</option>
           <option value="mes">Próximos 30 días</option>
+          <option value="fin-de-semana">Este fin de semana</option>
         </select>
       </div>
 

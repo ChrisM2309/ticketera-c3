@@ -35,7 +35,7 @@ export function EventCard({ event, featured = false }: EventCardProps) {
   });
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-md bg-superficie shadow-sm">
+    <article className={cn('relative flex h-full flex-col overflow-hidden bg-superficie', featured ? 'rounded-none shadow-none' : 'rounded-md shadow-sm')}>
       <div className={cn('relative bg-navy', featured ? 'aspect-[2/1]' : 'aspect-[16/10]')}>
         <Image
           src={coverImagePath(event)}
@@ -56,16 +56,16 @@ export function EventCard({ event, featured = false }: EventCardProps) {
       <div className={cn('flex flex-1', featured ? 'flex-col md:flex-row' : 'flex-row')}>
         <div
           className={cn(
-            'flex shrink-0 flex-col items-center justify-center gap-0.5 bg-navy px-5 py-4 text-texto-inverso',
+            'flex shrink-0 flex-col items-center justify-center gap-0.5 bg-navy px-4 py-4 text-texto-inverso',
             'border-r border-dashed border-borde-fuerte',
-            featured ? 'md:w-44' : 'w-24',
+            featured ? 'md:w-36' : 'w-24',
           )}
         >
           <Icon name="calendar" size={16} />
           <span
             className={cn(
               'font-titulo font-extrabold leading-none',
-              featured ? 'text-6xl' : 'text-3xl',
+              featured ? 'text-5xl' : 'text-3xl',
             )}
           >
             {date.day}
@@ -77,8 +77,8 @@ export function EventCard({ event, featured = false }: EventCardProps) {
           </span>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
-          <h3 className={cn('font-titulo font-bold leading-snug', featured ? 'text-2xl' : 'text-lg')}>
+        <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 md:p-5">
+          <h3 className={cn('font-titulo font-bold leading-snug', featured ? 'text-xl md:text-2xl' : 'text-lg')}>
             <Link href={href} className="after:absolute after:inset-0 underline-offset-4 hover:underline">
               {event.title}
             </Link>
@@ -92,14 +92,8 @@ export function EventCard({ event, featured = false }: EventCardProps) {
               <Icon name={event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
               <span>{modeLabel(event.mode)}{event.location ? `, ${event.location.name}` : ''}</span>
             </p>
-            {event.organizer ? (
-              <p className="flex items-center gap-2">
-                <Icon name="building" size={16} />
-                <span>{event.organizer.name}</span>
-              </p>
-            ) : null}
           </div>
-          <p className="mt-auto flex items-center gap-2 pt-2 font-titulo text-lg font-bold">
+          <p className="mt-auto flex items-center gap-2 rounded-sm bg-superficie-sutil px-3 py-2 pt-2 font-titulo text-xl font-extrabold text-accion">
             <Icon name="tag" size={20} />
             {priceLabel(event.ticketTypes)}
           </p>

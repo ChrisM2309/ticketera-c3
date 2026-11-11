@@ -21,13 +21,13 @@ export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
   const total = events.length;
 
   return (
-    <section aria-label="Eventos destacados" aria-roledescription="carrusel" className="flex min-w-0 flex-col gap-4">
+    <section aria-label="Eventos destacados" aria-roledescription="carrusel" className="flex min-w-0 flex-col overflow-hidden rounded-lg bg-navy shadow-lg">
       <div
         id={featuredListId}
         tabIndex={0}
         role="region"
         aria-label="Destacados"
-        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth rounded-lg outline-offset-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-texto-inverso [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {events.map((event, index) => (
           <div

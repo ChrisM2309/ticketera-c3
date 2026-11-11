@@ -2,14 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CategoryTile } from '@/components/catalog/category-tile';
+import { DiscoveryShortcuts } from '@/components/catalog/discovery-shortcuts';
 import { EventCard } from '@/components/catalog/event-card';
 import { FeaturedCarousel } from '@/components/catalog/featured-carousel';
+import { SiteSearch } from '@/components/layout/site-search';
 import { buttonVariants } from '@/components/ui/button';
 import { getHomeCatalog } from '@/features/catalog/queries';
 import { getSiteSettings } from '@/features/settings/settings';
 import { webSiteJsonLd } from '@/lib/seo/jsonld';
 import type { CatalogEvent } from '@/features/catalog/types';
-import { eventPath } from '@/features/catalog/paths';
 import { robotsMetadata } from '@/lib/seo/indexing';
 import { siteConfig } from '@/lib/site-config';
 
@@ -67,36 +68,19 @@ export default async function Home() {
   }
 
   const { featured, upcoming, free, categories } = catalog;
-  const primero = featured[0];
-
   return (
     <div className="flex flex-col gap-20 pb-20">
       {settings.indexingEnabled ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteJsonLd(siteConfig.siteUrl)).replace(/</g, '\\u003c') }} /> : null}
-      <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pt-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-center md:px-6 md:pt-16">
+      <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pt-12 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:items-center md:px-6 md:pt-16">
         <div className="flex flex-col gap-6">
-          <h1 className="font-titulo text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
-            Boletos para eventos tecnológicos en El Salvador
+          <h1 className="max-w-2xl font-titulo text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
+            Encontrá tu próximo evento tecnológico
           </h1>
           <p className="max-w-xl text-lg leading-relaxed text-texto-suave">
-            Congresos, hackathons y workshops, presenciales o en línea. Compra tu entrada en pocos pasos.
+            Descubrí congresos, hackathons y workshops en El Salvador. Buscá por tema, ciudad o modalidad y elegí cómo participar.
           </p>
-          <div className="flex flex-wrap gap-3">
-            {primero ? (
-              <Link
-                href={eventPath({
-                  slug: primero.slug,
-                  eventTypeSlug: primero.eventType.slug,
-                  topicSlug: primero.topic?.slug ?? null,
-                })}
-                className={buttonVariants({ variant: 'compra', size: 'lg' })}
-              >
-                Ver evento destacado
-              </Link>
-            ) : null}
-            <Link href="/panel/eventos/nuevo/" className={buttonVariants({ variant: 'secundario', size: 'lg' })}>
-              Publicar evento
-            </Link>
-          </div>
+          <SiteSearch inputId="buscar-eventos-home" searchLabel="Buscar eventos desde la portada" className="md:max-w-xl" />
+          <DiscoveryShortcuts />
         </div>
 
         <div className="min-w-0">
@@ -148,9 +132,9 @@ export default async function Home() {
       <section className="mx-auto w-full max-w-6xl px-4 md:px-6">
         <div className="flex flex-col items-start gap-6 rounded-lg bg-navy p-8 text-texto-inverso md:flex-row md:items-center md:justify-between md:p-10">
           <div className="max-w-2xl">
-            <h2 className="font-titulo text-2xl font-bold">¿Organizas un evento?</h2>
+            <h2 className="font-titulo text-2xl font-bold">¿Organizás un evento?</h2>
             <p className="mt-2">
-              Propón tu evento y lo revisamos antes de publicarlo.
+              Proponé tu evento y lo revisamos antes de publicarlo.
             </p>
           </div>
           <Link href="/panel/eventos/nuevo/" className={buttonVariants({ variant: 'compra' })}>

@@ -3,7 +3,7 @@ import type { CatalogModality, CatalogScope } from './routes';
 import type { CatalogEvent, EventMode } from './types';
 
 export type PriceFilter = 'gratis' | 'pago';
-export type DateFilter = 'semana' | 'mes';
+export type DateFilter = 'semana' | 'mes' | 'fin-de-semana';
 
 /** Filtros de la URL (`?ciudad=&modalidad=&precio=&fecha=`). El tema va en la ruta, no aquí. */
 export type CatalogFilters = {
@@ -24,11 +24,12 @@ export const noCatalogFilters: CatalogFilters = {
 
 const modalidades: readonly EventMode[] = ['presencial', 'virtual'];
 const precios: readonly PriceFilter[] = ['gratis', 'pago'];
-const fechas: readonly DateFilter[] = ['semana', 'mes'];
+const fechas: readonly DateFilter[] = ['semana', 'mes', 'fin-de-semana'];
 
 /** Ventana de fechas en días desde ahora. */
-const dateWindowDays: Readonly<Record<DateFilter, number>> = { semana: 7, mes: 30 };
+const dateWindowDays: Readonly<Record<'semana' | 'mes', number>> = { semana: 7, mes: 30 };
 const DAY_MS = 24 * 60 * 60 * 1000;
+const EL_SALVADOR_TIME_ZONE = 'America/El_Salvador';
 
 function firstValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -74,6 +75,15 @@ export function filterCatalogEvents(
   );
 }
 
+/** Eventos del catálogo completo que cumplen los filtros de la búsqueda global. */
+export function filterCatalogEventsByFilters(
+  events: readonly CatalogEvent[],
+  filters: CatalogFilters,
+  now: Date,
+): CatalogEvent[] {
+  return events.filter((event) => matchesFilters(event, filters, now));
+}
+
 function matchesScope(event: CatalogEvent, scope: CatalogScope): boolean {
   switch (scope.kind) {
     case 'event_type':
@@ -117,7 +127,21 @@ function matchesFilters(event: CatalogEvent, filters: CatalogFilters, now: Date)
     return false;
   }
 
-  if (
+  if (filters.fecha === 'fin-de-semana') {
+    const eventTime = new Date(event.startsAt).getTime();
+    const nowKey = localDateKey(now);
+    const eventKey = localDateKey(new Date(event.startsAt));
+    const eventDay = new Date(`${eventKey}T12:00:00Z`).getUTCDay();
+
+    if (
+      eventTime < now.getTime() ||
+      (eventDay !== 0 && eventDay !== 6) ||
+      eventKey < nowKey ||
+      eventKey > weekendEndKey(nowKey)
+    ) {
+      return false;
+    }
+  } else if (
     filters.fecha &&
     new Date(event.startsAt).getTime() > now.getTime() + dateWindowDays[filters.fecha] * DAY_MS
   ) {
@@ -125,4 +149,27 @@ function matchesFilters(event: CatalogEvent, filters: CatalogFilters, now: Date)
   }
 
   return true;
+}
+
+function localDateKey(date: Date): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: EL_SALVADOR_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function shiftDateKey(key: string, days: number): string {
+  const date = new Date(`${key}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function weekendEndKey(startKey: string): string {
+  const day = new Date(`${startKey}T12:00:00Z`).getUTCDay();
+  const daysToSaturday = day === 0 ? 0 : 6 - day;
+  return shiftDateKey(startKey, daysToSaturday + (day === 0 ? 0 : 1));
 }

@@ -11,7 +11,7 @@ type FeaturedControlsProps = Readonly<{
 }>;
 
 const botonClase =
-  'inline-flex size-11 cursor-pointer items-center justify-center rounded-pill border-2 border-borde-fuerte text-texto transition-colors hover:bg-superficie-sutil disabled:cursor-default disabled:opacity-40';
+  'inline-flex size-11 cursor-pointer items-center justify-center rounded-pill border-2 border-borde-fuerte bg-superficie text-texto transition-colors hover:bg-superficie-sutil focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accion disabled:cursor-default disabled:opacity-40';
 
 /** Flechas y puntos del carrusel de destacados. Solo cambian la posición del desplazamiento. */
 export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
@@ -47,7 +47,7 @@ export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-4 bg-navy px-4 py-3">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -77,13 +77,13 @@ export function FeaturedControls({ total, listId }: FeaturedControlsProps) {
             aria-label={`Mostrar destacado ${index + 1} de ${total}`}
             aria-current={index === indice ? 'true' : undefined}
             onClick={() => irA(index)}
-            className="inline-flex size-11 cursor-pointer items-center justify-center"
+            className="inline-flex size-11 cursor-pointer items-center justify-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-texto-inverso"
           >
             <span
               aria-hidden="true"
               className={cn(
                 'block h-2 rounded-pill bg-borde-fuerte transition-[width,background-color]',
-                index === indice ? 'w-6 bg-accion' : 'w-2',
+                index === indice ? 'w-6 bg-texto-inverso' : 'w-2',
               )}
             />
           </button>
