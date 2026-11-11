@@ -19,7 +19,7 @@ describe('datos estructurados SEO', () => {
   });
 
   it('Article trae fechas ISO', () => {
-    const result = articleJsonLd({ title: 'Artículo', description: 'Descripción', path: '/blog/articulo/', publishedAt: '2026-01-02T03:04:05Z', updatedAt: '2026-01-03T03:04:05Z' }, 'https://ticketera.example');
-    expect(result).toMatchObject({ '@type': 'Article', datePublished: '2026-01-02T03:04:05.000Z', dateModified: '2026-01-03T03:04:05.000Z' });
+    const result = articleJsonLd({ title: 'Artículo', description: 'Descripción', path: '/blog/articulo/', publishedAt: '2026-01-02T03:04:05Z', updatedAt: '2026-01-03T03:04:05Z', author: 'Fiorella Guzman', image: '/images/events/networking-cafe-nodo.jpg' }, 'https://ticketera.example');
+    expect(result).toMatchObject({ '@type': 'Article', datePublished: '2026-01-02T03:04:05.000Z', dateModified: '2026-01-03T03:04:05.000Z', author: { '@type': 'Person', name: 'Fiorella Guzman' }, image: 'https://ticketera.example/images/events/networking-cafe-nodo.jpg' });
   });
 });
