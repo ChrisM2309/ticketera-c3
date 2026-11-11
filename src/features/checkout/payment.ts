@@ -1,12 +1,14 @@
-/** Resultado que el comprador elige en el pago DEMO. Nunca incluye datos de tarjeta. */
+/**
+ * Decisión de pago DEMO de la simulación interna. Sigue vigente solo en destacados y paquete de empresas
+ * (compras de organizadores, pendientes de migrar a Wompi). Las compras de entradas ya no la usan.
+ */
 export type PaymentDecision = 'approved' | 'rejected';
 
 /** Resultado que recibe la RPC `confirm_order` (ver supabase/migrations). */
-export type PaymentOutcome = 'free' | 'demo_approved' | 'demo_rejected';
+export type PaymentOutcome = 'free' | 'demo_approved' | 'demo_rejected' | 'wompi_approved';
 
 export type ConfirmRequestData = {
   checkoutToken: string;
-  decision: PaymentDecision | null;
 };
 
 export type ConfirmRequestResult = { valid: true; data: ConfirmRequestData } | { valid: false };
@@ -17,43 +19,22 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Solo se acepta el token de checkout. Cualquier otro campo, incluida una decisión de pago o un importe,
+ * se ignora: el importe y el resultado de pago los decide el servidor.
+ */
 export function parseConfirmRequest(input: unknown): ConfirmRequestResult {
   const request = isRecord(input) ? input : {};
   const checkoutToken = typeof request.checkoutToken === 'string' ? request.checkoutToken : '';
-  const decision = request.decision ?? null;
 
   if (!checkoutTokenPattern.test(checkoutToken)) {
     return { valid: false };
   }
 
-  if (decision !== null && decision !== 'approved' && decision !== 'rejected') {
-    return { valid: false };
-  }
-
-  return { valid: true, data: { checkoutToken, decision } };
+  return { valid: true, data: { checkoutToken } };
 }
 
-/**
- * Una orden sin importe se confirma gratis y no pide decisión de pago.
- * Una orden con importe necesita el resultado DEMO elegido por el comprador.
- */
-export function paymentOutcomeFor(totalCents: number, decision: PaymentDecision | null): PaymentOutcome | null {
-  if (totalCents === 0) {
-    return 'free';
-  }
-
-  if (decision === 'approved') {
-    return 'demo_approved';
-  }
-
-  if (decision === 'rejected') {
-    return 'demo_rejected';
-  }
-
-  return null;
-}
-
-/** Clave estable por orden: un reintento nunca crea un segundo pago para la misma orden. */
-export function paymentIdempotencyKey(orderId: string): string {
-  return `demo:${orderId}`;
+/** Solo las órdenes sin importe se confirman desde el navegador. Las demás pasan por Wompi. */
+export function freeOutcomeFor(totalCents: number): 'free' | null {
+  return totalCents === 0 ? 'free' : null;
 }

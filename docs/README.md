@@ -31,6 +31,7 @@
 - `superpowers/plans/2026-11-09-fase-6-checkin.md` — Fase 6: check-in y post-evento.
 - `superpowers/plans/2026-11-09-fase-7-cierre.md` — Fase 7: cierre y entrega.
 - `superpowers/plans/2026-11-10-correo-brevo.md` — plan del correo de confirmación con Brevo (pendiente de decisiones del responsable).
+- `superpowers/plans/2026-11-11-wompi-sandbox.md` — plan para sustituir la simulación de pagos por Wompi El Salvador en sandbox (pendiente de decisiones del responsable).
 - `superpowers/plans/implementation-backlog.md` — backlog de tareas por área, dependencias y criterios de aceptación.
 - `DECISIONS.md` — decisiones cerradas, supuestos y pendientes menores.
 

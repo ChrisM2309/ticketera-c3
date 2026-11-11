@@ -1,15 +1,13 @@
-import { NextResponse, after } from 'next/server';
+import { after, NextResponse } from 'next/server';
 
 import { hashCheckoutToken } from '@/features/checkout/order';
-import { paymentIdempotencyKey, paymentOutcomeFor, parseConfirmRequest } from '@/features/checkout/payment';
-import {
-  buildReminderNotifications,
-  buildTicketNotifications,
-  enqueueNotifications,
-} from '@/features/ticketing/notifications';
+import { parseConfirmRequest } from '@/features/checkout/payment';
 import { deliverTicketEmail } from '@/features/ticketing/email/deliver-ticket-email';
+import {
+  readTicketEmailEvent,
+  scheduleConfirmedOrderNotifications,
+} from '@/features/ticketing/confirmed-order';
 import { createTicketId, deriveTicketQrToken, hashTicketQrToken } from '@/features/ticketing/qr';
-import { buildSurveyNotifications } from '@/features/ticketing/survey';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
@@ -29,6 +27,10 @@ function orderError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
+/**
+ * Confirmación de compras GRATUITAS. Las compras con importe se confirman solo desde el webhook de Wompi
+ * (src/app/api/pagos/wompi/webhook/route.ts): aquí no se acepta ninguna decisión de pago del navegador.
+ */
 export async function POST(request: Request, { params }: RouteContext) {
   const { orderId } = await params;
 
@@ -41,7 +43,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   try {
     input = await request.json();
   } catch {
-    return orderError('No pudimos leer la confirmación del pago.', 400);
+    return orderError('No pudimos leer la confirmación.', 400);
   }
 
   const parsed = parseConfirmRequest(input);
@@ -53,13 +55,11 @@ export async function POST(request: Request, { params }: RouteContext) {
   const client = createServiceRoleClient();
 
   if (!client) {
-    return orderError('El checkout DEMO no está configurado todavía. Intentá más tarde.', 503);
+    return orderError('El checkout no está configurado todavía. Intentá más tarde.', 503);
   }
 
   const publicTokenHash = hashCheckoutToken(parsed.data.checkoutToken);
 
-  // La orden y el token se comprueban antes de leer nada más; un token incorrecto
-  // recibe el mismo error que una orden inexistente.
   const orderResult = await client
     .from('orders')
     .select('total_cents, buyer_name, buyer_email, buyer_phone, event_id')
@@ -75,10 +75,8 @@ export async function POST(request: Request, { params }: RouteContext) {
     return orderError('La orden no existe o el token no coincide.', 400);
   }
 
-  const outcome = paymentOutcomeFor(orderResult.data.total_cents as number, parsed.data.decision);
-
-  if (!outcome) {
-    return orderError('Elegí el resultado del pago de demostración.', 400);
+  if ((orderResult.data.total_cents as number) !== 0) {
+    return orderError('Esta orden requiere pago con Wompi.', 409);
   }
 
   const itemsResult = await client.from('order_items').select('quantity').eq('order_id', orderId);
@@ -88,8 +86,6 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   const quantity = (itemsResult.data ?? []).reduce((sum, item) => sum + (item.quantity as number), 0);
-  // El QR de cada boleto sale del token de checkout y del id del boleto (D-29), así que la
-  // página de confirmación lo vuelve a calcular cuando el comprador abre su enlace.
   const tickets = Array.from({ length: quantity }, () => {
     const ticketId = createTicketId();
 
@@ -102,8 +98,8 @@ export async function POST(request: Request, { params }: RouteContext) {
   const { data, error } = await client.rpc('confirm_order', {
     p_order_id: orderId,
     p_public_token_hash: publicTokenHash,
-    p_payment_outcome: outcome,
-    p_idempotency_key: outcome === 'free' ? null : paymentIdempotencyKey(orderId),
+    p_payment_outcome: 'free',
+    p_idempotency_key: null,
     p_tickets: tickets,
   });
 
@@ -121,65 +117,39 @@ export async function POST(request: Request, { params }: RouteContext) {
     return orderError('No pudimos confirmar la orden. Intentá nuevamente.', 500);
   }
 
-  // El boleto «se envía» solo cuando esta llamada confirmó la orden: un reintento ya procesado y un
-  // pago rechazado no generan notificaciones. Un fallo del outbox no revierte la compra.
-  if (
-    (outcome === 'free' || outcome === 'demo_approved') &&
-    confirmed.result_status === 'confirmed' &&
-    !confirmed.result_already_processed
-  ) {
+  if (confirmed.result_status === 'confirmed' && !confirmed.result_already_processed) {
     const email = orderResult.data.buyer_email as string;
+    const buyerName = (orderResult.data.buyer_name as string | null) ?? '';
     const phone = (orderResult.data.buyer_phone as string | null) ?? null;
     const now = new Date();
-    const rows = buildTicketNotifications({ orderId: confirmed.result_order_id, email, phone, now });
 
-    // El recordatorio de 24 h viaja en la misma llamada que el boleto. Si no se puede leer la
-    // fecha del evento solo se omite el recordatorio; la compra y el boleto no se tocan.
-    const eventResult = await client
-      .from('events')
-      .select('title, starts_at, ends_at')
-      .eq('id', orderResult.data.event_id as string)
-      .maybeSingle();
+    await scheduleConfirmedOrderNotifications(client, {
+      orderId: confirmed.result_order_id,
+      eventId: orderResult.data.event_id as string,
+      email,
+      buyerName,
+      phone,
+      quantity,
+      checkoutToken: parsed.data.checkoutToken,
+      now,
+    });
 
-    if (eventResult.data?.starts_at) {
-      rows.push(
-        ...buildReminderNotifications({
+    const event = await readTicketEmailEvent(client, orderResult.data.event_id as string);
+    const checkoutToken = parsed.data.checkoutToken;
+
+    if (event) {
+      after(() =>
+        deliverTicketEmail({
           orderId: confirmed.result_order_id,
+          checkoutToken,
           email,
-          phone,
-          eventStartsAt: new Date(eventResult.data.starts_at as string),
-          now,
-        }),
-      );
-      rows.push(
-        ...buildSurveyNotifications({
-          orderId: confirmed.result_order_id,
-          email,
-          phone,
-          eventEndsAt: new Date((eventResult.data.ends_at as string | null) ?? (eventResult.data.starts_at as string)),
+          buyerName,
+          eventTitle: event.title,
+          eventStartsAt: event.startsAt,
+          ticketCount: quantity,
         }),
       );
     }
-
-    await enqueueNotifications(rows);
-
-    // El correo sale después de responder y usa el token de esta petición; un fallo queda en el outbox.
-    const checkoutToken = parsed.data.checkoutToken;
-    const eventTitle = (eventResult.data?.title as string | undefined) ?? null;
-    const eventStartsAt = eventResult.data?.starts_at ? new Date(eventResult.data.starts_at as string) : null;
-    const buyerName = (orderResult.data.buyer_name as string | null) ?? '';
-
-    after(() =>
-      deliverTicketEmail({
-        orderId: confirmed.result_order_id,
-        checkoutToken,
-        email,
-        buyerName,
-        eventTitle,
-        eventStartsAt,
-        ticketCount: quantity,
-      }),
-    );
   }
 
   return NextResponse.json({

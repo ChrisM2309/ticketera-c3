@@ -17,6 +17,7 @@ const expectedTables = [
   'orders',
   'organizers',
   'package_followup_requests',
+  'payment_webhook_events',
   'payments',
   'profiles',
   'seo_routes',
