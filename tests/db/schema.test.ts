@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -40,6 +42,38 @@ const eventTypeSlugs = [
   'charlas',
   'ferias-tecnologicas',
 ];
+
+const newCatalogEventSlugs = [
+  'cumbre-brujula-digital',
+  'congreso-codigo-abierto',
+  'reto-circuito-autonomo',
+  'liga-algoritmia-pacifico',
+  'cafe-nodo-mujeres-datos',
+  'after-office-devops',
+  'mapa-datos-decisiones',
+  'laboratorio-prototipos-ia',
+  'ruta-python-automatiza',
+  'cohorte-cero-apps-web',
+  'premios-prisma-visualizacion',
+  'desafio-llave-abierta',
+  'senales-de-nube',
+  'ia-con-criterio',
+  'plataformas-que-aprenden',
+  'diseno-para-diez',
+  'hackeo-verde-48h',
+  'ciudad-abierta-hackathon',
+  'python-al-parque',
+  'marea-emprende',
+  'cinco-minutos-ciberhigiene',
+  'vida-secreta-api',
+  'expo-futuro-local',
+  'feria-tecno-creativa',
+];
+
+const catalogMigrationSql = readFileSync(
+  join(import.meta.dirname, '..', '..', 'supabase', 'migrations', '20261118100000_demo_catalog_content.sql'),
+  'utf8',
+);
 
 let db: PGlite;
 
@@ -118,7 +152,7 @@ describe('migraciones y seed', () => {
     expect(result.rows[0].sin_ruta).toBe(0);
   });
 
-  it('publica 50 eventos DEMO: 24 gratuitos y 26 de pago, 29 presenciales y 21 virtuales', async () => {
+  it('publica 74 eventos DEMO: 36 gratuitos y 38 de pago, 41 presenciales y 33 virtuales', async () => {
     const events = await db.query<{
       total: number;
       demo: number;
@@ -146,8 +180,59 @@ describe('migraciones y seed', () => {
        ) priced`,
     );
 
-    expect(events.rows[0]).toEqual({ total: 50, demo: 50, presencial: 29, virtual: 21, cities: 3 });
-    expect(prices.rows[0]).toEqual({ gratuitos: 24, pago: 26 });
+    expect(events.rows[0]).toEqual({ total: 74, demo: 74, presencial: 41, virtual: 33, cities: 3 });
+    expect(prices.rows[0]).toEqual({ gratuitos: 36, pago: 38 });
+  });
+
+  it('agrega exactamente dos eventos nuevos por cada categoría SEO', async () => {
+    const result = await db.query<{ slug: string; total: number }>(
+      `select tipo.slug, count(*)::int as total
+       from public.events e
+       join public.categories tipo on tipo.id = e.event_type_id
+       where e.slug = any($1::text[])
+       group by tipo.slug
+       order by min(tipo.sort_order)`,
+      [newCatalogEventSlugs],
+    );
+
+    expect(result.rows).toEqual(eventTypeSlugs.map((slug) => ({ slug, total: 2 })));
+  });
+
+  it('cubre fechas, fotos, ponentes y entradas en el catálogo nuevo', async () => {
+    const result = await db.query<{ sin_foto: number; sin_ponentes: number; sin_entradas: number; pasados: number }>(
+      `select
+         count(*) filter (where image_path is null or image_path not like '/images/events/%')::int as sin_foto,
+         count(*) filter (where jsonb_array_length(speakers) = 0)::int as sin_ponentes,
+         count(*) filter (where not exists (select 1 from public.ticket_types t where t.event_id = e.id and t.is_active))::int as sin_entradas,
+         count(*) filter (where coalesce(ends_at, starts_at) < now())::int as pasados
+       from public.events e
+       where e.slug = any($1::text[])`,
+      [newCatalogEventSlugs],
+    );
+
+    expect(result.rows[0]).toEqual({ sin_foto: 0, sin_ponentes: 0, sin_entradas: 0, pasados: 9 });
+  });
+
+  it('publica los tres artículos SEO del demo', async () => {
+    const result = await db.query<{ total: number; sin_keyword: number; cuerpo_corto: number }>(
+      `select count(*)::int as total,
+         count(*) filter (where keyword is null)::int as sin_keyword,
+         count(*) filter (where char_length(body_md) < 200)::int as cuerpo_corto
+       from public.blog_posts
+       where slug = any($1::text[]) and status = 'published'`,
+      [['beneficios-networking-eventos-tecnologicos', 'como-aprovechar-hackathon', 'elegir-evento-tecnologico']],
+    );
+    const slugs = await db.query<{ slug: string }>(
+      `select slug from public.blog_posts where slug = any($1::text[]) and status = 'published' order by slug`,
+      [['beneficios-networking-eventos-tecnologicos', 'como-aprovechar-hackathon', 'elegir-evento-tecnologico']],
+    );
+
+    expect(slugs.rows.map((row) => row.slug)).toEqual([
+      'beneficios-networking-eventos-tecnologicos',
+      'como-aprovechar-hackathon',
+      'elegir-evento-tecnologico',
+    ]);
+    expect(result.rows[0]).toEqual({ total: 3, sin_keyword: 0, cuerpo_corto: 0 });
   });
 
   it('da al menos un tipo de entrada a cada evento del seed', async () => {
@@ -170,7 +255,8 @@ describe('migraciones y seed', () => {
     expect(result.rows[0]).toEqual({ cuentas: 0, con_propietario: 0 });
   });
 
-  it('volver a ejecutar el seed no duplica filas', async () => {
+  it('volver a ejecutar la migración y el seed no duplica filas ni cambia el catálogo previo', async () => {
+    await db.exec(catalogMigrationSql);
     await db.exec(seedSql);
 
     const result = await db.query<{
@@ -179,15 +265,21 @@ describe('migraciones y seed', () => {
       entradas: number;
       organizadores: number;
       rutas: number;
+      articulos: number;
     }>(
       `select
          (select count(*)::int from public.categories) as categorias,
          (select count(*)::int from public.events) as eventos,
          (select count(*)::int from public.ticket_types) as entradas,
          (select count(*)::int from public.organizers) as organizadores,
-         (select count(*)::int from public.seo_routes) as rutas`,
+         (select count(*)::int from public.seo_routes) as rutas,
+         (select count(*)::int from public.blog_posts) as articulos`,
     );
 
-    expect(result.rows[0]).toEqual({ categorias: 29, eventos: 50, entradas: 56, organizadores: 4, rutas: 128 });
+    expect(result.rows[0]).toEqual({ categorias: 29, eventos: 74, entradas: 88, organizadores: 9, rutas: 128, articulos: 3 });
+    const oldEvents = await db.query<{ title: string }>(
+      `select title from public.events where slug in ('congreso-demo-ia', 'hackathon-demo-en-linea', 'feria-demo-tecnologia') order by slug`,
+    );
+    expect(oldEvents.rows).toHaveLength(3);
   });
 });

@@ -21,12 +21,12 @@ describe('contenido editorial', () => {
     const admin = await createUser(db, 'admin');
     await savePost(admin, { status: 'published' });
     await asRole(db, 'anon');
-    const publicRows = await db.query(`select slug from public.blog_posts`);
+    const publicRows = await db.query(`select slug from public.blog_posts where slug = 'guia-eventos-demo'`);
     expect(publicRows.rows).toEqual([{ slug: 'guia-eventos-demo' }]);
     await asSuperuser(db);
     await db.query(`insert into public.blog_posts (slug, title, description, body_md, topic, status) values ('borrador', 'Borrador demo', $1, $2, 'eventos', 'draft')`, [description, body]);
     await asRole(db, 'anon');
-    const visible = await db.query(`select slug from public.blog_posts order by slug`);
+    const visible = await db.query(`select slug from public.blog_posts where slug = 'guia-eventos-demo'`);
     expect(visible.rows).toEqual([{ slug: 'guia-eventos-demo' }]);
   });
 

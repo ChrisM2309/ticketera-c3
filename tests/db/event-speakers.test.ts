@@ -114,7 +114,11 @@ describe('seed de ponentes', () => {
   it('cinco eventos DEMO publicados traen ponentes ficticios y anon los lee', async () => {
     await asRole(db, 'anon');
     const result = await db.query<{ slug: string; speakers: { name: string; role: string }[] }>(
-      `select slug, speakers from public.events where jsonb_array_length(speakers) > 0 order by slug`,
+      `select slug, speakers
+       from public.events
+       where slug = any($1::text[])
+       order by slug`,
+      [['bootcamp-demo-cloud', 'conferencia-demo-programacion', 'congreso-demo-ciberseguridad', 'congreso-demo-ia', 'hackathon-demo-en-linea']],
     );
 
     expect(result.rows).toHaveLength(5);

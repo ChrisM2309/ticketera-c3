@@ -13,7 +13,7 @@ const illustrationByLine: Readonly<Record<CatalogLine, string>> = {
 };
 
 /** Carpetas locales permitidas para imágenes de eventos (D-36). */
-const allowedLocalPrefixes = ['/images/tipos/', '/images/stock/'] as const;
+const allowedLocalPrefixes = ['/images/tipos/', '/images/stock/', '/images/events/'] as const;
 
 /**
  * Solo se aceptan rutas locales de las carpetas del sitio o URL HTTPS. «//» apunta a otro host

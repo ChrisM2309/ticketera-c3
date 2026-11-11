@@ -27,7 +27,7 @@ async function eventIdBySlug(slug: string): Promise<string> {
 }
 
 describe('acceso público (anon)', () => {
-  it('ve exactamente los 50 eventos publicados del seed', async () => {
+  it('ve exactamente los 74 eventos publicados del catálogo DEMO', async () => {
     await asRole(db, 'anon');
     const result = await db.query<{ total: number; publicados: number }>(
       `select count(*)::int as total,
@@ -36,7 +36,7 @@ describe('acceso público (anon)', () => {
     );
     await asSuperuser(db);
 
-    expect(result.rows[0]).toEqual({ total: 50, publicados: 50 });
+    expect(result.rows[0]).toEqual({ total: 74, publicados: 74 });
   });
 
   it('lee el árbol SEO pero no puede modificarlo', async () => {
