@@ -22,7 +22,7 @@ export type LinkOrganizerState = {
   values?: { name: string; slug: string; description: string; ownerEmail: string };
 };
 
-const failedMessage = 'No pudimos vincular al organizador. Intentá nuevamente.';
+const failedMessage = 'No pudimos vincular al organizador. Intenta nuevamente.';
 
 function textOf(value: FormDataEntryValue | null): string {
   return typeof value === 'string' ? value.slice(0, 1000) : '';

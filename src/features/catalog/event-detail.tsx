@@ -259,6 +259,11 @@ export function EventDetailPage({ event, related, indexingEnabled = false }: Eve
 
         <aside className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-6">
           <TicketSelector event={event} disabled={!canPurchase} />
+          <div className="mt-4 flex flex-col gap-2 rounded-md bg-superficie p-4 font-texto text-sm text-texto-suave">
+            <p>Pago de demostración mediante Wompi en modo de prueba.</p>
+            {event.includesCertificate ? <p>Incluye certificado</p> : null}
+            <Link href="/terminos/" className="w-fit underline underline-offset-4">Consulta la política de reembolso y los términos</Link>
+          </div>
         </aside>
 
         <div className="flex min-w-0 flex-col gap-8 lg:col-start-1 lg:row-start-2">

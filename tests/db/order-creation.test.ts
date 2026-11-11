@@ -97,8 +97,8 @@ describe('create_pending_order', () => {
     expect(result.rows[0]).toEqual({
       order_id: expect.any(String),
       subtotal_cents: 4500,
-      fee_cents: 225,
-      total_cents: 4725,
+      fee_cents: 0,
+      total_cents: 4500,
     });
 
     await asSuperuser(db);
@@ -118,7 +118,7 @@ describe('create_pending_order', () => {
       [general.id, premium.id],
     );
 
-    expect(order.rows).toEqual([{ status: 'pending', subtotal_cents: 4500, fee_cents: 225, total_cents: 4725 }]);
+    expect(order.rows).toEqual([{ status: 'pending', subtotal_cents: 4500, fee_cents: 0, total_cents: 4500 }]);
     expect(items.rows).toEqual([
       { unit_price_cents: 1000, quantity: 2, line_total_cents: 2000 },
       { unit_price_cents: 2500, quantity: 1, line_total_cents: 2500 },
@@ -311,4 +311,59 @@ describe('create_pending_order', () => {
       ]),
     ).rejects.toThrow(/solicitud/i);
   });
+});
+
+it('cobra al comprador solo el subtotal y registra comisión al organizador por unidad', async () => {
+  const general = await ticket('congreso-demo-ia', 'General');
+  const result = await createPendingOrder([{ ticketTypeId: general.id, quantity: 2 }]);
+  expect(result.rows[0]).toMatchObject({ subtotal_cents: 2000, fee_cents: 0, total_cents: 2000 });
+  await asSuperuser(db);
+  const saved = await db.query<{ organizer_fee_cents: number }>('select organizer_fee_cents from public.orders where id = $1', [result.rows[0].order_id]);
+  expect(saved.rows[0].organizer_fee_cents).toBe(220);
+});
+
+
+it('registra cincuenta centavos por cada boleto gratuito sin cobrar al comprador', async () => {
+  const free = await ticket('bootcamp-demo-ciberseguridad-gratis', 'Registro gratuito');
+  const result = await createPendingOrderForEvent('bootcamp-demo-ciberseguridad-gratis', [{ ticketTypeId: free.id, quantity: 2 }]);
+  expect(result.rows[0]).toMatchObject({ subtotal_cents: 0, fee_cents: 0, total_cents: 0 });
+  await asSuperuser(db);
+  const saved = await db.query<{ organizer_fee_cents: number }>('select organizer_fee_cents from public.orders where id = $1', [result.rows[0].order_id]);
+  expect(saved.rows[0].organizer_fee_cents).toBe(100);
+});
+
+it('conserva el total de una orden anterior al reintentarla', async () => {
+  const general = await ticket('congreso-demo-ia', 'General');
+  const requestId = randomUUID();
+  const first = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }], { requestId });
+  await asSuperuser(db);
+  await db.query('update public.orders set fee_cents = 50, total_cents = 1050, organizer_fee_cents = 0 where id = $1', [first.rows[0].order_id]);
+  const retry = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }], { requestId });
+  expect(retry.rows[0]).toMatchObject({ order_id: first.rows[0].order_id, subtotal_cents: 1000, fee_cents: 50, total_cents: 1050 });
+});
+
+it('cuenta boletos gratuitos y de pago en la misma orden', async () => {
+  const general = await ticket('congreso-demo-ia', 'General');
+  const premium = await ticket('congreso-demo-ia', 'Premium');
+  await asSuperuser(db);
+  await db.query('update public.ticket_types set price_cents = 0 where id = $1', [premium.id]);
+  const result = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }, { ticketTypeId: premium.id, quantity: 1 }]);
+  expect(result.rows[0]).toMatchObject({ subtotal_cents: 1000, fee_cents: 0, total_cents: 1000 });
+  await asSuperuser(db);
+  const saved = await db.query<{ organizer_fee_cents: number }>('select organizer_fee_cents from public.orders where id = $1', [result.rows[0].order_id]);
+  expect(saved.rows[0].organizer_fee_cents).toBe(160);
+});
+
+it('asigna un código corto único y estable a la orden y su reintento', async () => {
+  const general = await ticket('congreso-demo-ia', 'General');
+  const requestId = randomUUID();
+  const first = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }], { requestId });
+  const retry = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }], { requestId });
+  const second = await createPendingOrder([{ ticketTypeId: general.id, quantity: 1 }]);
+  await asSuperuser(db);
+  const result = await db.query<{ id: string; public_code: string }>('select id, public_code from public.orders where id in ($1, $2)', [first.rows[0].order_id, second.rows[0].order_id]);
+  expect(retry.rows[0].order_id).toBe(first.rows[0].order_id);
+  expect(result.rows).toHaveLength(2);
+  expect(result.rows[0].public_code).toMatch(/^TC3-\d+$/);
+  expect(result.rows[0].public_code).not.toBe(result.rows[1].public_code);
 });

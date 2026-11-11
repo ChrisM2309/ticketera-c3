@@ -31,7 +31,7 @@ export async function startFeaturedPaymentAction(formData: FormData): Promise<Fe
   const row = (Array.isArray(data) ? data[0] : data) as
     | { placement_id: string; total_cents: number; event_title: string }
     | undefined;
-  if (!row) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+  if (!row) return { ok: false, message: 'No pudimos iniciar el pago. Intenta nuevamente.' };
 
   // Cubierto por completo por el paquete empresas: no hay pago, ya quedó pendiente de revisión.
   if (row.total_cents === 0) return { ok: true, redirectUrl: '/panel/?destacado=solicitado' };
@@ -45,13 +45,13 @@ export async function startFeaturedPaymentAction(formData: FormData): Promise<Fe
   if (!link.ok) return { ok: false, message: link.message };
 
   const service = createServiceRoleClient();
-  if (!service) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+  if (!service) return { ok: false, message: 'No pudimos iniciar el pago. Intenta nuevamente.' };
 
   const saved = await service
     .from('featured_placements')
     .update({ wompi_link_id: link.linkId, wompi_link_url: link.redirectUrl })
     .eq('id', row.placement_id);
-  if (saved.error) return { ok: false, message: 'No pudimos iniciar el pago. Intentá nuevamente.' };
+  if (saved.error) return { ok: false, message: 'No pudimos iniciar el pago. Intenta nuevamente.' };
 
   return { ok: true, redirectUrl: link.redirectUrl };
 }

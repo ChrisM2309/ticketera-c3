@@ -152,13 +152,13 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
 
   const now = new Date();
   const locationSlugs = listing.taxonomy.locations.map((location) => location.slug);
-  const filters = filtersForScope(parseCatalogFilters(await searchParams, locationSlugs), scope);
+  const filters = filtersForScope(parseCatalogFilters(await searchParams, locationSlugs, listing.taxonomy.topics.map((topic) => topic.slug)), scope);
   const scopedEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, now);
   const events = filterCatalogEvents(listing.events, scope, filters, now);
   const isTypeScope = scope.kind === 'event_type' || scope.kind === 'event_type_topic' || scope.kind === 'modality';
   const featuredIds = isTypeScope && scope.eventType.id ? await getCategoryFeaturedIds(scope.eventType.id) : [];
   const featuredSet = new Set(featuredIds);
-  const featuredEvents = listing.events.filter((event) => featuredSet.has(event.id));
+  const featuredEvents = events.filter((event) => featuredSet.has(event.id));
   const visibleEvents = events.filter((event) => !featuredSet.has(event.id));
   const subcategories = scopeSubcategories(scope, listing.taxonomy);
   const countLabel = events.length === 1 ? '1 evento' : `${events.length} eventos`;
@@ -181,7 +181,7 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
       </header>
 
       {subcategories.length > 0 ? (
-        <nav aria-label="Explorá también">
+        <nav aria-label="Explora también">
           <ul className="flex flex-wrap gap-2">
             {subcategories.map((item) => (
               <li key={item.href}>
@@ -203,6 +203,7 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
         <CatalogFilters
           filters={filters}
           locations={listing.taxonomy.locations}
+          topics={listing.taxonomy.topics}
           showCiudad={scope.kind !== 'location'}
           clearHref={scopePath(scope)}
         />
@@ -229,8 +230,8 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
         ) : (
           <p className="rounded-lg bg-superficie-sutil p-6 text-texto-suave">
             {scopedEvents.length === 0 && featuredEvents.length === 0
-              ? 'Todavía no hay eventos publicados aquí. Mirá otras categorías en el menú.'
-              : 'Ningún evento coincide con estos filtros. Quitá alguno para ver más resultados.'}
+              ? 'Todavía no hay eventos publicados aquí. Mira otras categorías en el menú.'
+              : 'Ningún evento coincide con estos filtros. Quita alguno para ver más resultados.'}
           </p>
         )}
       </section>

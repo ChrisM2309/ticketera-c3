@@ -46,7 +46,7 @@ export default async function AdminOrganizersPage() {
             Organizadores
           </h1>
           <p className="font-texto text-base leading-7 text-texto-suave">
-            Modo DEMO. Vinculá una cuenta registrada con una organización para que pueda publicar eventos.
+            Modo DEMO. Vincula una cuenta registrada con una organización para que pueda publicar eventos.
           </p>
         </div>
         <Link href={adminHomePath} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>

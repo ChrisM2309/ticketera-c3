@@ -121,7 +121,7 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
         <p className="font-titulo text-sm font-semibold uppercase tracking-[0.08em] text-enlace">Compra DEMO</p>
         <h1 className="font-titulo text-4xl font-bold leading-tight tracking-tight">Tu carrito</h1>
         <p className="max-w-2xl font-texto text-base leading-7 text-texto-suave">
-          Revisá tus entradas antes de continuar. Este carrito admite un evento por orden.
+          Revisa tus entradas antes de continuar. Este carrito admite un evento por orden.
         </p>
       </header>
 
@@ -140,12 +140,12 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
           </h2>
           <p className="max-w-xl font-texto leading-7 text-texto-suave">
             {initialState === 'invalid_query'
-              ? 'Volvé a la ficha del evento y seleccioná tus entradas nuevamente.'
+              ? 'Vuelve a la ficha del evento y selecciona tus entradas nuevamente.'
               : initialState === 'not_found' || initialState === 'unavailable'
-                ? 'Volvé a intentar o explorá otros eventos publicados.'
+                ? 'Vuelve a intentar o explora otros eventos publicados.'
                 : initialState === 'empty_selection'
-                  ? 'Volvé a la ficha para revisar la disponibilidad actual.'
-                  : 'Elegí un evento y seleccioná tus entradas para verlas aquí.'}
+                  ? 'Vuelve a la ficha para revisar la disponibilidad actual.'
+                  : 'Elige un evento y selecciona tus entradas para verlas aquí.'}
           </p>
           <Link href="/congresos/" className={buttonVariants({ variant: 'compra' })}>
             <Icon name="search" />

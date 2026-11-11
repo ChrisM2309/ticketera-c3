@@ -44,7 +44,7 @@ export type SignInState = {
   fieldErrors?: LoginFieldErrors;
 };
 
-const unavailableMessage = 'El acceso no está disponible en este momento. Intentá más tarde.';
+const unavailableMessage = 'El acceso no está disponible en este momento. Intenta más tarde.';
 const invalidCredentialsMessage = 'Correo o contraseña incorrectos.';
 
 export async function signInAction(_previous: SignInState, formData: FormData): Promise<SignInState> {
@@ -77,7 +77,7 @@ export async function signInAction(_previous: SignInState, formData: FormData): 
     role = await readRole(config, result.tokens.accessToken, result.userId);
   } catch {
     await signOutSession(config, result.tokens);
-    return { email, message: 'No pudimos comprobar tu cuenta. Intentá nuevamente.' };
+    return { email, message: 'No pudimos comprobar tu cuenta. Intenta nuevamente.' };
   }
 
   if (!isAppRole(role)) {
@@ -174,7 +174,7 @@ export async function requestResetAction(_previous: RequestResetState, formData:
   const parsed = parseLoginInput({ email: rawEmail, password: 'x' });
 
   if (!parsed.valid) {
-    return { email, fieldError: parsed.errors.email ?? 'Ingresá un correo electrónico válido.' };
+    return { email, fieldError: parsed.errors.email ?? 'Ingresa un correo electrónico válido.' };
   }
 
   await requestPasswordReset(parsed.email, {
@@ -190,7 +190,7 @@ export type NewPasswordState = {
   done?: boolean;
 };
 
-const expiredLinkMessage = 'El enlace venció o ya se usó. Pedí uno nuevo desde «Recuperar contraseña».';
+const expiredLinkMessage = 'El enlace venció o ya se usó. Pide uno nuevo desde «Recuperar contraseña».';
 
 export async function setNewPasswordAction(_previous: NewPasswordState, formData: FormData): Promise<NewPasswordState> {
   const rawToken = formData.get('accessToken');

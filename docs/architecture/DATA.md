@@ -98,3 +98,8 @@ El outbox registra `survey` para dos horas después de `coalesce(ends_at, starts
 ## Importación del Excel
 
 El archivo fuente tiene una sola pestaña `ARQUITECTURA ` y propone **1 + 21 + 36 + 76 = 134 URLs**. Se debe guardar un snapshot versionado con los slugs, y no deducir categorías por strings de título. `seo_routes` permite mantener taxonomía incluso si una ruta no se publica por falta de eventos.
+
+
+### Cambios de presentación en revisión local
+
+Las migraciones `20261120100000`–`20261120120000` añaden `orders.organizer_fee_cents`, `events.includes_certificate` y `orders.public_code`. Las órdenes nuevas calculan en servidor 6 % del subtotal redondeado más 50 centavos por boleto, incluidos los gratuitos. `fee_cents` conserva únicamente el cargo histórico al comprador; los totales y cargos históricos no se reescriben. El código `TC3-<secuencia>` identifica la orden sin sustituir el UUID ni el token privado. No hay liquidación automática del organizador. Estas migraciones todavía no se han aplicado al entorno remoto.

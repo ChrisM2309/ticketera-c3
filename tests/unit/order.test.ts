@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getServerDemoCommissionPercent,
-  hashCheckoutToken,
   normalizeSvPhone,
   parseOrderRequest,
 } from '../../src/features/checkout/order';
+import { hashCheckoutToken } from '../../src/features/checkout/order-token';
 import { deriveCheckoutToken } from '../../src/features/checkout/token';
 
 const eventId = '11111111-1111-4111-8111-111111111111';
@@ -49,11 +49,11 @@ describe('contrato de orden de invitado', () => {
       valid: false,
       fieldErrors: {
         eventId: 'La selección del evento no es válida.',
-        requestId: 'La solicitud de compra no es válida. Recargá la página.',
-        items: 'Revisá las entradas seleccionadas.',
-        buyerName: 'Ingresá tu nombre completo.',
-        buyerEmail: 'Ingresá un correo electrónico válido.',
-        buyerPhone: 'Ingresá un teléfono de El Salvador de 8 dígitos.',
+        requestId: 'La solicitud de compra no es válida. Recarga la página.',
+        items: 'Revisa las entradas seleccionadas.',
+        buyerName: 'Ingresa tu nombre completo.',
+        buyerEmail: 'Ingresa un correo electrónico válido.',
+        buyerPhone: 'Ingresa un teléfono de El Salvador de 8 dígitos.',
       },
     });
   });

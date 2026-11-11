@@ -4,6 +4,17 @@
 **Objetivo:** terminar funcionalidades verificables y avanzar según disponibilidad, sin perder el flujo completo de compra.  
 **Agentes:** documento compartido para Codex, Claude Code o cualquier herramienta que lea `AGENTS.md`.
 
+## Cambios para presentación: seguimiento en revisión
+
+El diseño y plan aprobados por el responsable están en `docs/superpowers/specs/2026-11-11-cambios-presentacion-design.md` y `docs/superpowers/plans/2026-11-11-cambios-presentacion-plan.md`. El responsable confirmó $0.50 por boleto también en entradas gratuitas.
+
+- **Implementado en worktree, sin despliegue:** comisión para organizador, respaldo de imágenes, contacto y tuteo, certificado, Wompi sandbox/términos en ficha, relacionados/newsletter por correo, filtro Tema, código corto de orden, saneamiento de rutas privadas en analítica propia, y CRUD mínimo del organizador (edición de metadatos; archivar cambia a `archived` sin borrar órdenes/boletos). La edición de evento publicado lo devuelve a revisión. Migraciones locales: `20261120100000`, `20261120110000`, `20261120120000`, `20261120130000`.
+- **Verificación local registrada:** lint PASS; typecheck PASS; pruebas focales 7 archivos/62 tests PASS (incluye gestión de eventos); `npx next build --webpack` PASS. El intento de `npm test` global se interrumpió antes de terminar y no se atribuye resultado global. E2E de carrito: 3/3 con Next Webpack en puerto aislado, según registro anterior.
+- **Pendiente de integración y despliegue:** migraciones locales, revisión integral, batería completa, pruebas E2E del flujo actualizado y comprobación en el entorno desplegado. No se aplicaron migraciones remotas ni se modificaron datos remotos.
+- **Pendiente externo:** retirar el evento de prueba de producción; en revisión visual remota del responsable/coordinación se observaron 14 imágenes cargadas tanto en escritorio 1280×800 como en móvil 390×844, sin recorrer todos los slides del carrusel.
+- **Medición externa fuera del alcance:** por decisión del responsable no se integran GA4 ni Meta Pixel; no hay tarea pendiente ni IDs por solicitar. Continúa la analítica propia existente, sin envío a terceros.
+- **Sin cambio de dominio.**
+
 ## Cómo usar este backlog
 
 - **P0 — Núcleo:** necesario para que el visitante complete el recorrido de compra con datos persistidos y QR.

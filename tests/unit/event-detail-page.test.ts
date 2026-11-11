@@ -14,6 +14,7 @@ function event(overrides: Partial<CatalogEventDetail> = {}): CatalogEventDetail 
     slug: 'congreso-demo',
     title: 'Congreso demo',
     description: 'Descripción almacenada del evento.',
+    includesCertificate: false,
     agenda: '09:00 Bienvenida',
     startsAt: '2027-03-13T15:00:00Z',
     endsAt: '2027-03-13T18:00:00Z',
@@ -140,4 +141,17 @@ describe('ficha de evento: agregar al calendario', () => {
 
     expect(html).not.toContain('/calendario/');
   });
+});
+
+test('muestra Wompi sandbox y enlace a los términos debajo de la compra', () => {
+  const html = render(event());
+  expect(html).toContain('Wompi');
+  expect(html).toContain('modo de prueba');
+  expect(html).toMatch(/href="\/terminos\/?"/);
+  expect(html).not.toContain('Incluye certificado');
+});
+
+test('muestra certificado solo si el evento lo declara', () => {
+  expect(render(event({ includesCertificate: true }))).toContain('Incluye certificado');
+  expect(render(event({ includesCertificate: false }))).not.toContain('Incluye certificado');
 });

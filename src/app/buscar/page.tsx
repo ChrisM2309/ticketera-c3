@@ -28,7 +28,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const listing = await getCatalogListing();
   const now = new Date();
   const filters = listing.status === 'ok'
-    ? parseCatalogFilters(params, listing.taxonomy.locations.map((location) => location.slug))
+    ? parseCatalogFilters(params, listing.taxonomy.locations.map((location) => location.slug), listing.taxonomy.topics.map((topic) => topic.slug))
     : noCatalogFilters;
   const filteredEvents = listing.status === 'ok'
     ? searchCatalogEvents(filterCatalogEventsByFilters(upcomingEvents(listing.events, now.getTime()), filters, now), query)
@@ -53,6 +53,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <CatalogFilters
             filters={filters}
             locations={listing.taxonomy.locations}
+            topics={listing.taxonomy.topics}
             showCiudad
             clearHref="/buscar/"
             query={query}
@@ -84,7 +85,7 @@ function SearchResults({ query, events, truncated, hasFilters }: SearchResultsPr
           {query
             ? `No encontramos eventos para «${query}». Prueba con otra ciudad, tema o palabra.`
             : hasFilters
-              ? 'Ningún evento coincide con estos filtros. Probá quitar alguno para ver más resultados.'
+              ? 'Ningún evento coincide con estos filtros. Prueba quitar alguno para ver más resultados.'
               : 'Todavía no hay eventos publicados.'}
         </p>
         {!query && hasFilters ? (

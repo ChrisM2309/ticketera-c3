@@ -9,7 +9,6 @@ import { Icon } from '@/components/ui/icon';
 import { statusIcon } from '@/features/catalog/icons';
 import { checkoutErrorView, type CheckoutErrorView } from '@/features/checkout/errors';
 import { receiptStatusLabel } from '@/features/checkout/payment-flow';
-import { siteConfig } from '@/lib/site-config';
 import { trackEvent } from '@/lib/analytics/track';
 import { cn } from '@/lib/utils';
 
@@ -280,11 +279,11 @@ export function PaymentStep({ order }: PaymentStepProps) {
       <CheckoutSteps current="pago" free={isFree} />
       <header className="flex flex-col gap-2">
         <h1 id="payment-title" className="font-titulo text-3xl font-bold leading-tight tracking-tight">
-          {isFree ? 'Confirmá tu registro' : 'Pago de demostración'}
+          {isFree ? 'Confirma tu registro' : 'Pago de demostración'}
         </h1>
         {isFree ? (
           <p className="font-texto text-base leading-7 text-texto-suave">
-            Este evento es gratuito. Confirmá tu registro para emitir tus boletos.
+            Este evento es gratuito. Confirma tu registro para emitir tus boletos.
           </p>
         ) : null}
       </header>
@@ -324,7 +323,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
             amountCents={order.totalCents}
             summary={[
               { label: 'Subtotal', amountCents: order.subtotalCents },
-              { label: `Comisión DEMO (${siteConfig.demoCommissionPercent} %)`, amountCents: order.feeCents },
+              ...(order.feeCents > 0 ? [{ label: 'Comisión de la orden anterior', amountCents: order.feeCents }] : []),
             ]}
           />
         </>

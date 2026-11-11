@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
+import { EventImage } from '@/components/catalog/event-image';
 import { Icon } from '@/components/ui/icon';
 import { eventDateParts, modeLabel, priceLabel } from '@/features/catalog/format';
-import { coverImagePath, isIllustrativeCover } from '@/features/catalog/images';
+import { coverImagePath } from '@/features/catalog/images';
 import { lineForEventType, type CatalogLine } from '@/features/catalog/lines';
 import { iconForEventType, toneForEventType } from '@/features/catalog/icons';
 import { eventPath } from '@/features/catalog/paths';
@@ -37,19 +37,8 @@ export function EventCard({ event, featured = false }: EventCardProps) {
   return (
     <article className={cn('relative flex h-full flex-col overflow-hidden bg-superficie', featured ? 'rounded-none shadow-none' : 'rounded-md shadow-sm')}>
       <div className={cn('relative bg-navy', featured ? 'aspect-[2/1]' : 'aspect-[16/10]')}>
-        <Image
-          src={coverImagePath(event)}
-          alt=""
-          fill
-          sizes={featured ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'}
-          className="object-cover"
-          unoptimized={!coverImagePath(event).startsWith('/')}
-        />
-        {isIllustrativeCover(event) ? (
-          <span className="absolute bottom-2 left-2 rounded-sm bg-navy/85 px-2 py-0.5 font-texto text-xs font-medium text-texto-inverso">
-            Imagen ilustrativa
-          </span>
-        ) : null}
+        <EventImage key={`${event.id}:${event.imagePath}`} event={event} src={coverImagePath(event)}
+          sizes={featured ? '(max-width: 1024px) 100vw, 60vw' : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'} />
       </div>
       <div className={cn('h-1.5', lineStripe[line])} aria-hidden="true" />
 

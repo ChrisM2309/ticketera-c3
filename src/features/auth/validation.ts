@@ -54,7 +54,7 @@ export function validateRegistration(input: unknown): RegistrationResult {
   const errors: RegistrationErrors = {};
 
   if (email.length > emailMaxLength || !emailPattern.test(email)) {
-    errors.email = 'Ingresá un correo electrónico válido.';
+    errors.email = 'Ingresa un correo electrónico válido.';
   }
 
   if (!isValidPasswordLength(password)) {
@@ -62,7 +62,7 @@ export function validateRegistration(input: unknown): RegistrationResult {
   }
 
   if (displayName.length < displayNameMinLength || displayName.length > displayNameMaxLength) {
-    errors.displayName = `Ingresá tu nombre (de ${displayNameMinLength} a ${displayNameMaxLength} caracteres).`;
+    errors.displayName = `Ingresa tu nombre (de ${displayNameMinLength} a ${displayNameMaxLength} caracteres).`;
   }
 
   if (!acceptsPrivacy) {

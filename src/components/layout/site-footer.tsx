@@ -4,9 +4,9 @@ import { DemoBadge } from '@/components/ui/demo-badge';
 import { Icon } from '@/components/ui/icon';
 import { accountLinks } from '@/lib/navigation';
 
-/* Datos de contacto de demostración: ficticios, marcados como DEMO (AGENTS.md). */
-const correo = 'contacto@ticketera.example';
-const telefono = '+503 0000-0000';
+/* Contacto proporcionado por el equipo. */
+const correo = 'competitivecodingclub.sv@gmail.com';
+const telefono = '+503 6963-9295';
 
 const enlace = 'inline-flex min-h-11 items-center gap-2 underline-offset-4 hover:underline';
 
@@ -26,10 +26,10 @@ export function SiteFooter() {
             <Icon name="mail" size={16} />
             {correo}
           </a>
-          <span className="inline-flex min-h-11 items-center gap-2">
+          <a href="tel:+50369639295" className="inline-flex min-h-11 items-center gap-2">
             <Icon name="phone" size={16} />
             {telefono}
-          </span>
+          </a>
         </div>
 
         <nav aria-label="Enlaces del pie" className="flex flex-col gap-1 text-sm">

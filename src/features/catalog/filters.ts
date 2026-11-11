@@ -5,8 +5,9 @@ import type { CatalogEvent, EventMode } from './types';
 export type PriceFilter = 'gratis' | 'pago';
 export type DateFilter = 'semana' | 'mes' | 'fin-de-semana';
 
-/** Filtros de la URL (`?ciudad=&modalidad=&precio=&fecha=`). El tema va en la ruta, no aquí. */
+/** Filtros GET combinables; los temas válidos vienen de la taxonomía. */
 export type CatalogFilters = {
+  tema: string | null;
   ciudad: string | null;
   modalidad: EventMode | null;
   precio: PriceFilter | null;
@@ -16,6 +17,7 @@ export type CatalogFilters = {
 export type SearchParams = Record<string, string | string[] | undefined>;
 
 export const noCatalogFilters: CatalogFilters = {
+  tema: null,
   ciudad: null,
   modalidad: null,
   precio: null,
@@ -43,10 +45,13 @@ function oneOf<T extends string>(value: string | undefined, allowed: readonly T[
 export function parseCatalogFilters(
   params: SearchParams,
   locationSlugs: readonly string[],
+  topicSlugs: readonly string[] = [],
 ): CatalogFilters {
   const ciudad = firstValue(params.ciudad);
+  const tema = firstValue(params.tema);
 
   return {
+    tema: tema && topicSlugs.includes(tema) ? tema : null,
     ciudad: ciudad && locationSlugs.includes(ciudad) ? ciudad : null,
     modalidad: oneOf(firstValue(params.modalidad), modalidades),
     precio: oneOf(firstValue(params.precio), precios),
@@ -111,6 +116,7 @@ function matchesModality(event: CatalogEvent, modality: CatalogModality): boolea
 }
 
 function matchesFilters(event: CatalogEvent, filters: CatalogFilters, now: Date): boolean {
+  if (filters.tema && event.topic?.slug !== filters.tema) return false;
   if (filters.ciudad && event.location?.slug !== filters.ciudad) {
     return false;
   }

@@ -193,7 +193,7 @@ async function runPaymentPanel(page: Page, decision: 'aprobado' | 'rechazado') {
 
   // Sin elegir resultado no se envía nada: el panel pide elegir uno.
   await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
-  await expect(page.getByRole('alert').filter({ hasText: 'Elegí el resultado que quieres simular.' })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Elige el resultado que quieres simular.' })).toBeVisible();
 
   // Volver al resumen y regresar conserva el flujo.
   await page.getByRole('button', { name: 'Volver al resumen' }).click();
@@ -224,7 +224,7 @@ for (const viewport of viewports) {
       await fillBuyer(page, orderRequests);
 
       // Sin pago: un solo paso de confirmación, sin panel simulado ni campos de tarjeta.
-      await expect(paymentSection(page).getByRole('heading', { level: 1, name: 'Confirmá tu registro' })).toBeVisible();
+      await expect(paymentSection(page).getByRole('heading', { level: 1, name: 'Confirma tu registro' })).toBeVisible();
       await expect(paymentSection(page).getByRole('heading', { level: 2 })).toHaveCount(0);
       await expectNoCardFields(page);
       await expectNoHorizontalScroll(page);

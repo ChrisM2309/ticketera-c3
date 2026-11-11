@@ -23,13 +23,14 @@ function FilterLabel({ htmlFor, icon, children }: Readonly<{ htmlFor: string; ic
 type CatalogFiltersProps = Readonly<{
   filters: CatalogFilters;
   locations: readonly CatalogCategory[];
+  topics: readonly CatalogCategory[];
   showCiudad: boolean;
   clearHref: string;
   query?: string;
 }>;
 
 /** Filtros con GET: la búsqueda queda en la URL y el formulario funciona sin JavaScript. */
-export function CatalogFilters({ filters, locations, showCiudad, clearHref, query }: CatalogFiltersProps) {
+export function CatalogFilters({ filters, locations, topics, showCiudad, clearHref, query }: CatalogFiltersProps) {
   return (
     <form
       method="get"
@@ -37,6 +38,13 @@ export function CatalogFilters({ filters, locations, showCiudad, clearHref, quer
       className="grid gap-4 rounded-lg bg-superficie p-5 sm:grid-cols-2 lg:grid-cols-4"
     >
       {query ? <input type="hidden" name="q" value={query} readOnly /> : null}
+      <div className="flex flex-col gap-2">
+        <FilterLabel htmlFor="filtro-tema" icon="tag">Tema</FilterLabel>
+        <select id="filtro-tema" name="tema" defaultValue={filters.tema ?? ''} className={fieldClass}>
+          <option value="">Todos los temas</option>
+          {topics.map((topic) => <option key={topic.slug} value={topic.slug}>{topic.name}</option>)}
+        </select>
+      </div>
       {showCiudad ? (
         <div className="flex flex-col gap-2">
           <FilterLabel htmlFor="filtro-ciudad" icon="mapPin">

@@ -32,7 +32,7 @@ export function RegisterForm({ next }: RegisterFormProps) {
           <Icon name="mail" size={24} tone="accion" />
           <span>
             Creamos tu cuenta. Te enviamos un correo{state.email ? ` a ${state.email}` : ''} para confirmarla. Cuando lo
-            confirmes, ya podés ingresar.
+            confirmes, ya puedes ingresar.
           </span>
         </p>
         <Link href={signIn} className={cn(buttonVariants({ variant: 'primario', size: 'lg' }), 'w-full')}>
@@ -160,7 +160,7 @@ export function RegisterForm({ next }: RegisterFormProps) {
       </button>
 
       <p className={cn(hintClass, 'flex flex-wrap items-center gap-x-2')}>
-        ¿Ya tenés cuenta?
+        ¿Ya tienes cuenta?
         <Link
           href={signIn}
           className="inline-flex min-h-11 items-center font-titulo font-semibold text-enlace underline-offset-4 hover:underline"

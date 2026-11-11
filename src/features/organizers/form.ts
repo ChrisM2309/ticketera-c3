@@ -24,6 +24,8 @@ export function readPublishForm(formData: FormData): Record<string, unknown> {
     input[name] = formData.get(name);
   }
 
+  input.includesCertificate = formData.get('includesCertificate') === 'on';
+
   input.tickets = Array.from({ length: maxTicketTypes }, (_, index) => ({
     name: formData.get(`ticket-${index}-name`),
     price: formData.get(`ticket-${index}-price`),

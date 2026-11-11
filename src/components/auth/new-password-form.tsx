@@ -41,7 +41,7 @@ export function NewPasswordForm() {
       <div role="status" className="flex flex-col gap-4">
         <p className="flex items-start gap-3 font-texto text-base leading-7 text-texto">
           <Icon name="check" size={24} tone="exito" />
-          <span>Cambiamos tu contraseña. Ya podés ingresar con la nueva.</span>
+          <span>Cambiamos tu contraseña. Ya puedes ingresar con la nueva.</span>
         </p>
         <Link href={signInPath} className={cn(buttonVariants({ variant: 'primario', size: 'lg' }), 'w-full')}>
           Ir a ingresar
@@ -62,7 +62,7 @@ export function NewPasswordForm() {
     return (
       <div className="flex flex-col gap-4">
         <p role="alert" className="rounded-md bg-superficie-sutil p-3 font-texto text-sm leading-6 text-error">
-          Este enlace no es válido o ya venció. Pedí uno nuevo para cambiar tu contraseña.
+          Este enlace no es válido o ya venció. Pide uno nuevo para cambiar tu contraseña.
         </p>
         <Link href="/recuperar/" className={cn(buttonVariants({ variant: 'primario', size: 'lg' }), 'w-full')}>
           Pedir un enlace nuevo
@@ -106,7 +106,7 @@ export function NewPasswordForm() {
 
       <div className="flex flex-col gap-2">
         <label htmlFor="confirm-password" className="font-texto text-sm font-medium text-texto">
-          Repetí la contraseña
+          Repite la contraseña
         </label>
         <input
           id="confirm-password"

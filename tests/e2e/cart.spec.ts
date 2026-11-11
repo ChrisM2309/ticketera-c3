@@ -54,7 +54,8 @@ test('carrito local permite editar cantidades y conserva la selección', async (
   await expect(page.getByText('Congreso demo de IA')).toBeVisible();
   await expect(page.getByRole('spinbutton', { name: 'Cantidad de General' })).toHaveValue('2');
   await expect(page.getByRole('spinbutton', { name: 'Cantidad de Premium' })).toHaveValue('1');
-  await expect(page.getByText(/Comisión DEMO/)).toContainText('5 %');
+  await expect(page.getByText(/Comisión DEMO/)).toHaveCount(0);
+  await expect(page.locator('dd').filter({ hasText: /^\$45$/ }).first()).toBeVisible();
   await expect(page.getByText('Total provisional')).toBeVisible();
 
   await page.getByRole('spinbutton', { name: 'Cantidad de General' }).fill('3');

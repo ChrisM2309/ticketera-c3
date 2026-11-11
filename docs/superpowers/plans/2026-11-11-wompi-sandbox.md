@@ -1,6 +1,8 @@
 # Plan v2: Wompi El Salvador en sandbox (sustituye la simulación de pagos)
 
-**Estado:** implementado en `codex/wompi-sandbox` (sin commit). Pendiente antes de activar: aplicar la migración `20261115100000_wompi_payments.sql` en producción (con confirmación del responsable), poner las variables en Vercel, y hacer la prueba de $0.01 para confirmar la unidad del monto. Pendientes abiertos: valores de rechazo de Wompi (sin documentar: hoy quedan pendientes hasta caducar), consulta de la transacción por el host `api.wompi.sv` (no documentado en la página de consulta), y el pago de destacados y paquete de organizadores, que sigue con la simulación.
+**Estado (actualización del responsable, 2026-11-11):** Wompi sandbox ya está activado. Esta actualización recoge lo informado por el responsable; en esta revisión no se comprobaron independientemente las migraciones remotas, las variables de Vercel ni el resultado de una transacción de $0.01. La implementación de destacados y paquetes también usa Wompi según D-68; su estado remoto no se verificó aquí. El resto de este documento conserva el plan original y puede contener pendientes históricos, no un diagnóstico actual.
+
+**Evidencia del trabajo anterior:** `1c936ef` implementó pagos sandbox de entradas; `cb7a15d` corrigió la lectura del importe y `e7ebbd6` incorporó destacados y paquetes. Los cambios figuran integrados mediante los PR #41, #43 y #44. La guía vigente está en `docs/checkout/DEMO_PAYMENT.md`.
 
 **Contexto de la demo:** no hay negocio real ni cobros. La base de datos es la de producción de Supabase; Wompi es el sandbox del negocio `TicketeraC3Demo`. Las credenciales las pone el responsable directamente en Vercel.
 

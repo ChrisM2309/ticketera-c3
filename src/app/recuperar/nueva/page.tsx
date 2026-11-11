@@ -5,7 +5,7 @@ import { Icon } from '@/components/ui/icon';
 
 export const metadata: Metadata = {
   title: 'Contraseña nueva DEMO',
-  description: 'Elegí una contraseña nueva para tu cuenta de Ticketera C3 DEMO.',
+  description: 'Elige una contraseña nueva para tu cuenta de Ticketera C3 DEMO.',
   robots: { index: false, follow: false },
 };
 
@@ -18,7 +18,7 @@ export default function NuevaContrasenaPage() {
           Contraseña nueva
         </h1>
         <p className="font-texto text-base leading-7 text-texto-suave">
-          Elegí una contraseña de 8 a 72 caracteres para tu cuenta.
+          Elige una contraseña de 8 a 72 caracteres para tu cuenta.
         </p>
       </header>
 

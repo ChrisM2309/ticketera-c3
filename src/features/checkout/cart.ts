@@ -73,18 +73,16 @@ export function normalizeCartItems(event: CartEvent, items: readonly CartItem[])
 export function calculateCartTotals(
   event: CartEvent,
   items: readonly CartItem[],
-  commissionPercent: number,
+  _commissionPercent: number,
 ): CartTotals {
+  void _commissionPercent; // Mantiene compatibilidad con consumidores existentes.
   const normalizedItems = normalizeCartItems(event, items);
   const subtotalCents = normalizedItems.reduce((subtotal, item) => {
     const ticket = event.ticketTypes.find((candidate) => candidate.id === item.ticketTypeId);
 
     return subtotal + (ticket?.priceCents ?? 0) * item.quantity;
   }, 0);
-  const safeCommissionPercent = Number.isFinite(commissionPercent) && commissionPercent >= 0 ? commissionPercent : 0;
-  const commissionCents = Math.round((subtotalCents * safeCommissionPercent) / 100);
-
-  return { subtotalCents, commissionCents, totalCents: subtotalCents + commissionCents };
+  return { subtotalCents, commissionCents: 0, totalCents: subtotalCents };
 }
 
 export function createCartSnapshot(event: CartEvent, items: readonly CartItem[]): CartSnapshot {

@@ -1,6 +1,6 @@
 import { after, NextResponse } from 'next/server';
 
-import { hashCheckoutToken } from '@/features/checkout/order';
+import { hashCheckoutToken } from '@/features/checkout/order-token';
 import { createWompiClient, WompiError } from '@/features/checkout/wompi/client';
 import { readWompiConfig } from '@/features/checkout/wompi/config';
 import { parsePaymentReference } from '@/features/checkout/wompi/reference';

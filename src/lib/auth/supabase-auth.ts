@@ -134,9 +134,9 @@ export type SignUpResult =
   | { status: 'error'; message: string };
 
 const signUpFailedMessage =
-  'No pudimos crear la cuenta con esos datos. Si ya tenés una, ingresá o recuperá tu contraseña.';
-const signUpUnavailableMessage = 'El registro no está disponible en este momento. Intentá más tarde.';
-const signUpRateLimitedMessage = 'Hubo demasiados intentos. Esperá unos minutos y volvé a intentar.';
+  'No pudimos crear la cuenta con esos datos. Si ya tienes una, ingresa o recuperá tu contraseña.';
+const signUpUnavailableMessage = 'El registro no está disponible en este momento. Intenta más tarde.';
+const signUpRateLimitedMessage = 'Hubo demasiados intentos. Espera unos minutos y vuelve a intentar.';
 
 /**
  * Crea la cuenta de comprador. El rol lo fija el disparador de la base de datos (`buyer`);

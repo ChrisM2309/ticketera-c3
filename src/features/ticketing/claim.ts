@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { hashCheckoutToken } from '@/features/checkout/order';
+import { hashCheckoutToken } from '@/features/checkout/order-token';
 import { readOptionalSession } from '@/lib/auth/optional-session';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 

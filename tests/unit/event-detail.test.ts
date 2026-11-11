@@ -16,6 +16,7 @@ function event(overrides: Partial<CatalogEventDetail> = {}): CatalogEventDetail 
     slug: 'congreso-demo',
     title: 'Congreso demo',
     description: 'Descripción almacenada del evento.',
+    includesCertificate: false,
     agenda: '09:00 Bienvenida',
     startsAt: '2027-03-13T15:00:00Z',
     endsAt: '2027-03-13T18:00:00Z',

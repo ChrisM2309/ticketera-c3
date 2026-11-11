@@ -35,7 +35,7 @@ export default async function IngresarPage({ searchParams }: IngresarPageProps) 
           Ingresar
         </h1>
         <p className="font-texto text-base leading-7 text-texto-suave">
-          Zona DEMO para organizadores y administración. Para comprar no necesitás cuenta: podés seguir como invitado.
+          Zona DEMO para organizadores y administración. Para comprar no necesitas cuenta: puedes seguir como invitado.
         </p>
       </header>
 

@@ -1,6 +1,6 @@
 'use server';
 
-import { hashCheckoutToken } from '@/features/checkout/order';
+import { hashCheckoutToken } from '@/features/checkout/order-token';
 import { validateSurvey } from '@/features/ticketing/survey';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 

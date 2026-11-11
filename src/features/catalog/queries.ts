@@ -4,7 +4,7 @@ import { createPublicClient } from '@/lib/supabase/public';
 import { getHomeFeaturedIds } from '@/features/featured/queries';
 
 import type { CartEvent } from '../checkout/cart';
-import { chooseHomeEvents } from './home';
+import { chooseHomeEvents, rankRelatedEvents } from './home';
 import type {
   CatalogCategory,
   CatalogEvent,
@@ -41,6 +41,7 @@ type EventDetailRow = {
   slug: string;
   title: string;
   description: string;
+  includes_certificate: boolean;
   agenda: string | null;
   starts_at: string;
   ends_at: string | null;
@@ -96,7 +97,7 @@ const eventSelect = `
 `;
 
 const eventDetailSelect = `
-  id, slug, title, description, agenda, starts_at, ends_at, event_type_id, mode, venue, image_path, status,
+  id, slug, title, description, includes_certificate, agenda, starts_at, ends_at, event_type_id, mode, venue, image_path, status,
   event_type:categories!events_event_type_fk(slug, name),
   topic:categories!events_topic_fk(slug, name),
   location:categories!events_location_fk(slug, name),
@@ -164,6 +165,7 @@ function mapEventDetail(row: EventDetailRow): CatalogEventDetail | null {
     slug: row.slug,
     title: row.title,
     description: row.description,
+    includesCertificate: row.includes_certificate,
     agenda: row.agenda,
     startsAt: row.starts_at,
     endsAt: row.ends_at,
@@ -416,13 +418,13 @@ export const getEventDetail = cache(async (slug: string): Promise<EventDetailRes
     .neq('id', event.id)
     .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
-    .limit(3);
+    .limit(100);
 
   const related = relatedResult.error
     ? []
-    : ((relatedResult.data ?? []) as unknown as EventRow[])
+    : rankRelatedEvents(((relatedResult.data ?? []) as unknown as EventRow[])
         .map(mapEvent)
-        .filter((item): item is CatalogEvent => item !== null);
+        .filter((item): item is CatalogEvent => item !== null), { eventId: event.id, topicSlug: event.topic?.slug ?? null });
 
   return { status: 'ok', event, related };
 });

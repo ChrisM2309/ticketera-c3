@@ -29,9 +29,9 @@ export async function startOrderPayment(orderId: string, checkoutToken: string):
     const body = (await response.json().catch(() => null)) as { redirectUrl?: unknown; error?: unknown } | null;
 
     if (response.ok && typeof body?.redirectUrl === 'string') return { ok: true, redirectUrl: body.redirectUrl };
-    return { ok: false, message: typeof body?.error === 'string' ? body.error : 'No pudimos iniciar el pago. Intentá nuevamente.' };
+    return { ok: false, message: typeof body?.error === 'string' ? body.error : 'No pudimos iniciar el pago. Intenta nuevamente.' };
   } catch {
-    return { ok: false, message: 'No pudimos iniciar el pago. Revisá tu conexión e intentá nuevamente.' };
+    return { ok: false, message: 'No pudimos iniciar el pago. Revisa tu conexión e intenta nuevamente.' };
   }
 }
 

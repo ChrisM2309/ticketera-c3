@@ -41,3 +41,11 @@ describe('isIllustrativeCover', () => {
     expect(isIllustrativeCover({ imagePath: '/images/stock/stock-auditorio-01.jpg' })).toBe(true);
   });
 });
+
+it('elige una ilustración local al fallar la portada y no repite el mismo intento', async () => {
+  const { fallbackCoverPath } = await import('../../src/features/catalog/images');
+  const event = { id: 'event-1', eventType: { slug: 'congresos' } };
+  const fallback = fallbackCoverPath(event, 'https://example.test/missing.jpg');
+  expect(fallback).toMatch(/^\/images\/tipos\/congresos-[12]\.webp$/);
+  expect(fallbackCoverPath(event, fallback!)).toBeNull();
+});
