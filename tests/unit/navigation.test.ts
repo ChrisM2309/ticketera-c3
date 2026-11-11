@@ -45,15 +45,16 @@ describe('navigation', () => {
     expect(items.map((item) => item.href)).not.toContain('/');
   });
 
-  it('muestra Ingresar sin sesión y Mis boletos y Mi cuenta con sesión', () => {
+  it('prioriza la cuenta compradora y deja publicar fuera de la navegación', () => {
     const anonymous = accountLinksFor(false);
     const signedIn = accountLinksFor(true);
 
     expect(anonymous).toEqual(accountLinks);
     expect(anonymous.map((link) => link.href)).toContain('/ingresar/');
-    expect(signedIn.map((link) => link.href)).toEqual(['/panel/eventos/nuevo/', '/mis-boletos/', '/cuenta/']);
-    expect(signedIn.map((link) => link.label)).toEqual(['Publicar evento', 'Mis boletos', 'Mi cuenta']);
-    expect(signedIn.map((link) => link.icon)).toEqual(['calendarPlus', 'ticket', 'user']);
+    expect(signedIn.map((link) => link.href)).toEqual(['/mis-boletos/', '/cuenta/']);
+    expect(signedIn.map((link) => link.label)).toEqual(['Mis boletos', 'Mi cuenta']);
+    expect(signedIn.map((link) => link.icon)).toEqual(['ticket', 'user']);
     expect(signedIn.map((link) => link.href)).not.toContain('/ingresar/');
+    expect([...anonymous, ...signedIn].map((link) => link.label)).not.toContain('Publicar evento');
   });
 });

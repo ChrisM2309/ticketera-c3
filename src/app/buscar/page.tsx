@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 
+import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
 import { SiteSearch } from '@/components/layout/site-search';
+import { filterCatalogEventsByFilters, parseCatalogFilters } from '@/features/catalog/filters';
 import { getCatalogListing } from '@/features/catalog/queries';
 import { parseSearchQuery, searchCatalogEvents } from '@/features/catalog/search';
 import { getSiteSettings } from '@/features/settings/settings';
@@ -23,6 +25,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const query = parseSearchQuery(params.q);
   const listing = await getCatalogListing();
+  const now = new Date();
+  const filters = listing.status === 'ok'
+    ? parseCatalogFilters(params, listing.taxonomy.locations.map((location) => location.slug))
+    : null;
+  const filteredEvents = listing.status === 'ok'
+    ? searchCatalogEvents(filterCatalogEventsByFilters(upcomingEvents(listing.events, now.getTime()), filters, now), query)
+    : [];
 
   return (
     <section aria-labelledby="buscar-title" className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 md:px-6">
@@ -38,11 +47,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           No pudimos cargar los eventos. Intenta nuevamente más tarde.
         </p>
       ) : (
-        <SearchResults
-          query={query}
-          events={searchCatalogEvents(upcomingEvents(listing.events), query)}
-          truncated={listing.truncated}
-        />
+        <>
+          <CatalogFilters
+            filters={filters!}
+            locations={listing.taxonomy.locations}
+            showCiudad
+            clearHref="/buscar/"
+            query={query}
+          />
+          <SearchResults query={query} events={filteredEvents} truncated={listing.truncated} />
+        </>
       )}
     </section>
   );

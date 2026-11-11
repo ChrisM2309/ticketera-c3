@@ -94,7 +94,7 @@ Apariencia técnica, limpia y profesional, basada en el manual C3. Es un **proto
 ## Pantallas y bloques
 
 ### Home
-Header (logo, badge DEMO, buscador, Publicar evento, Mis boletos, Carrito), barra de 12 categorías, hero con evento destacado y CTA, próximos eventos, bloque de gratuitos, CTA de organizador, pie con avisos de demostración.
+Header (logo, badge DEMO, buscador, Mis boletos, Carrito), barra de 12 categorías, hero buyer-first con búsqueda, atajos y evento destacado, próximos eventos, bloque de gratuitos, CTA de organizador, pie con avisos de demostración.
 
 ### Categoría / subcategoría
 Breadcrumb, H1 con keyword, 2–3 líneas SEO, chips de subtemas, filtros (fecha, modalidad, ciudad, gratis/de pago), tarjetas ordenadas por fecha, FAQ contextual. Estado vacío sin mentir sobre disponibilidad.

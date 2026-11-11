@@ -19,10 +19,9 @@ export type CategoryGroup = {
 };
 
 /**
- * Acciones de la cuenta y de la publicación. El logo lleva al Home; el menú no incluye «Inicio».
+ * Acciones de la cuenta. Publicar vive como CTA contextual para organizadores; el logo lleva al Home.
  * El carrito tiene su propio control en la cabecera (con contador), no aquí.
  */
-const publishLink: MenuItem = { href: '/panel/eventos/nuevo/', label: 'Publicar evento', icon: 'calendarPlus' };
 const signInLink: MenuItem = { href: '/ingresar/', label: 'Ingresar', icon: 'logIn' };
 
 /** Zona de cuenta con sesión activa: reemplaza a «Ingresar». «Cerrar sesión» vive en /cuenta/. */
@@ -32,11 +31,11 @@ const signedInLinks: readonly MenuItem[] = [
 ];
 
 /** Enlaces sin sesión (el HTML que se sirve a todos). */
-export const accountLinks: readonly MenuItem[] = [publishLink, signInLink];
+export const accountLinks: readonly MenuItem[] = [signInLink];
 
 /** Enlaces de la cabecera según haya o no una sesión en el navegador. */
 export function accountLinksFor(signedIn: boolean): readonly MenuItem[] {
-  return signedIn ? [publishLink, ...signedInLinks] : accountLinks;
+  return signedIn ? signedInLinks : accountLinks;
 }
 
 export const categoryLinks: readonly CategoryItem[] = eventCategories.map(({ slug, label }) => ({

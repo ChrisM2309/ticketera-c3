@@ -1,13 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { cn } from '@/lib/utils';
 
 type SiteSearchProps = Readonly<{
   defaultValue?: string;
+  className?: string;
 }>;
 
-export function SiteSearch({ defaultValue = '' }: SiteSearchProps) {
+export function SiteSearch({ defaultValue = '', className }: SiteSearchProps) {
   return (
-    <form action="/buscar/" method="get" role="search" className="flex w-full gap-2 md:max-w-md md:flex-1">
+    <form action="/buscar/" method="get" role="search" className={cn('flex w-full gap-2 md:max-w-md md:flex-1', className)}>
       <label htmlFor="buscar-eventos" className="sr-only">
         Buscar eventos
       </label>

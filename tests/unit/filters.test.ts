@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   filterCatalogEvents,
+  filterCatalogEventsByFilters,
   filtersForScope,
   noCatalogFilters,
   parseCatalogFilters,
@@ -115,6 +116,10 @@ describe('lectura de filtros desde la URL', () => {
     );
   });
 
+  it('acepta el atajo de este fin de semana', () => {
+    expect(parseCatalogFilters({ fecha: 'fin-de-semana' }, ['san-salvador']).fecha).toBe('fin-de-semana');
+  });
+
   it('no aplica ciudad cuando la ruta ya es una ciudad', () => {
     const scope = resolveCatalogRoute(['san-miguel'], taxonomy);
 
@@ -156,6 +161,28 @@ describe('filtrado del catálogo', () => {
     expect(
       ids('/congresos/', { ...noCatalogFilters, precio: 'gratis', ciudad: 'san-salvador', fecha: 'semana' }),
     ).toEqual(['a']);
+  });
+
+  it('filtra un catálogo global sin exigir una ruta SEO', () => {
+    expect(filterCatalogEventsByFilters(events, { ...noCatalogFilters, modalidad: 'virtual' }, now).map((item) => item.id)).toEqual(['b']);
+  });
+
+  it('limita este fin de semana al sábado y domingo próximos en El Salvador', () => {
+    const viernes = new Date('2027-03-05T18:00:00Z');
+    const weekendEvents = [
+      event('sabado', { startsAt: '2027-03-06T16:00:00Z' }),
+      event('domingo', { startsAt: '2027-03-07T16:00:00Z' }),
+      event('lunes', { startsAt: '2027-03-08T16:00:00Z' }),
+      event('pasado', { startsAt: '2027-03-05T16:00:00Z' }),
+    ];
+
+    expect(
+      filterCatalogEventsByFilters(
+        weekendEvents,
+        { ...noCatalogFilters, fecha: 'fin-de-semana' },
+        viernes,
+      ).map((item) => item.id),
+    ).toEqual(['sabado', 'domingo']);
   });
 });
 

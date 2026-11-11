@@ -31,7 +31,7 @@ export function SiteHeader() {
 
         <SiteSearch />
 
-        {/* Escritorio: publicar y cuenta a la derecha (Ingresar, o Mis boletos y Mi cuenta con sesión). En móvil van dentro del menú. */}
+        {/* Escritorio: cuenta a la derecha (Ingresar, o Mis boletos y Mi cuenta con sesión). En móvil van dentro del menú. */}
         <AccountNav />
 
         {/* Carrito y Menú van en la misma fila en móvil, sin abrir el menú para comprar. */}

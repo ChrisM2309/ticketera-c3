@@ -17,6 +17,7 @@
 - `superpowers/specs/2026-11-02-ticketera-design.md` — especificación base de la solución.
 - `superpowers/specs/2026-11-11-catalogo-demo-contenido-design.md` — diseño del catálogo DEMO adicional, fotos y artículos SEO.
 - `superpowers/specs/2026-11-11-editorial-blog-enrichment-design.md` — diseño del enriquecimiento visual y SEO del blog DEMO.
+- `superpowers/specs/2026-11-11-home-buyer-first-design.md` — diseño buyer-first de portada, búsqueda y navegación.
 - `superpowers/plans/2026-11-02-t01-next-project-plan.md` — plan de T01 (proyecto Next.js).
 - `superpowers/plans/2026-11-03-t07-event-detail-plan.md` — plan de T07 (ficha del evento).
 - `superpowers/plans/2026-11-04-t08-cart-plan.md` — plan de T08 (carrito).
@@ -36,6 +37,7 @@
 - `superpowers/plans/2026-11-11-wompi-sandbox.md` — plan para sustituir la simulación de pagos por Wompi El Salvador en sandbox (pendiente de decisiones del responsable).
 - `superpowers/plans/2026-11-11-catalogo-demo-contenido-plan.md` — plan del catálogo DEMO adicional, assets locales y contenido editorial.
 - `superpowers/plans/2026-11-11-editorial-blog-enrichment-plan.md` — plan para portadas, autores, keywords, enlaces internos y cinco artículos.
+- `superpowers/plans/2026-11-11-home-buyer-first-plan.md` — plan para jerarquía del Home, atajos, filtros y cards buyer-first.
 - `superpowers/plans/implementation-backlog.md` — backlog de tareas por área, dependencias y criterios de aceptación.
 - `DECISIONS.md` — decisiones cerradas, supuestos y pendientes menores.
 

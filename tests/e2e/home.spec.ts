@@ -21,11 +21,19 @@ test('home muestra la identidad demo del proyecto', async ({ page }) => {
   );
   await expect(page.locator('meta[property="og:description"]')).not.toHaveAttribute('content', '');
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary');
-  await expect(
-    page.getByRole('heading', {
-      name: 'Boletos para eventos tecnológicos en El Salvador',
-    }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Encontrá tu próximo evento tecnológico' })).toBeVisible();
+  await expect(page.getByRole('search').last()).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Este fin de semana' })).toHaveAttribute(
+    'href',
+    '/buscar/?fecha=fin-de-semana',
+  );
+  await expect(page.getByRole('link', { name: 'Cerca de mí' })).toHaveAttribute(
+    'href',
+    '/buscar/?ciudad=san-salvador',
+  );
+  await expect(page.locator('header').getByText('Publicar evento')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Próximos eventos' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '¿Organizás un evento?' })).toBeVisible();
   await expectStructuredDataMatchesRobots(page);
 });
 

@@ -35,7 +35,7 @@ export function EventCard({ event, featured = false }: EventCardProps) {
   });
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-md bg-superficie shadow-sm">
+    <article className={cn('relative flex h-full flex-col overflow-hidden rounded-md bg-superficie', featured ? 'shadow-xl' : 'shadow-sm')}>
       <div className={cn('relative bg-navy', featured ? 'aspect-[2/1]' : 'aspect-[16/10]')}>
         <Image
           src={coverImagePath(event)}
@@ -92,14 +92,8 @@ export function EventCard({ event, featured = false }: EventCardProps) {
               <Icon name={event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
               <span>{modeLabel(event.mode)}{event.location ? `, ${event.location.name}` : ''}</span>
             </p>
-            {event.organizer ? (
-              <p className="flex items-center gap-2">
-                <Icon name="building" size={16} />
-                <span>{event.organizer.name}</span>
-              </p>
-            ) : null}
           </div>
-          <p className="mt-auto flex items-center gap-2 pt-2 font-titulo text-lg font-bold">
+          <p className="mt-auto flex items-center gap-2 rounded-sm bg-superficie-sutil px-3 py-2 pt-2 font-titulo text-xl font-extrabold text-accion">
             <Icon name="tag" size={20} />
             {priceLabel(event.ticketTypes)}
           </p>
