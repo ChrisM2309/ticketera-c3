@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { startOrderPayment, WompiPaymentButton } from '@/components/payments/wompi-payment-button';
 import { buttonVariants } from '@/components/ui/button';
@@ -149,10 +149,11 @@ export function PaymentStep({ order }: PaymentStepProps) {
   const [isConfirming, setIsConfirming] = useState(false);
   // La referencia evita un segundo envío antes de que el botón se deshabilite.
   const inFlight = useRef(false);
+  const autoConfirmStarted = useRef(false);
   const isFree = order.totalCents === 0;
 
   /** Confirma una compra gratuita. Las compras con importe se confirman solo desde el webhook de Wompi. */
-  async function requestConfirmation(): Promise<ConfirmOutcome> {
+  const requestConfirmation = useCallback(async (): Promise<ConfirmOutcome> => {
     try {
       const response = await fetch(`/api/checkout/orders/${order.orderId}/confirm/`, {
         method: 'POST',
@@ -176,9 +177,9 @@ export function PaymentStep({ order }: PaymentStepProps) {
     } catch {
       return { ok: false, view: checkoutErrorView(null, 0) };
     }
-  }
+  }, [order.checkoutToken, order.orderId]);
 
-  async function confirmFree() {
+  const confirmFree = useCallback(async () => {
     if (inFlight.current) {
       return;
     }
@@ -199,10 +200,10 @@ export function PaymentStep({ order }: PaymentStepProps) {
       inFlight.current = false;
       setIsConfirming(false);
     }
-  }
+  }, [requestConfirmation]);
 
   /** «Reintentar» repite la confirmación gratuita (misma orden y clave): no duplica boletos. */
-  async function retryConfirmation() {
+  const retryConfirmation = useCallback(async () => {
     if (inFlight.current || !isFree) {
       return;
     }
@@ -221,7 +222,14 @@ export function PaymentStep({ order }: PaymentStepProps) {
       inFlight.current = false;
       setIsConfirming(false);
     }
-  }
+  }, [isFree, requestConfirmation]);
+
+  useEffect(() => {
+    if (isFree && !autoConfirmStarted.current) {
+      autoConfirmStarted.current = true;
+      void confirmFree();
+    }
+  }, [confirmFree, isFree]);
 
   if (view.status === 'confirmed') {
     return (
@@ -298,15 +306,11 @@ export function PaymentStep({ order }: PaymentStepProps) {
               retrying={isConfirming}
             />
           ) : null}
-          <button
-            type="button"
-            disabled={isConfirming}
-            onClick={confirmFree}
-            className={cn(buttonVariants({ variant: 'compra', size: 'lg' }), 'w-full')}
-          >
-            <Icon name="check" />
-            {isConfirming ? 'Confirmando…' : 'Confirmar registro gratuito'}
-          </button>
+          {!errorView ? (
+            <p role="status" className="font-texto text-sm text-texto-suave">
+              {isConfirming ? 'Confirmando tu registro…' : 'Tu registro es gratuito.'}
+            </p>
+          ) : null}
         </>
       ) : (
         <>
@@ -321,6 +325,7 @@ export function PaymentStep({ order }: PaymentStepProps) {
           <WompiPaymentButton
             start={() => startOrderPayment(order.orderId, order.checkoutToken)}
             amountCents={order.totalCents}
+            autoStart
             summary={[
               { label: 'Subtotal', amountCents: order.subtotalCents },
               ...(order.feeCents > 0 ? [{ label: 'Comisión de la orden anterior', amountCents: order.feeCents }] : []),

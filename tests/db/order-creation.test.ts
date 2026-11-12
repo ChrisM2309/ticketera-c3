@@ -323,13 +323,13 @@ it('cobra al comprador solo el subtotal y registra comisión al organizador por 
 });
 
 
-it('registra cincuenta centavos por cada boleto gratuito sin cobrar al comprador', async () => {
+it('no registra comisión por entradas gratuitas', async () => {
   const free = await ticket('bootcamp-demo-ciberseguridad-gratis', 'Registro gratuito');
   const result = await createPendingOrderForEvent('bootcamp-demo-ciberseguridad-gratis', [{ ticketTypeId: free.id, quantity: 2 }]);
   expect(result.rows[0]).toMatchObject({ subtotal_cents: 0, fee_cents: 0, total_cents: 0 });
   await asSuperuser(db);
   const saved = await db.query<{ organizer_fee_cents: number }>('select organizer_fee_cents from public.orders where id = $1', [result.rows[0].order_id]);
-  expect(saved.rows[0].organizer_fee_cents).toBe(100);
+  expect(saved.rows[0].organizer_fee_cents).toBe(0);
 });
 
 it('conserva el total de una orden anterior al reintentarla', async () => {
@@ -351,7 +351,7 @@ it('cuenta boletos gratuitos y de pago en la misma orden', async () => {
   expect(result.rows[0]).toMatchObject({ subtotal_cents: 1000, fee_cents: 0, total_cents: 1000 });
   await asSuperuser(db);
   const saved = await db.query<{ organizer_fee_cents: number }>('select organizer_fee_cents from public.orders where id = $1', [result.rows[0].order_id]);
-  expect(saved.rows[0].organizer_fee_cents).toBe(160);
+  expect(saved.rows[0].organizer_fee_cents).toBe(110);
 });
 
 it('asigna un código corto único y estable a la orden y su reintento', async () => {

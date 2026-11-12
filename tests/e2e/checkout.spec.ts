@@ -65,10 +65,19 @@ test('checkout de invitado envía solo selección y muestra los importes verific
       body: JSON.stringify({
         orderId: '33333333-3333-4333-8333-333333333333',
         subtotalCents: 4500,
-        feeCents: 225,
-        totalCents: 4725,
+        feeCents: 0,
+        totalCents: 4500,
         checkoutToken: 'secreto-solo-de-sesion',
       }),
+    });
+  });
+  let paymentStarts = 0;
+  await page.route('**/api/checkout/orders/33333333-3333-4333-8333-333333333333/pago/', async (route) => {
+    paymentStarts += 1;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'No pudimos iniciar el pago. Intenta nuevamente.' }),
     });
   });
   await page.evaluate(({ key, value }) => {
@@ -84,11 +93,14 @@ test('checkout de invitado envía solo selección y muestra los importes verific
 
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
-  await page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' }).click();
+  await expect(page.getByText('Comisión')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Pagar $45' }).click();
 
   await expect(page.getByRole('heading', { level: 1, name: 'Pago de demostración' })).toBeVisible();
-  await expect(page.getByText('Total verificado')).toBeVisible();
-  await expect(page.locator('dd').filter({ hasText: /^\$47\.25$/ }).first()).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'No pudimos iniciar el pago.' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Pagar \$45 con Wompi/ })).toBeVisible();
+  expect(paymentStarts).toBe(1);
+  await expect(page.locator('dd').filter({ hasText: /^\$45$/ }).first()).toBeVisible();
   await expect(page).not.toHaveURL(/secreto-solo-de-sesion/);
   await expect
     .poll(() => page.evaluate(({ cartKey, checkoutKey }) => ({
@@ -115,7 +127,7 @@ test('checkout anuncia los errores de datos de comprador', async ({ page }) => {
   }, { key: cartStorageKey, value: storedCart });
   await page.reload();
 
-  await page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' }).click();
+  await page.getByRole('button', { name: 'Pagar $45' }).click();
 
   await expect(page.getByRole('alert').filter({ hasText: 'Ingresa tu nombre completo.' })).toBeVisible();
   await expect(page.getByRole('alert').filter({ hasText: 'Ingresa un correo electrónico válido.' })).toBeVisible();
@@ -142,13 +154,19 @@ const freeCart = {
   items: [{ ticketTypeId: 'free', quantity: 2 }],
 };
 
-/** Nombre accesible del botón principal del checkout según el total (gratuito o pago de demostración). */
+/** Nombre accesible del botón principal del checkout según el total. */
 function submitName(totalCents: number): string {
-  return totalCents === 0 ? 'Confirmar registro gratuito' : 'Pagar $47.25 · pago de demostración';
+  return totalCents === 0 ? 'Confirmar registro gratuito' : 'Pagar $45';
 }
 
-/** Crea la orden con la API simulada y deja la página en el paso de pago. */
-async function reachPaymentStep(page: Page, cart: typeof storedCart, totalCents: number) {
+/** Crea la orden; las entradas pagadas inician Wompi y las gratuitas se confirman automáticamente. */
+async function reachPaymentStep(
+  page: Page,
+  cart: typeof storedCart,
+  totalCents: number,
+  paymentStart: 'error' | 'redirect' = 'error',
+  freeConfirmStatus = 200,
+) {
   await page.route('**/api/checkout/orders', async (route) => {
     await route.fulfill({
       status: 201,
@@ -162,6 +180,30 @@ async function reachPaymentStep(page: Page, cart: typeof storedCart, totalCents:
       }),
     });
   });
+  if (totalCents === 0) {
+    await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
+      await route.fulfill({
+        status: freeConfirmStatus,
+        contentType: 'application/json',
+        body: JSON.stringify(freeConfirmStatus === 200
+          ? { orderId, status: 'confirmed', ticketCount: 2, alreadyProcessed: false }
+          : { error: 'La cantidad supera los cupos disponibles.' }),
+      });
+    });
+  } else {
+    if (paymentStart === 'redirect') {
+      await page.route('https://pay.test/**', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'text/html', body: '<h1>Pago Wompi de prueba</h1>' });
+      });
+    }
+    await page.route(`**/api/checkout/orders/${orderId}/pago/`, async (route) => {
+      if (paymentStart === 'redirect') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ redirectUrl: 'https://pay.test/checkout/1' }) });
+      } else {
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'No pudimos iniciar el pago. Intenta nuevamente.' }) });
+      }
+    });
+  }
   await page.evaluate(({ key, value }) => {
     window.localStorage.setItem(key, JSON.stringify(value));
   }, { key: cartStorageKey, value: cart });
@@ -169,216 +211,81 @@ async function reachPaymentStep(page: Page, cart: typeof storedCart, totalCents:
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
   await page.getByRole('button', { name: submitName(totalCents) }).click();
-  await expect(page.getByRole('heading', { level: 1, name: /Confirma tu registro|Pago de demostración/ })).toBeVisible();
-}
-
-/** Recorre el panel de pago simulado: resumen, resultado elegido y confirmación. */
-async function simulatePayment(page: Page, decision: 'aprobado' | 'rechazado') {
-  await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
-  await page.getByRole('radio', { name: new RegExp(`^Simular pago ${decision}`) }).check();
-  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
+  if (totalCents === 0 && freeConfirmStatus === 200) {
+    await expect(page.getByRole('heading', { level: 1, name: 'Orden confirmada' })).toBeVisible();
+  } else if (totalCents === 0) {
+    await expect(page.getByRole('alert')).toBeVisible();
+  } else if (paymentStart === 'redirect') {
+    await expect(page.getByRole('heading', { name: 'Pago Wompi de prueba' })).toBeVisible();
+  } else {
+    await expect(page.getByRole('heading', { level: 1, name: 'Pago de demostración' })).toBeVisible();
+  }
 }
 
 test('registro gratuito se confirma sin pasarela y muestra los boletos emitidos', async ({ page }) => {
   await reachPaymentStep(page, freeCart, 0);
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ checkoutToken, decision: null });
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        orderId,
-        status: 'confirmed',
-        ticketCount: 2,
-        alreadyProcessed: false,
-        tickets: ['qr-1', 'qr-2'],
-      }),
-    });
-  });
-
-  await page.getByRole('button', { name: 'Confirmar registro gratuito' }).click();
-
   await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: 'Emitimos 2 boletos para esta orden.' })).toBeVisible();
-  await expect(page.getByText('Modo demostración')).toHaveCount(0);
-});
-
-test('pago DEMO aprobado confirma la orden y explica que no hubo cobro', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-  await expect(page.getByText('no se cobrará dinero ni se solicitará información bancaria')).toBeVisible();
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ checkoutToken, decision: 'approved' });
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] }),
-    });
-  });
-
-  await simulatePayment(page, 'aprobado');
-
-  await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
-  await expect(page.getByRole('status').filter({ hasText: 'Emitimos 3 boletos para esta orden.' })).toBeVisible();
-});
-
-test('el comprador recorre los pasos y ve el comprobante aprobado', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-  const notice = page.getByText('Modo demostración: aquí no se cobrará dinero ni se solicitará información bancaria.');
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ checkoutToken, decision: 'approved' });
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] }),
-    });
-  });
-
-  // Paso 1: resumen. Sin campos de tarjeta en ningún paso.
-  await expect(page.getByRole('heading', { level: 2, name: 'Resumen', exact: true }).first()).toBeVisible();
-  await expect(notice).toBeVisible();
-  await expect(page.locator('dt').filter({ hasText: 'Total a pagar (simulado)' })).toBeVisible();
-  await expect(page.locator('input[autocomplete^="cc-"], input[name*="card" i]')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
-
-  // Paso 2: elegir el resultado de la simulación.
-  await expect(page.getByRole('heading', { name: 'Resultado de la simulación' })).toBeVisible();
-  await expect(notice).toBeVisible();
-  await expect(page.getByRole('radio')).toHaveCount(2);
-  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
-  await expect(page.getByRole('alert').filter({ hasText: 'Elige el resultado que quieres simular.' })).toBeVisible();
-  await page.getByRole('radio', { name: /^Simular pago aprobado/ }).check();
-  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
-
-  // Paso 3: procesamiento. Paso 4: resultado aprobado.
-  await expect(page.getByRole('heading', { name: 'Procesando pago de demostración…' })).toBeVisible();
-  await expect(notice).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
-  await expect(page.getByText('Pago de demostración: Aprobado (simulado)')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Ver mis boletos' })).toHaveAttribute(
     'href',
     `/confirmacion/${orderId}/${checkoutToken}/`,
   );
 });
 
-test('se puede volver del paso de resultado al resumen', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-
-  await page.getByRole('button', { name: 'Continuar con el pago simulado' }).click();
-  await page.getByRole('button', { name: 'Volver al resumen' }).click();
-
-  await expect(page.getByRole('button', { name: 'Continuar con el pago simulado' })).toBeVisible();
+test('un clic crea la orden e inicia el pago Wompi', async ({ page }) => {
+  const paymentRequests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes(`/api/checkout/orders/${orderId}/pago/`)) paymentRequests.push(request.url());
+  });
+  await reachPaymentStep(page, storedCart, 4500, 'redirect');
+  expect(paymentRequests).toHaveLength(1);
+  await expect(page).toHaveURL('https://pay.test/checkout/1');
+  await expect(page.getByRole('heading', { name: 'Pago Wompi de prueba' })).toBeVisible();
 });
 
-test('pago DEMO rechazado deja la orden fallida sin boletos', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ checkoutToken, decision: 'rejected' });
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ orderId, status: 'failed', ticketCount: 0, alreadyProcessed: false, tickets: [] }),
-    });
-  });
-
-  await simulatePayment(page, 'rechazado');
-
-  await expect(page.getByRole('heading', { name: 'Pago rechazado' })).toBeVisible();
-  await expect(page.getByText('No se emitieron boletos ni se descontó cupo.')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Volver al inicio' })).toBeVisible();
+test('el token sigue en sesión y no se agrega a la URL de Wompi', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4500, 'redirect');
+  await expect(page).toHaveURL('https://pay.test/checkout/1');
+  await expect(page).not.toHaveURL(new RegExp(checkoutToken));
 });
 
-test('un pago rechazado muestra el comprobante rechazado y cero boletos', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ checkoutToken, decision: 'rejected' });
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ orderId, status: 'failed', ticketCount: 0, alreadyProcessed: false, tickets: [] }),
-    });
-  });
-
-  await simulatePayment(page, 'rechazado');
-
-  await expect(page.getByRole('heading', { name: 'Pago rechazado' })).toBeVisible();
-  await expect(page.getByText('Pago de demostración: Rechazado (simulado)')).toBeVisible();
-  await expect(page.getByText('No se emitieron boletos ni se descontó cupo.')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Ver mis boletos' })).toHaveCount(0);
+test('el inicio de pago fallido deja un reintento claro', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4500);
+  await expect(page.getByRole('alert').filter({ hasText: 'No pudimos iniciar el pago.' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Pagar \$45 con Wompi/ })).toBeVisible();
 });
 
-test('un error del servidor se anuncia y el comprador puede reintentar', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-  let attempts = 0;
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    attempts += 1;
-    await route.fulfill({
-      status: attempts === 1 ? 500 : 200,
-      contentType: 'application/json',
-      body: JSON.stringify(
-        attempts === 1
-          ? { error: 'No pudimos confirmar la orden. Intenta nuevamente.' }
-          : { orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] },
-      ),
-    });
+test('reintenta Wompi sin crear una orden adicional', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4500);
+  await page.route(`**/api/checkout/orders/${orderId}/pago/`, async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ redirectUrl: 'https://pay.test/checkout/1' }) });
   });
-
-  await simulatePayment(page, 'aprobado');
-  await expect(
-    page.getByRole('alert').filter({ hasText: 'No pudimos completar la compra. Intenta de nuevo' }),
-  ).toBeVisible();
-
-  // El panel vuelve al paso de resultado con la elección intacta para reintentar.
-  await expect(page.getByRole('radio', { name: /^Simular pago aprobado/ })).toBeChecked();
-  await page.getByRole('button', { name: 'Confirmar pago simulado' }).click();
-  await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
+  await page.route('https://pay.test/**', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'text/html', body: '<h1>Pago Wompi de prueba</h1>' });
+  });
+  await page.getByRole('button', { name: /Pagar \$45 con Wompi/ }).click();
+  await expect(page.getByRole('heading', { name: 'Pago Wompi de prueba' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Finaliza tu compra|Pago de demostración/ })).toHaveCount(0);
 });
 
-test('un error 503 muestra Reintentar y el reintento funciona', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-  const decisions: unknown[] = [];
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    decisions.push(route.request().postDataJSON());
-    await route.fulfill({
-      status: decisions.length === 1 ? 503 : 200,
-      contentType: 'application/json',
-      body: JSON.stringify(
-        decisions.length === 1
-          ? { error: 'El checkout DEMO no está configurado todavía. Intenta más tarde.' }
-          : { orderId, status: 'confirmed', ticketCount: 3, alreadyProcessed: false, tickets: [] },
-      ),
-    });
+test('Wompi fallido no confirma ni emite boletos', async ({ page }) => {
+  const confirmations: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes(`/api/checkout/orders/${orderId}/confirm/`)) confirmations.push(request.url());
   });
-
-  await simulatePayment(page, 'aprobado');
-
-  const alert = page.getByRole('alert').filter({ hasText: 'No pudimos completar la compra. Intenta de nuevo' });
-  await expect(alert).toBeVisible();
-  // El mensaje técnico del servidor nunca llega al comprador.
-  await expect(page.getByText('no está configurado todavía')).toHaveCount(0);
-  await expect(page.getByRole('radio', { name: /^Simular pago aprobado/ })).toBeChecked();
-
-  await alert.getByRole('button', { name: 'Reintentar' }).click();
-
-  await expect(page.getByRole('heading', { name: 'Orden confirmada' })).toBeVisible();
-  expect(decisions).toEqual([
-    { checkoutToken, decision: 'approved' },
-    { checkoutToken, decision: 'approved' },
-  ]);
+  await reachPaymentStep(page, storedCart, 4500);
+  expect(confirmations).toHaveLength(0);
+  await expect(page.getByText('No pudimos iniciar el pago.')).toBeVisible();
 });
 
-test('sin cupo al confirmar ofrece volver al evento y no reintentar', async ({ page }) => {
-  await reachPaymentStep(page, storedCart, 4725);
-  await page.route(`**/api/checkout/orders/${orderId}/confirm/`, async (route) => {
-    await route.fulfill({
-      status: 400,
-      contentType: 'application/json',
-      body: JSON.stringify({ error: 'La cantidad supera los cupos disponibles.' }),
-    });
-  });
+test('el token de confirmación no aparece en la URL ni en el botón de pago', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4500);
+  await expect(page).not.toHaveURL(new RegExp(checkoutToken));
+  await expect(page.getByRole('button', { name: /Pagar \$45 con Wompi/ })).toBeVisible();
+});
 
-  await simulatePayment(page, 'aprobado');
-
+test('el fallo de cupo en un registro gratuito es recuperable', async ({ page }) => {
+  await reachPaymentStep(page, freeCart, 0, 'error', 400);
   const alert = page.getByRole('alert').filter({ hasText: 'Ya no hay entradas disponibles' });
   await expect(alert).toBeVisible();
   await expect(alert.getByRole('button', { name: 'Reintentar' })).toHaveCount(0);
@@ -386,6 +293,14 @@ test('sin cupo al confirmar ofrece volver al evento y no reintentar', async ({ p
     'href',
     '/congresos/inteligencia-artificial/congreso-demo-ia/',
   );
+});
+
+test('el total y la etiqueta del checkout caben en la vista móvil', async ({ page }) => {
+  await reachPaymentStep(page, storedCart, 4500);
+  const button = page.getByRole('button', { name: /Pagar \$45 con Wompi/ });
+  await expect(button).toBeVisible();
+  expect(await button.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
 test.describe('móvil de 375 px', () => {
@@ -399,13 +314,13 @@ test.describe('móvil de 375 px', () => {
     await expect(page.getByRole('heading', { name: 'Finaliza tu compra' })).toBeVisible();
   });
 
-  test('subtotal, comisión y total se ven antes del botón de pago', async ({ page }) => {
-    const boton = page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' });
+  test('subtotal y total se ven antes del botón de pago', async ({ page }) => {
+    const boton = page.getByRole('button', { name: 'Pagar $45' });
     await expect(boton).toBeVisible();
     const botonBox = await boton.boundingBox();
     expect(botonBox).not.toBeNull();
 
-    for (const nombre of ['Subtotal', /^Comisión DEMO/, 'Total provisional']) {
+    for (const nombre of ['Subtotal', 'Total provisional']) {
       const fila = page.locator('dt').filter({ hasText: nombre });
       await expect(fila).toBeVisible();
       const filaBox = await fila.boundingBox();
@@ -413,16 +328,15 @@ test.describe('móvil de 375 px', () => {
       expect(filaBox!.y + filaBox!.height).toBeLessThanOrEqual(botonBox!.y);
     }
 
-    await expect(page.locator('dd').filter({ hasText: /^\$45$/ })).toBeVisible();
-    await expect(page.locator('dd').filter({ hasText: /^\$2\.25$/ })).toBeVisible();
-    await expect(page.locator('dd').filter({ hasText: /^\$47\.25$/ })).toBeVisible();
+    await expect(page.locator('dd').filter({ hasText: /^\$45$/ }).first()).toBeVisible();
+    await expect(page.getByText('Comisión')).toHaveCount(0);
   });
 
   test('el botón de pago está dentro del primer scroll tras llenar los datos', async ({ page }) => {
     await page.getByLabel('Nombre completo').fill('Ana DEMO');
     await page.getByLabel('Correo electrónico').fill('ana@example.test');
 
-    const boton = page.getByRole('button', { name: 'Pagar $47.25 · pago de demostración' });
+    const boton = page.getByRole('button', { name: 'Pagar $45' });
     await expect(boton).toBeVisible();
     const box = await boton.boundingBox();
     expect(box).not.toBeNull();
@@ -433,5 +347,6 @@ test.describe('móvil de 375 px', () => {
 
     const sinScrollHorizontal = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
     expect(sinScrollHorizontal).toBe(true);
+    expect(await boton.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   });
 });

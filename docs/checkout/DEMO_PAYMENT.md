@@ -80,7 +80,9 @@ La página privada `/confirmacion/[orderId]/[token]/` (con `noindex`) reúne:
 
 ## Comisión
 
-El modelo académico habla de comisión por venta, sin cifra definitiva. Configuración demo sugerida: `DEMO_COMMISSION_PERCENT=5`, sujeta a aprobación del equipo. Declarar siempre el supuesto y exhibir monto antes del botón final. Nunca atribuir 5% a una política real de C3.
+## Comisión actual
+
+Para órdenes nuevas, el organizador asume una comisión de 6 % sobre el subtotal de entradas pagadas, redondeada al centavo por orden, más $0.50 por cada entrada con precio mayor que cero. Las entradas gratuitas generan comisión de $0. El comprador paga únicamente el subtotal de entradas; no se agrega cargo al carrito ni al checkout. El servidor calcula la comisión y la guarda en `organizer_fee_cents`. Las órdenes existentes conservan sus montos históricos. Esta regla corresponde a la decisión D-74 y no representa una tarifa oficial de C3.
 
 ## Forma de comprobarlo
 

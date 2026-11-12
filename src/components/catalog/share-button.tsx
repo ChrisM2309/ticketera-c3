@@ -21,10 +21,16 @@ export function ShareButton({ title, startsAt, eventUrl, className }: ShareButto
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-fit print:hidden', className)}
+      aria-label="Compartir por WhatsApp"
+      className={cn(
+        buttonVariants({ variant: 'secundario' }),
+        'w-full min-w-0 whitespace-normal px-3 text-xs normal-case tracking-normal sm:w-fit sm:whitespace-nowrap sm:px-5 sm:text-etiqueta sm:tracking-etiqueta print:hidden',
+        className,
+      )}
     >
-      <Icon name="share" />
-      Compartir por WhatsApp
+      <Icon name="share" className="shrink-0" />
+      <span className="sm:hidden">Compartir</span>
+      <span className="hidden sm:inline">Compartir por WhatsApp</span>
     </a>
   );
 }
