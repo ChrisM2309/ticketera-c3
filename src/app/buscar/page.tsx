@@ -89,10 +89,13 @@ function SearchResults({ query, events, truncated, hasFilters }: SearchResultsPr
               : 'Todavía no hay eventos publicados.'}
         </p>
         {!query && hasFilters ? (
-          <Link href="/buscar/" className="mt-3 inline-flex min-h-11 items-center font-titulo font-semibold text-enlace underline-offset-4 hover:underline">
-            Quitar filtros
-          </Link>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/buscar/" className="inline-flex min-h-11 items-center rounded-md bg-azul px-4 font-titulo font-semibold text-white">Ver todos los eventos</Link>
+            <Link href="/buscar/?precio=gratis" className="inline-flex min-h-11 items-center rounded-md border border-borde-fuerte px-4 font-titulo font-semibold text-enlace">Eventos gratis</Link>
+            <Link href="/buscar/?fecha=mes" className="inline-flex min-h-11 items-center rounded-md border border-borde-fuerte px-4 font-titulo font-semibold text-enlace">Próximos 30 días</Link>
+          </div>
         ) : null}
+        {query ? <Link href="/buscar/" className="mt-3 inline-flex min-h-11 items-center font-titulo font-semibold text-enlace underline-offset-4 hover:underline">Explorar todos los eventos</Link> : null}
       </div>
     );
   }

@@ -96,6 +96,11 @@ describe('página de confirmación', () => {
     expect(html).not.toContain('77771234');
     expect(html).toContain(`href="/calendario/${eventId}/"`);
     expect(html).toContain('Compartir por WhatsApp');
+    expect(html).toContain('>Calendario</span>');
+    expect(html).toContain('>Compartir</span>');
+    expect(html).toContain('>Encuesta</span>');
+    expect(html).toContain('grid-cols-2');
+    expect(html).toContain('normal-case');
     expect(html).toContain('https://wa.me/');
     expect(html).not.toMatch(/wa\.me[^"]*confirmacion/);
   });

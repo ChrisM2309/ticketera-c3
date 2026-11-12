@@ -172,6 +172,7 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
   const [orderError, setOrderError] = useState<CheckoutErrorView | null>(null);
+  const [reviewing, setReviewing] = useState(false);
 
   const provisionalTotals = snapshot
     ? calculateCartTotals(snapshot.event, snapshot.items, siteConfig.demoCommissionPercent)
@@ -187,7 +188,9 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
 
   function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void createOrder();
+    const errors = validateBuyer(buyerName, buyerEmail, buyerPhone);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length === 0) setReviewing(true);
   }
 
   /** Crea la orden; «Reintentar» la vuelve a llamar con el mismo request id, así no se duplica. */
@@ -269,21 +272,9 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
   }
 
   if (createdOrder) {
-    const verifiedTotals = {
-      subtotalCents: createdOrder.subtotalCents,
-      commissionCents: createdOrder.feeCents,
-      totalCents: createdOrder.totalCents,
-    };
-
     return (
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-20 pt-10 md:px-6 md:pt-14">
         <PaymentStep order={createdOrder} />
-        <CartSummary
-          totals={verifiedTotals}
-          commissionPercent={siteConfig.demoCommissionPercent}
-          totalLabel="Total verificado"
-          note="Estos importes fueron calculados en el servidor. No se solicitarán datos de tarjeta."
-        />
       </div>
     );
   }
@@ -301,6 +292,39 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
           <Icon name="cart" />
           Volver al carrito
         </Link>
+      </div>
+    );
+  }
+
+  if (reviewing) {
+    return (
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-20 pt-6 md:px-6 md:pt-14">
+        <CheckoutSteps current="datos" free={provisionalTotals.totalCents === 0} />
+        <header>
+          <h1 className="font-titulo text-2xl font-bold md:text-4xl">Revisa tu compra</h1>
+          <p className="mt-2 text-sm text-texto-suave">Confirma las entradas y tus datos antes de continuar.</p>
+        </header>
+        <section aria-labelledby="review-event" className="rounded-lg bg-superficie p-4 md:p-6">
+          <h2 id="review-event" className="font-titulo text-xl font-bold">{snapshot.event.title}</h2>
+          <ul className="mt-4 flex flex-col divide-y divide-borde">
+            {snapshot.items.map((item) => {
+              const ticket = snapshot.event.ticketTypes.find((candidate) => candidate.id === item.ticketTypeId);
+              if (!ticket) return null;
+              return <li key={item.ticketTypeId} className="flex justify-between gap-4 py-3 text-sm"><span>{ticket.name} × {item.quantity}</span><span>{new Intl.NumberFormat('es-SV', { style: 'currency', currency: 'USD' }).format(ticket.priceCents * item.quantity / 100)}</span></li>;
+            })}
+          </ul>
+          <dl className="mt-3 flex flex-col gap-2 border-t border-borde pt-4 text-sm">
+            <div><dt className="inline text-texto-suave">Nombre: </dt><dd className="inline">{buyerName}</dd></div>
+            <div><dt className="inline text-texto-suave">Correo: </dt><dd className="inline">{buyerEmail}</dd></div>
+            {buyerPhone ? <div><dt className="inline text-texto-suave">Teléfono: </dt><dd className="inline">{buyerPhone}</dd></div> : null}
+            <div className="flex justify-between border-t border-borde pt-3 text-base font-bold"><dt>Total</dt><dd>{new Intl.NumberFormat('es-SV', { style: 'currency', currency: 'USD' }).format(provisionalTotals.totalCents / 100)}</dd></div>
+          </dl>
+        </section>
+        {orderError ? <CheckoutErrorNotice view={orderError} eventHref={eventHref} onRetry={createOrder} retrying={isSubmitting} /> : null}
+        <div className="flex flex-col-reverse gap-3 sm:flex-row">
+          <button type="button" onClick={() => setReviewing(false)} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>Editar datos</button>
+          <button type="button" disabled={isSubmitting} onClick={() => void createOrder()} className={cn(buttonVariants({ variant: 'compra' }), 'w-full sm:flex-1')}>{isSubmitting ? 'Creando orden…' : provisionalTotals.totalCents === 0 ? 'Confirmar registro gratis' : `Confirmar y pagar ${new Intl.NumberFormat('es-SV', { style: 'currency', currency: 'USD' }).format(provisionalTotals.totalCents / 100)}`}</button>
+        </div>
       </div>
     );
   }
@@ -448,7 +472,7 @@ export function CheckoutPage({ account = null }: { account?: CheckoutAccount | n
             disabled={isSubmitting}
             className={cn(
               buttonVariants({ variant: 'compra', size: 'lg' }),
-              'w-full whitespace-normal px-2 text-center leading-5',
+              'w-full min-w-0 whitespace-normal px-3 text-center text-sm normal-case leading-5 tracking-normal',
             )}
           >
             {isSubmitting ? 'Creando orden…' : submitLabel(provisionalTotals.totalCents)}

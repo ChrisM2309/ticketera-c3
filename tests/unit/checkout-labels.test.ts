@@ -3,10 +3,10 @@ import { describe, expect, test } from 'vitest';
 import { accountNotice, submitLabel } from '../../src/features/checkout/labels';
 
 describe('etiqueta del botón de checkout', () => {
-  test('el botón dice el monto', () => {
+  test('el botón de compra muestra el monto con una etiqueta breve', () => {
     expect(submitLabel(0)).toBe('Confirmar registro gratuito');
-    expect(submitLabel(2700)).toBe('Pagar $27 · pago de demostración');
-    expect(submitLabel(1050)).toBe('Pagar $10.50 · pago de demostración');
+    expect(submitLabel(2700)).toBe('Pagar $27');
+    expect(submitLabel(1050)).toBe('Pagar $10.50');
   });
 });
 

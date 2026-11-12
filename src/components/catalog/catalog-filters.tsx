@@ -31,12 +31,14 @@ type CatalogFiltersProps = Readonly<{
 
 /** Filtros con GET: la búsqueda queda en la URL y el formulario funciona sin JavaScript. */
 export function CatalogFilters({ filters, locations, topics, showCiudad, clearHref, query }: CatalogFiltersProps) {
+  const active = hasActiveFilters(filters);
   return (
-    <form
-      method="get"
-      aria-label="Filtrar eventos"
-      className="grid gap-4 rounded-lg bg-superficie p-5 sm:grid-cols-2 lg:grid-cols-4"
-    >
+    <details open={active} className="rounded-lg bg-superficie">
+      <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-lg px-4 py-3 font-titulo font-semibold text-texto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-enlace">
+        <span>{active ? 'Filtros aplicados' : 'Filtrar eventos'}</span>
+        <span className="text-sm font-normal text-texto-suave">Tema, ciudad, modalidad, precio y fecha</span>
+      </summary>
+      <form method="get" aria-label="Filtrar eventos" className="grid gap-4 p-4 pt-1 sm:grid-cols-2 lg:grid-cols-4">
       {query ? <input type="hidden" name="q" value={query} readOnly /> : null}
       <div className="flex flex-col gap-2">
         <FilterLabel htmlFor="filtro-tema" icon="tag">Tema</FilterLabel>
@@ -99,7 +101,7 @@ export function CatalogFilters({ filters, locations, topics, showCiudad, clearHr
         <button type="submit" className={buttonVariants({ variant: 'primario' })}>
           Aplicar filtros
         </button>
-        {hasActiveFilters(filters) ? (
+        {active ? (
           <Link
             href={clearHref}
             className="font-titulo font-semibold text-enlace underline-offset-4 hover:underline"
@@ -108,6 +110,7 @@ export function CatalogFilters({ filters, locations, topics, showCiudad, clearHr
           </Link>
         ) : null}
       </div>
-    </form>
+      </form>
+    </details>
   );
 }

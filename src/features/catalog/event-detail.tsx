@@ -4,10 +4,8 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs';
 import { EventCard } from '@/components/catalog/event-card';
 import { MobileBuyBar } from '@/components/catalog/mobile-buy-bar';
-import { ShareButton } from '@/components/catalog/share-button';
 import { SpeakersList } from '@/components/catalog/speakers-list';
 import { TicketSelector } from '@/components/catalog/ticket-selector';
-import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { modeLabel, priceFromLabel } from '@/features/catalog/format';
 import { coverImagePath, isIllustrativeCover, publicImagePath } from '@/features/catalog/images';
@@ -15,7 +13,6 @@ import { eventPath } from '@/features/catalog/paths';
 import { getAvailableQuantity, hasAvailableTickets, isEventPast } from '@/features/catalog/tickets';
 import type { CatalogEvent, CatalogEventDetail } from '@/features/catalog/types';
 import { siteConfig } from '@/lib/site-config';
-import { cn } from '@/lib/utils';
 
 type EventDetailPageProps = Readonly<{
   event: CatalogEventDetail;
@@ -274,18 +271,6 @@ export function EventDetailPage({ event, related, indexingEnabled = false }: Eve
             <p className="max-w-3xl whitespace-pre-line font-texto text-base leading-7 text-texto-suave">
               {event.description}
             </p>
-            {past ? null : (
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a
-                  href={`/calendario/${event.id}/`}
-                  className={cn(buttonVariants({ variant: 'secundario' }), 'w-fit')}
-                >
-                  <Icon name="calendarPlus" />
-                  Agregar al calendario
-                </a>
-                <ShareButton title={event.title} startsAt={event.startsAt} eventUrl={eventUrl(event)} />
-              </div>
-            )}
           </section>
 
           {event.agenda ? (

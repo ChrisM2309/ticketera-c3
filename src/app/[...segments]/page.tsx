@@ -228,11 +228,14 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
             ))}
           </div>
         ) : (
-          <p className="rounded-lg bg-superficie-sutil p-6 text-texto-suave">
+          <div className="rounded-lg bg-superficie-sutil p-6 text-texto-suave">
+            <p>
             {scopedEvents.length === 0 && featuredEvents.length === 0
               ? 'Todavía no hay eventos publicados aquí. Mira otras categorías en el menú.'
               : 'Ningún evento coincide con estos filtros. Quita alguno para ver más resultados.'}
-          </p>
+            </p>
+            {scopedEvents.length > 0 ? <Link href={scopePath(scope)} className="mt-4 inline-flex min-h-11 items-center rounded-md bg-azul px-4 font-titulo font-semibold text-white">Ver todos en esta categoría</Link> : null}
+          </div>
         )}
       </section>
 

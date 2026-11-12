@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Excluir dominio; no reactivar Wompi ni ejecutar transacciones solo para documentarlo.
-- Total del comprador = subtotal; comisión al organizador = 6 % más $0.50 por boleto, incluidas las entradas gratis, confirmado por el responsable.
+- Total del comprador = subtotal; comisión al organizador = 6 % del subtotal pagado más $0.50 por entrada pagada. La decisión posterior D-74 excluye las entradas gratuitas.
 - Conservar íntegramente órdenes y pagos históricos y su idempotencia; verificar RPC y privilegios solo `service_role`.
 - Tuteo, USD en centavos, distintivo DEMO; no inventar certificados, políticas, credenciales, cuentas, evidencia o afiliación.
 - Leer la guía pertinente de `node_modules/next/dist/docs/` antes de modificar Next.js; actualizar backlog y decisiones solo al tener evidencia.
@@ -22,7 +22,7 @@
 
 ## Review Focus
 
-- Compras mixtas y gratis: el comprador paga subtotal y el fijo por unidad se calcula según decisión confirmada (tarea 1).
+- Compras mixtas y gratis: el comprador paga subtotal; solo las entradas pagadas generan comisión porcentual o fija (D-74).
 - Reintento de orden previa al despliegue: conserva importes y no duplica boletos (tarea 1).
 - Imagen HTTPS rota: aparece respaldo local y no hay bucle de error (tarea 2).
 - Medición de terceros queda fuera del alcance; solo continúa la analítica propia saneada.
@@ -44,7 +44,7 @@
 
 **Interfaces:** `orders.fee_cents` conserva su significado histórico de cargo al comprador; añadir `orders.organizer_fee_cents integer not null default 0` para nuevas órdenes. `create_pending_order` conserva la firma vigente por compatibilidad, ignora `p_fee_percent` en órdenes nuevas y devuelve `fee_cents = 0`; `total_cents = subtotal_cents`. La regla de comisión se fija en la RPC, nunca procede del navegador. Mantener `orders_total_check` para históricos. El reporte debe agregar comisiones del organizador por separado de cargos históricos.
 
-- [x] El responsable confirmó que el fijo aplica también a entradas gratis; la especificación contiene los ejemplos.
+- [x] Corrección D-74 del responsable: las entradas gratuitas no generan comisión.
 - [ ] Añadir pruebas en `tests/db/order-creation.test.ts`: dos entradas de $10 producen subtotal/total 2000, `fee_cents=0`, `organizer_fee_cents=220`; redondeo de 6 %, múltiples tipos, mezcla y gratis según decisión; manipulación de `p_fee_percent` no altera resultado. Verificar repetición con mismo `requestId`, órdenes históricas y acceso denegado a `anon`.
 - [ ] Ejecutar `npx vitest run tests/db/order-creation.test.ts` y comprobar fallo por la comisión anterior.
 - [ ] Crear migración posterior a `20261119100000`, reemplazando la definición vigente de RPC, conservando bloqueos, validaciones, privilegios y retorno de órdenes existentes; agregar columna sin reescribir importes. Actualizar RPC de reporte para mostrar por separado la comisión del organizador y los cargos históricos, manteniendo controles de acceso.

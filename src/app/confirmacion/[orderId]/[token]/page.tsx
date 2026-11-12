@@ -151,13 +151,15 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
           </div>
         </dl>
         {confirmation.status === 'confirmed' ? (
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap print:hidden">
+          <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-row sm:flex-wrap print:hidden">
             <a
               href={`/calendario/${confirmation.event.id}/`}
-              className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-fit print:hidden')}
+              aria-label="Agregar al calendario"
+              className={cn(buttonVariants({ variant: 'secundario' }), 'w-full min-w-0 whitespace-normal px-3 text-xs normal-case tracking-normal sm:w-fit sm:whitespace-nowrap sm:px-5 sm:text-etiqueta sm:tracking-etiqueta print:hidden')}
             >
-              <Icon name="calendarPlus" />
-              Agregar al calendario
+              <Icon name="calendarPlus" className="shrink-0" />
+              <span className="sm:hidden">Calendario</span>
+              <span className="hidden sm:inline">Agregar al calendario</span>
             </a>
             {confirmation.event.url ? (
               <ShareButton
@@ -168,9 +170,11 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
             ) : null}
             <Link
               href={`/confirmacion/${confirmation.orderId}/${token}/encuesta/`}
-              className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-fit print:hidden')}
+              aria-label="Encuesta del evento"
+              className={cn(buttonVariants({ variant: 'secundario' }), 'col-span-2 w-full min-w-0 whitespace-normal px-3 text-xs normal-case tracking-normal sm:col-span-auto sm:w-fit sm:whitespace-nowrap sm:px-5 sm:text-etiqueta sm:tracking-etiqueta print:hidden')}
             >
-              Encuesta del evento
+              <span className="sm:hidden">Encuesta</span>
+              <span className="hidden sm:inline">Encuesta del evento</span>
             </Link>
           </div>
         ) : null}

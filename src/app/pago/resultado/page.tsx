@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { buttonVariants } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
+import { PaymentResultLink } from '@/components/payments/payment-result-link';
 import { expirePendingOrderIfOverdue } from '@/features/checkout/wompi/expiry';
 import { readOptionalSession } from '@/lib/auth/optional-session';
 import { createServiceRoleClient } from '@/lib/supabase/server';
@@ -48,20 +48,7 @@ export default async function PaymentResultPage({ searchParams }: PageProps) {
         title="Pago aprobado (DEMO)"
         text="Tu compra quedó confirmada. Te enviamos los boletos por correo electrónico."
       >
-        {session ? (
-          <Link href="/mis-boletos/" className={cn(buttonVariants({ variant: 'compra' }), 'w-full sm:w-auto')}>
-            <Icon name="ticket" />
-            Ver mis boletos
-          </Link>
-        ) : (
-          <Link
-            href="/ingresar/?next=%2Fmis-boletos%2F"
-            className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}
-          >
-            <Icon name="logIn" />
-            Ingresar para ver mis boletos
-          </Link>
-        )}
+        <PaymentResultLink orderId={order.id} signedIn={session !== null} />
       </ResultShell>
     );
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
@@ -16,6 +16,8 @@ type WompiPaymentButtonProps = Readonly<{
   summary: readonly SummaryLine[];
   /** Crea el enlace de pago en el servidor y devuelve la URL de Wompi. */
   start: () => Promise<PaymentStart>;
+  /** Inicia automáticamente después de crear la orden; se usa en el checkout de entradas. */
+  autoStart?: boolean;
 }>;
 
 /** Inicio del pago de una orden de entradas (usado por el checkout). */
@@ -39,13 +41,16 @@ export async function startOrderPayment(orderId: string, checkoutToken: string):
  * Botón de pago con Wompi El Salvador en modo de prueba. El servidor crea el enlace y el navegador solo sigue la
  * URL que devuelve. No hay campos de tarjeta ni decisiones de pago en el navegador.
  */
-export function WompiPaymentButton({ amountCents, summary, start }: WompiPaymentButtonProps) {
+export function WompiPaymentButton({ amountCents, summary, start, autoStart = false }: WompiPaymentButtonProps) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const started = useRef(false);
+  const autoStartAttempted = useRef(false);
 
-  async function startPayment() {
-    if (pending) return;
+  const startPayment = useCallback(async () => {
+    if (started.current) return;
 
+    started.current = true;
     setPending(true);
     setMessage(null);
 
@@ -59,10 +64,18 @@ export function WompiPaymentButton({ amountCents, summary, start }: WompiPayment
 
       // Un error no marca la compra como exitosa: queda en espera y se puede reintentar.
       setMessage(result.message);
+      started.current = false;
     } finally {
-      setPending(false);
+      if (!started.current) setPending(false);
     }
-  }
+  }, [start]);
+
+  useEffect(() => {
+    if (autoStart && !autoStartAttempted.current) {
+      autoStartAttempted.current = true;
+      void startPayment();
+    }
+  }, [autoStart, startPayment]);
 
   return (
     <div className="flex flex-col gap-5 rounded-lg bg-superficie p-6">
@@ -93,10 +106,11 @@ export function WompiPaymentButton({ amountCents, summary, start }: WompiPayment
         type="button"
         onClick={startPayment}
         disabled={pending}
-        className={cn(buttonVariants({ variant: 'compra' }), 'w-full')}
+        aria-label={`Pagar ${formatUsd(amountCents)} con Wompi en modo de prueba`}
+        className={cn(buttonVariants({ variant: 'compra' }), 'w-full min-w-0 whitespace-normal px-3 text-sm normal-case tracking-normal')}
       >
-        <Icon name="lock" />
-        {pending ? 'Preparando el pago…' : 'Pagar con Wompi (prueba)'}
+        <Icon name="lock" className="shrink-0" />
+        {pending ? 'Preparando pago…' : `Pagar ${formatUsd(amountCents)}`}
       </button>
     </div>
   );

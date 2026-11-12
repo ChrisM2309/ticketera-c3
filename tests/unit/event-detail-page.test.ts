@@ -126,20 +126,13 @@ describe('ficha de evento: ponentes', () => {
   });
 });
 
-describe('ficha de evento: agregar al calendario', () => {
-  test('un evento próximo enlaza al archivo .ics', () => {
+describe('ficha de evento: acciones sociales', () => {
+  test('deja compartir y calendario para la confirmación después de la compra', () => {
     const html = render(event());
 
-    expect(html).toContain('href="/calendario/event-1/"');
-    expect(html).toContain('Agregar al calendario');
-  });
-
-  test('un evento finalizado no ofrece agregarlo al calendario', () => {
-    const html = render(
-      event({ startsAt: '2027-02-01T15:00:00Z', endsAt: '2027-02-01T18:00:00Z' }),
-    );
-
     expect(html).not.toContain('/calendario/');
+    expect(html).not.toContain('wa.me/');
+    expect(html).not.toContain('Compartir por WhatsApp');
   });
 });
 
