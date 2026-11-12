@@ -95,12 +95,17 @@ test('checkout de invitado envía solo selección y muestra los importes verific
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
   await expect(page.getByText('Comisión')).toHaveCount(0);
   await page.getByRole('button', { name: 'Pagar $45' }).click();
+  await expect(page.getByRole('heading', { name: 'Revisa tu compra' })).toBeVisible();
+  await expect(page.getByText('General × 2')).toBeVisible();
+  await expect(page.getByText('Premium × 1')).toBeVisible();
+  await expect(page.getByText('Ana DEMO')).toBeVisible();
+  await page.getByRole('button', { name: /Confirmar y pagar/ }).click();
 
   await expect(page.getByRole('heading', { level: 1, name: 'Pago de demostración' })).toBeVisible();
   await expect(page.getByRole('alert').filter({ hasText: 'No pudimos iniciar el pago.' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Pagar \$45 con Wompi/ })).toBeVisible();
   expect(paymentStarts).toBe(1);
-  await expect(page.locator('dd').filter({ hasText: /^\$45$/ }).first()).toBeVisible();
+  await expect(page.getByText('$45', { exact: true }).first()).toBeVisible();
   await expect(page).not.toHaveURL(/secreto-solo-de-sesion/);
   await expect
     .poll(() => page.evaluate(({ cartKey, checkoutKey }) => ({
@@ -211,10 +216,18 @@ async function reachPaymentStep(
   await page.getByLabel('Nombre completo').fill('Ana DEMO');
   await page.getByLabel('Correo electrónico').fill('ana@example.test');
   await page.getByRole('button', { name: submitName(totalCents) }).click();
+  await expect(page.getByRole('heading', { name: 'Revisa tu compra' })).toBeVisible();
+  if (totalCents === 0 && freeConfirmStatus === 200) {
+    await page.getByRole('button', { name: 'Confirmar registro gratis' }).click();
+  } else if (totalCents === 0) {
+    await page.getByRole('button', { name: 'Confirmar registro gratis' }).click();
+  } else {
+    await page.getByRole('button', { name: /Confirmar y pagar/ }).click();
+  }
   if (totalCents === 0 && freeConfirmStatus === 200) {
     await expect(page.getByRole('heading', { level: 1, name: 'Orden confirmada' })).toBeVisible();
   } else if (totalCents === 0) {
-    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'Ya no hay entradas disponibles' })).toBeVisible();
   } else if (paymentStart === 'redirect') {
     await expect(page.getByRole('heading', { name: 'Pago Wompi de prueba' })).toBeVisible();
   } else {
@@ -348,5 +361,15 @@ test.describe('móvil de 375 px', () => {
     const sinScrollHorizontal = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
     expect(sinScrollHorizontal).toBe(true);
     expect(await boton.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  });
+
+  test('revisión de orden y acciones caben en pantalla móvil', async ({ page }) => {
+    await page.getByLabel('Nombre completo').fill('Ana DEMO');
+    await page.getByLabel('Correo electrónico').fill('ana@example.test');
+    await page.getByRole('button', { name: 'Pagar $45' }).click();
+    await expect(page.getByRole('heading', { name: 'Revisa tu compra' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Editar datos' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Confirmar y pagar/ })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 });
