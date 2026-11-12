@@ -5,7 +5,7 @@ import { ProfileForm } from '@/components/accounts/profile-form';
 import { buttonVariants } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { signOutAction } from '@/features/auth/actions';
-import { accountPath, buyerHomePath } from '@/lib/auth/access';
+import { accountPanelLinksForRole, accountPath, buyerHomePath } from '@/lib/auth/access';
 import { requireRole } from '@/lib/auth/require-role';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +26,7 @@ function formatConsentDate(isoDate: string): string {
 export default async function AccountPage() {
   // El proxy solo mira cookies; esta comprobación valida la sesión y el rol en el servidor.
   const account = await requireRole('buyer', accountPath);
+  const panelLinks = accountPanelLinksForRole(account.role);
 
   // RLS solo devuelve la fila del propio usuario.
   const { data, error } = await account.client
@@ -62,11 +63,17 @@ export default async function AccountPage() {
         <ProfileForm initial={initial} consentedOn={consentedOn} />
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link href={buyerHomePath} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
           <Icon name="ticket" />
           Mis boletos
         </Link>
+        {panelLinks.map((link) => (
+          <Link key={link.href} href={link.href} className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
+            <Icon name={link.href === '/admin/' ? 'settings' : 'layoutDashboard'} />
+            {link.label}
+          </Link>
+        ))}
         <form action={signOutAction}>
           <button type="submit" className={cn(buttonVariants({ variant: 'secundario' }), 'w-full sm:w-auto')}>
             <Icon name="logOut" />

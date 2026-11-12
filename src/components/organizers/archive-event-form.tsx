@@ -2,6 +2,7 @@
 
 import { archiveEventAction } from '@/features/organizers/actions';
 import { buttonVariants } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 
 export function ArchiveEventForm({ eventId, title }: { eventId: string; title: string }) {
   return (
@@ -11,7 +12,10 @@ export function ArchiveEventForm({ eventId, title }: { eventId: string; title: s
       }
     }}>
       <input type="hidden" name="eventId" value={eventId} />
-      <button type="submit" className={buttonVariants({ variant: 'secundario' })}>Archivar</button>
+      <button type="submit" aria-label={`Archivar ${title}`} className={`${buttonVariants({ variant: 'secundario' })} min-h-9 gap-1.5 px-3 py-1 text-xs`}>
+        <Icon name="archive" size={16} />
+        Archivar
+      </button>
     </form>
   );
 }
