@@ -34,6 +34,11 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s · ${siteConfig.name} · DEMO`,
     },
     description: siteConfig.description,
+    icons: {
+      icon: '/favicon.ico?v=20261111-c3',
+      shortcut: '/favicon.ico?v=20261111-c3',
+      apple: '/brand/isotipo-color.png',
+    },
     robots: robotsMetadata({ indexingEnabled: settings.indexingEnabled, pageIndexable: true }),
   };
 }
