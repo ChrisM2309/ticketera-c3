@@ -128,20 +128,22 @@ export default async function PanelPage() {
               ) : (
                 <ul className="flex flex-col divide-y divide-borde rounded-lg bg-superficie">
                   {organizerEvents.map((event) => (
-                  <li key={event.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-texto text-base font-medium text-texto">{event.title}</span>
+                  <li key={event.id} className="flex flex-col gap-2.5 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4">
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <span className="font-texto text-sm font-semibold leading-5 text-texto sm:text-base">{event.title}</span>
                       {event.status === 'published' ? (
-                        <div className="flex flex-wrap gap-4">
-                          <Link href={`/panel/eventos/${event.id}/checkin/`} className="font-texto text-sm font-semibold text-accion underline">
+                        <div className="flex flex-wrap gap-x-3 gap-y-1">
+                          <Link href={`/panel/eventos/${event.id}/checkin/`} className="inline-flex items-center gap-1 font-texto text-xs font-semibold text-accion underline sm:text-sm">
+                            <Icon name="qr" size={16} />
                             Check-in
                           </Link>
-                          <Link href={`/panel/eventos/${event.id}/reporte/`} className="font-texto text-sm font-semibold text-accion underline">
+                          <Link href={`/panel/eventos/${event.id}/reporte/`} className="inline-flex items-center gap-1 font-texto text-xs font-semibold text-accion underline sm:text-sm">
+                            <Icon name="chart" size={16} />
                             Reporte
                           </Link>
                         </div>
                       ) : null}
-                      <span className="flex flex-wrap items-center gap-x-3 gap-y-1 font-texto text-sm text-texto-suave">
+                      <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-texto text-xs text-texto-suave sm:text-sm">
                         <span className="inline-flex items-center gap-1.5">
                           <Icon name="calendar" size={16} />
                           {formatEventStart(event.starts_at)}
@@ -156,17 +158,19 @@ export default async function PanelPage() {
                         </span>
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0">
                       {event.status !== 'archived' ? (
                         <>
-                          <Link href={`/panel/eventos/${event.id}/editar/`} className={buttonVariants({ variant: 'secundario' })}>
+                          <Link href={`/panel/eventos/${event.id}/editar/`} aria-label={`Editar ${event.title}`} className={cn(buttonVariants({ variant: 'secundario' }), 'min-h-9 gap-1.5 px-3 py-1 text-xs')}>
+                            <Icon name="edit" size={16} />
                             Editar
                           </Link>
                           <ArchiveEventForm eventId={event.id} title={event.title} />
                         </>
                       ) : <span className="font-texto text-sm text-texto-suave">Archivado</span>}
                       {event.status === 'published' ? (
-                        <Link href={`/panel/destacar/${event.id}/`} className={buttonVariants({ variant: 'secundario' })}>
+                        <Link href={`/panel/destacar/${event.id}/`} aria-label={`Destacar ${event.title}`} className={cn(buttonVariants({ variant: 'secundario' }), 'min-h-9 gap-1.5 px-3 py-1 text-xs')}>
+                          <Icon name="star" size={16} />
                           Destacar
                         </Link>
                       ) : null}

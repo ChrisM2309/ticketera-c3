@@ -18,6 +18,20 @@ export const accountPath = '/cuenta/';
 export const organizerHomePath = '/panel/';
 export const adminHomePath = '/admin/';
 
+export type AccountPanelLink = { href: string; label: string };
+
+/** Paneles que se ofrecen en Mi cuenta según el rol ya verificado en el servidor. */
+export function accountPanelLinksForRole(role: AppRole): AccountPanelLink[] {
+  if (role === 'admin') {
+    return [
+      { href: adminHomePath, label: 'Panel de administración' },
+      { href: organizerHomePath, label: 'Panel del organizador' },
+    ];
+  }
+
+  return role === 'organizer' ? [{ href: organizerHomePath, label: 'Panel del organizador' }] : [];
+}
+
 export const sessionErrorCodes = ['sesion-expirada', 'sin-rol'] as const;
 
 export type SessionErrorCode = (typeof sessionErrorCodes)[number];

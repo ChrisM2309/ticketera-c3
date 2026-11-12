@@ -1,4 +1,5 @@
 import {
+  Archive,
   Building2,
   Calendar,
   CalendarPlus,
@@ -65,6 +66,7 @@ import { cn } from '@/lib/utils';
  * building -> Building2, message -> MessageSquare, edit -> Pencil, print -> Printer, trash -> Trash2.
  */
 export const iconRegistry = {
+  archive: Archive,
   search: Search,
   cart: ShoppingCart,
   user: User,

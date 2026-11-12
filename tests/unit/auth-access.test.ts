@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   decideAccess,
+  accountPanelLinksForRole,
   destinationAfterSignIn,
   isOptionalSessionPath,
   landingPathForRole,
@@ -42,6 +43,17 @@ describe('zonas privadas', () => {
 });
 
 describe('decisión de acceso', () => {
+  it('ofrece en Mi cuenta solo los paneles permitidos para cada rol', () => {
+    expect(accountPanelLinksForRole('buyer')).toEqual([]);
+    expect(accountPanelLinksForRole('organizer')).toEqual([
+      { href: '/panel/', label: 'Panel del organizador' },
+    ]);
+    expect(accountPanelLinksForRole('admin')).toEqual([
+      { href: '/admin/', label: 'Panel de administración' },
+      { href: '/panel/', label: 'Panel del organizador' },
+    ]);
+  });
+
   it('pide ingresar sin sesión, aunque el rol sea válido', () => {
     expect(decideAccess({ required: 'organizer', hasSession: false, role: 'organizer' })).toEqual({
       action: 'sign-in',
