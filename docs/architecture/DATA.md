@@ -90,7 +90,7 @@ El outbox registra `survey` para dos horas después de `coalesce(ends_at, starts
 
 ## Datos demo iniciales
 
-- 12 categorías de tipos de evento (ordenadas según keyword research), 4 temas principales y 3 ciudades. El Excel propone 2 páginas de organizador; el alcance vigente conserva solo `/copa/` (D-47).
+- 12 categorías de tipos de evento (ordenadas según keyword research), 4 temas principales y 3 ciudades. El Excel propone 2 páginas de organizador; se admiten páginas para organizadores activos con slug válido, siempre `noindex`.
 - 10 eventos **ficticios** identificados como demo; mezcla de `gratis`, precio bajo y precio mayor; virtual/presencial; tres ciudades; mínimo dos organizadores.
 - Al menos 3 tipos de boleto de demostración, uno gratuito y dos de pago; precios y fechas son **supuestos**, no datos de eventos reales.
 - Las cuentas de administrador y organizadores se provisionan por separado: el seed no crea cuentas de Auth ni contraseñas (D-17). Su existencia en un entorno requiere verificación; nunca guardar credenciales en el repositorio.

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CatalogFilters } from '@/components/catalog/catalog-filters';
 import { EventCard } from '@/components/catalog/event-card';
 import { SiteSearch } from '@/components/layout/site-search';
-import { filterCatalogEventsByFilters, hasActiveFilters, noCatalogFilters, parseCatalogFilters } from '@/features/catalog/filters';
+import { catalogOrganizers, filterCatalogEventsByFilters, hasActiveFilters, noCatalogFilters, parseCatalogFilters } from '@/features/catalog/filters';
 import { getCatalogListing } from '@/features/catalog/queries';
 import { parseSearchQuery, searchCatalogEvents } from '@/features/catalog/search';
 import { getSiteSettings } from '@/features/settings/settings';
@@ -27,8 +27,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = parseSearchQuery(params.q);
   const listing = await getCatalogListing();
   const now = new Date();
+  const organizers = listing.status === 'ok' ? catalogOrganizers(upcomingEvents(listing.events, now.getTime())) : [];
   const filters = listing.status === 'ok'
-    ? parseCatalogFilters(params, listing.taxonomy.locations.map((location) => location.slug), listing.taxonomy.topics.map((topic) => topic.slug))
+    ? parseCatalogFilters(params, listing.taxonomy.locations.map((location) => location.slug), listing.taxonomy.topics.map((topic) => topic.slug), organizers.map((organizer) => organizer.slug))
     : noCatalogFilters;
   const filteredEvents = listing.status === 'ok'
     ? searchCatalogEvents(filterCatalogEventsByFilters(upcomingEvents(listing.events, now.getTime()), filters, now), query)
@@ -53,6 +54,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <CatalogFilters
             filters={filters}
             locations={listing.taxonomy.locations}
+            organizers={organizers}
             topics={listing.taxonomy.topics}
             showCiudad
             clearHref="/buscar/"

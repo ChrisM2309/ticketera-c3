@@ -10,6 +10,8 @@ import { CategoryIntro } from '@/components/content/category-intro';
 import { OrganizerPage } from '@/components/catalog/organizer-page';
 import { EventDetailPage } from '@/features/catalog/event-detail';
 import {
+  catalogOrganizers,
+  hasActiveFilters,
   filterCatalogEvents,
   filtersForScope,
   noCatalogFilters,
@@ -108,7 +110,7 @@ export async function generateMetadata({ params }: CatalogPageProps): Promise<Me
 
   if (route.kind === 'organizer') {
     const settings = await getSiteSettings();
-    return buildPageMetadata({ title: `${route.organizer.name} · Organizador DEMO`, description: route.organizer.description, path: `/${segments[0]}/`, indexable: route.organizer.events.length > 0, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
+    return buildPageMetadata({ title: `${route.organizer.name} · Organizador DEMO`, description: route.organizer.description, path: `/${segments[0]}/`, indexable: false, indexingEnabled: settings.indexingEnabled }, siteConfig.siteUrl);
   }
 
   const { listing, scope } = route;
@@ -152,14 +154,15 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
 
   const now = new Date();
   const locationSlugs = listing.taxonomy.locations.map((location) => location.slug);
-  const filters = filtersForScope(parseCatalogFilters(await searchParams, locationSlugs, listing.taxonomy.topics.map((topic) => topic.slug)), scope);
   const scopedEvents = filterCatalogEvents(listing.events, scope, noCatalogFilters, now);
+  const organizers = catalogOrganizers(scopedEvents);
+  const filters = filtersForScope(parseCatalogFilters(await searchParams, locationSlugs, listing.taxonomy.topics.map((topic) => topic.slug), organizers.map((organizer) => organizer.slug)), scope);
   const events = filterCatalogEvents(listing.events, scope, filters, now);
   const isTypeScope = scope.kind === 'event_type' || scope.kind === 'event_type_topic' || scope.kind === 'modality';
   const featuredIds = isTypeScope && scope.eventType.id ? await getCategoryFeaturedIds(scope.eventType.id) : [];
   const featuredSet = new Set(featuredIds);
   const featuredEvents = events.filter((event) => featuredSet.has(event.id));
-  const visibleEvents = events.filter((event) => !featuredSet.has(event.id));
+  const visibleEvents = hasActiveFilters(filters) ? events : events.filter((event) => !featuredSet.has(event.id));
   const subcategories = scopeSubcategories(scope, listing.taxonomy);
   const countLabel = events.length === 1 ? '1 evento' : `${events.length} eventos`;
   const editorialCategoryId = scope.kind === 'event_type' || scope.kind === 'event_type_topic' || scope.kind === 'modality'
@@ -197,12 +200,13 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
         </nav>
       ) : null}
 
-      {isTypeScope ? <FeaturedBlock events={featuredEvents} heading={`Destacados de ${scopeTitle(scope)}`} /> : null}
+      {isTypeScope && !hasActiveFilters(filters) ? <FeaturedBlock events={featuredEvents} heading={`Destacados de ${scopeTitle(scope)}`} /> : null}
 
       <section aria-labelledby="resultados" className="flex flex-col gap-6">
         <CatalogFilters
           filters={filters}
           locations={listing.taxonomy.locations}
+          organizers={organizers}
           topics={listing.taxonomy.topics}
           showCiudad={scope.kind !== 'location'}
           clearHref={scopePath(scope)}

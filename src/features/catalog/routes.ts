@@ -103,12 +103,13 @@ export function resolveCatalogRoute(
   }
 }
 
-/** Las rutas de modalidad y precio no se indexan hasta tener contenido (D-24). */
+/** Ciudades, modalidad y precio quedan fuera del índice según la política SEO vigente. */
 export function isCatalogRouteIndexable(
   segments: readonly string[],
   taxonomy: CatalogTaxonomy,
 ): boolean {
-  return findRoute(segments, taxonomy)?.isIndexable ?? false;
+  const route = findRoute(segments, taxonomy);
+  return !!route && route.kind !== 'location' && route.kind !== 'modality' && route.isIndexable;
 }
 
 export function scopePath(scope: CatalogScope): string {

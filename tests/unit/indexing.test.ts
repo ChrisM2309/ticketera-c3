@@ -63,7 +63,6 @@ describe('rutas indexables del catálogo', () => {
       '/congresos/',
       '/hackathons/',
       '/cloud/',
-      '/san-salvador/',
       '/congresos/cloud/',
     ]);
   });
