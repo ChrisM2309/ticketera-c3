@@ -29,7 +29,7 @@ Empates se resuelven según el orden del Excel. Valores aportados por el equipo;
 
 **Ubicaciones:** `/san-miguel/`, `/san-salvador/`, `/santa-ana/`.
 
-**Organizadores:** el Excel contempla `/claude/` y `/copa/`; el alcance aprobado conserva solo `/copa/` (D-47). La página requiere un organizador activo y se hace indexable cuando tiene eventos próximos publicados. No atribuir afiliaciones oficiales al contenido DEMO.
+**Organizadores:** el Excel contempla `/claude/` y `/copa/`; las páginas se generan para organizadores activos con slug válido y enlazan desde sus fichas de evento. Todas llevan `noindex` y quedan fuera del sitemap. No atribuir afiliaciones oficiales al contenido DEMO.
 
 **No** mezclar estas nueve páginas con los 12 tipos del menú primario; deben estar en navegación secundaria, filtros o footer.
 
@@ -61,7 +61,7 @@ Implementación vigente: catch-all `src/app/[...segments]/page.tsx` para catálo
 - Home: title/H1 vinculados a 'boletos para El Salvador' + eventos tecnológicos; meta description sin afirmaciones no respaldadas.
 - Categoría: title, H1 y texto introductorio con keyword del Excel; filtros aplicables y contenido contextual.
 - Evento: title específico, imagen, fecha y lugar/modo; JSON-LD `Event` con información realmente almacenada.
-- Modalidad/precio: `noindex` y sin sitemap incluso con inventario; categorías, temas y ciudades vacíos también quedan fuera.
+- Ciudad, modalidad/precio y organizadores: `noindex` y sin sitemap incluso con inventario; categorías y temas vacíos también quedan fuera.
 - Checkout, confirmaciones, panel y rutas de autenticación: `noindex`; enlaces a orden bajo token privado.
 - `sitemap.xml` y `robots.txt`, canonical por URL limpia y trailing slash consistente.
 - `site_settings.indexing_enabled` gobierna la indexación (apagado por defecto): apagado genera `Disallow: /`, sitemap vacío, metadatos `noindex` y omite JSON-LD. Encendido habilita solo las páginas elegibles. La etiqueta DEMO sigue visible y no gobierna el interruptor (D-63).
@@ -83,7 +83,7 @@ Crear un sistema de rutas y plantillas a partir de taxonomía. Mantener 134 entr
 |---|---|---|
 | `/blog/` | Sí | Listado público; actualmente puede mostrar un estado vacío |
 | `/blog/[slug]/` | Sí | Solo artículos `published`; inexistentes o borradores responden 404 al público |
-| `/copa/` | Sí, con eventos | Organizador activo con eventos próximos publicados |
+| `/[organizador]/` | No | Organizador activo con slug válido; muestra próximos eventos publicados |
 | `/para-empresas/` | Sí | Beneficios públicos; contratación vinculada a organizador, pago DEMO |
 | `/privacidad/` | Sí | Texto de datos y consentimiento de la demo |
 | `/terminos/` | Sí | Condiciones de uso académico y pagos simulados |

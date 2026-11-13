@@ -29,7 +29,7 @@ export type CatalogEvent = {
   eventType: { slug: string; name: string };
   topic: { slug: string } | null;
   location: { slug: string; name: string } | null;
-  organizer: { name: string } | null;
+  organizer: { name: string; slug?: string; status?: string } | null;
   speakers: Speaker[];
   ticketTypes: CatalogTicketType[];
 };

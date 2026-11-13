@@ -237,7 +237,7 @@ export function EventDetailPage({ event, related, indexingEnabled = false }: Eve
                   <Icon name="building" size={16} />
                   Organiza
                 </dt>
-                <dd className={detailValueClass}>{event.organizer.name}</dd>
+                <dd className={detailValueClass}>{event.organizer.slug && event.organizer.status === 'active' ? <Link href={`/${event.organizer.slug}/`} className="text-enlace underline underline-offset-4">{event.organizer.name}</Link> : event.organizer.name}</dd>
               </div>
             ) : null}
             <div className="hidden sm:block">

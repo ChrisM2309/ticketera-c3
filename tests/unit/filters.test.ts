@@ -107,7 +107,7 @@ describe('lectura de filtros desde la URL', () => {
         { ciudad: 'zzz', modalidad: 'hibrido', precio: 'gratis', fecha: 'anio' },
         ['san-salvador'],
       ),
-    ).toEqual({ tema: null, ciudad: null, modalidad: null, precio: 'gratis', fecha: null });
+    ).toEqual({ tema: null, ciudad: null, organizador: null, modalidad: null, precio: 'gratis', fecha: null });
   });
 
   it('usa el primer valor cuando el parámetro se repite', () => {

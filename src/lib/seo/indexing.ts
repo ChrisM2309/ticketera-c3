@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { filterCatalogEvents, noCatalogFilters } from '../../features/catalog/filters';
-import { resolveCatalogRoute } from '../../features/catalog/routes';
+import { isCatalogRouteIndexable, resolveCatalogRoute } from '../../features/catalog/routes';
 import type { CatalogEvent, CatalogTaxonomy } from '../../features/catalog/types';
 
 /**
@@ -34,7 +34,7 @@ export function indexableCatalogPaths(
   now: Date,
 ): string[] {
   return taxonomy.routes
-    .filter((route) => route.isIndexable)
+    .filter((route) => isCatalogRouteIndexable(route.path.split('/').filter(Boolean), taxonomy))
     .filter((route) => {
       const scope = resolveCatalogRoute(route.path.split('/').filter(Boolean), taxonomy);
 
@@ -94,7 +94,7 @@ export function buildSitemapEntries(input: SitemapInput): MetadataRoute.Sitemap 
   add('/');
   for (const path of input.catalogPaths) add(path);
   for (const event of input.eventPaths) add(event.path, { lastModified: event.updatedAt });
-  for (const path of input.organizerPaths) add(path);
+
   for (const post of input.blogPaths) add(post.path, { lastModified: post.updatedAt });
   add('/para-empresas/');
   add('/privacidad/');

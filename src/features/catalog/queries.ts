@@ -31,7 +31,7 @@ type EventRow = {
   event_type: { slug: string; name: string } | null;
   topic: { slug: string } | null;
   location: { slug: string; name: string } | null;
-  organizer: { name: string } | null;
+  organizer: { name: string; slug: string; status: string } | null;
   speakers: Speaker[] | null;
   ticket_types: { price_cents: number; is_active: boolean }[];
 };
@@ -53,7 +53,7 @@ type EventDetailRow = {
   event_type: { slug: string; name: string } | null;
   topic: { slug: string; name: string } | null;
   location: { slug: string; name: string } | null;
-  organizer: { name: string } | null;
+  organizer: { name: string; slug: string; status: string } | null;
   speakers: Speaker[] | null;
   ticket_types: {
     id: string;
@@ -91,7 +91,7 @@ const eventSelect = `
   event_type:categories!events_event_type_fk(slug, name),
   topic:categories!events_topic_fk(slug),
   location:categories!events_location_fk(slug, name),
-  organizer:organizers(name),
+  organizer:organizers(name, slug, status),
   speakers,
   ticket_types(price_cents, is_active)
 `;
@@ -101,7 +101,7 @@ const eventDetailSelect = `
   event_type:categories!events_event_type_fk(slug, name),
   topic:categories!events_topic_fk(slug, name),
   location:categories!events_location_fk(slug, name),
-  organizer:organizers(name),
+  organizer:organizers(name, slug, status),
   speakers,
   ticket_types(id, name, price_cents, quantity_total, quantity_sold, max_per_order, is_active)
 `;

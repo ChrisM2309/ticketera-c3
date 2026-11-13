@@ -9,6 +9,7 @@ export type DateFilter = 'semana' | 'mes' | 'fin-de-semana';
 export type CatalogFilters = {
   tema: string | null;
   ciudad: string | null;
+  organizador: string | null;
   modalidad: EventMode | null;
   precio: PriceFilter | null;
   fecha: DateFilter | null;
@@ -19,6 +20,7 @@ export type SearchParams = Record<string, string | string[] | undefined>;
 export const noCatalogFilters: CatalogFilters = {
   tema: null,
   ciudad: null,
+  organizador: null,
   modalidad: null,
   precio: null,
   fecha: null,
@@ -46,6 +48,7 @@ export function parseCatalogFilters(
   params: SearchParams,
   locationSlugs: readonly string[],
   topicSlugs: readonly string[] = [],
+  organizerSlugs: readonly string[] = [],
 ): CatalogFilters {
   const ciudad = firstValue(params.ciudad);
   const tema = firstValue(params.tema);
@@ -53,6 +56,7 @@ export function parseCatalogFilters(
   return {
     tema: tema && topicSlugs.includes(tema) ? tema : null,
     ciudad: ciudad && locationSlugs.includes(ciudad) ? ciudad : null,
+    organizador: oneOf(firstValue(params.organizador), organizerSlugs),
     modalidad: oneOf(firstValue(params.modalidad), modalidades),
     precio: oneOf(firstValue(params.precio), precios),
     fecha: oneOf(firstValue(params.fecha), fechas),
@@ -117,6 +121,7 @@ function matchesModality(event: CatalogEvent, modality: CatalogModality): boolea
 
 function matchesFilters(event: CatalogEvent, filters: CatalogFilters, now: Date): boolean {
   if (filters.tema && event.topic?.slug !== filters.tema) return false;
+  if (filters.organizador && event.organizer?.slug !== filters.organizador) return false;
   if (filters.ciudad && event.location?.slug !== filters.ciudad) {
     return false;
   }
@@ -178,4 +183,13 @@ function weekendEndKey(startKey: string): string {
   const day = new Date(`${startKey}T12:00:00Z`).getUTCDay();
   const daysToSaturday = day === 0 ? 0 : 6 - day;
   return shiftDateKey(startKey, daysToSaturday + (day === 0 ? 0 : 1));
+}
+
+/** Organizadores disponibles en la lista actual, sin duplicados. */
+export function catalogOrganizers(events: readonly CatalogEvent[]): { slug: string; name: string }[] {
+  const organizers = new Map<string, string>();
+  for (const event of events) {
+    if (event.organizer?.slug && event.organizer.status === 'active') organizers.set(event.organizer.slug, event.organizer.name);
+  }
+  return [...organizers].map(([slug, name]) => ({ slug, name })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
 }

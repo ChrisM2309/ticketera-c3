@@ -3,7 +3,6 @@ import type { MetadataRoute } from 'next';
 import { getCatalogListing } from '@/features/catalog/queries';
 import { eventPath } from '@/features/catalog/paths';
 import { listPublishedPosts } from '@/features/content/queries';
-import { listPublicOrganizerPaths } from '@/features/catalog/organizers';
 import { getSiteSettings } from '@/features/settings/settings';
 import { buildSitemapEntries, indexableCatalogPaths } from '@/lib/seo/indexing';
 import { siteConfig } from '@/lib/site-config';
@@ -30,6 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     : [];
 
   const blogPaths = blog.posts.map((post) => ({ path: `/blog/${post.slug}/`, updatedAt: new Date(post.publishedAt) }));
-  const organizerPaths = await listPublicOrganizerPaths(now);
+  const organizerPaths: string[] = [];
   return buildSitemapEntries({ indexingEnabled: true, siteUrl: siteConfig.siteUrl, catalogPaths, eventPaths, organizerPaths, blogPaths, now });
 }
