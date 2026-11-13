@@ -22,7 +22,7 @@ Casilla desactivada por defecto; no suscribir al registrar; máximo tres eventos
 
 ### 1. Registro privado y preferencias
 
-**Crear:** `supabase/migrations/20261116110000_weekly_event_emails.sql`, `tests/db/weekly-event-emails.test.ts`; **modificar:** `src/components/accounts/profile-form.tsx` solo si hace falta aclarar frecuencia o baja.
+**Crear:** `supabase/migrations/20261120140000_email_reminders.sql`, `tests/db/weekly-event-emails.test.ts`; **modificar:** `src/components/accounts/profile-form.tsx` solo si hace falta aclarar frecuencia o baja.
 
 **Interfaces:** tabla privada `weekly_event_email_deliveries` con `user_id`, semana local, estado y resultado sin dirección; unicidad `(user_id, week_start)`; función transaccional de reclamación y consulta de elegibilidad con rol de servicio.
 

@@ -22,7 +22,7 @@ Mantener español y DEMO; 24 horas de inactividad; un intento por solicitud; bor
 
 ### 1. Persistencia y validación
 
-**Crear:** `supabase/migrations/20261116100000_cart_reminders.sql`, `src/features/reminders/cart-validation.ts`, `tests/db/cart-reminders.test.ts`, `tests/unit/cart-reminders-validation.test.ts`.
+**Crear:** `supabase/migrations/20261120140000_email_reminders.sql`, `src/features/reminders/cart-validation.ts`, `tests/db/cart-reminders.test.ts`, `tests/unit/cart-reminders-validation.test.ts`.
 
 **Interfaces:** `parseCartReminder(input: unknown): { valid: true; email: string; eventId: string; items: { ticketTypeId: string; quantity: number }[] } | { valid: false }`; SQL de servicio para crear/actualizar, cancelar por hash y reclamar solicitudes elegibles atómicamente.
 
