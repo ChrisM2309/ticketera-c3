@@ -210,6 +210,7 @@ export async function POST(request: Request) {
   const email = order?.buyer_email as string;
   const buyerName = (order?.buyer_name as string | null) ?? '';
   const phone = (order?.buyer_phone as string | null) ?? null;
+  await client.from('cart_email_reminders').update({ status: 'cancelled', email: '[redacted]' }).eq('email', email.trim().toLowerCase()).eq('event_id', eventId).in('status', ['pending', 'processing']);
   const event = await readTicketEmailEvent(client, eventId);
 
   await scheduleConfirmedOrderNotifications(client, {

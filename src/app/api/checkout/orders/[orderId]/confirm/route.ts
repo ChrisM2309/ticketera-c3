@@ -121,6 +121,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     const email = orderResult.data.buyer_email as string;
     const buyerName = (orderResult.data.buyer_name as string | null) ?? '';
     const phone = (orderResult.data.buyer_phone as string | null) ?? null;
+    await client.from('cart_email_reminders').update({ status: 'cancelled', email: '[redacted]' }).eq('email', email.trim().toLowerCase()).eq('event_id', orderResult.data.event_id).in('status', ['pending', 'processing']);
     const now = new Date();
 
     await scheduleConfirmedOrderNotifications(client, {

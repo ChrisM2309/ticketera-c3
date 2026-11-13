@@ -30,6 +30,7 @@ export type CartPageProps = Readonly<{
   initialEvent: CartEvent | null;
   initialItems: CartItem[];
   initialState: CartInitialState;
+  initialEmail?: string;
 }>;
 
 const emptyCartSource = 'without-query';
@@ -52,7 +53,7 @@ function getServerCartStorageSnapshot(): string | null {
   return null;
 }
 
-export function CartPage({ initialEvent, initialItems, initialState }: CartPageProps) {
+export function CartPage({ initialEvent, initialItems, initialState, initialEmail = '' }: CartPageProps) {
   const storedValue = useSyncExternalStore(
     subscribeToCartStorage,
     getCartStorageSnapshot,
@@ -96,11 +97,36 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
   const totals = snapshot
     ? calculateCartTotals(snapshot.event, snapshot.items, siteConfig.demoCommissionPercent)
     : null;
+  const [reminderEmail, setReminderEmail] = useState(initialEmail);
+  const [reminderConsent, setReminderConsent] = useState(false);
+  const [reminderStatus, setReminderStatus] = useState('');
+
+  async function cancelReminder() {
+    try {
+      const token = window.sessionStorage.getItem('ticketera-cart-reminder-token');
+      if (token) await fetch('/api/recordatorios/carrito/', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) });
+      window.sessionStorage.removeItem('ticketera-cart-reminder-token');
+    } catch { /* El recordatorio también se suprime si el servidor ve una compra confirmada. */ }
+  }
+
+  async function saveReminder() {
+    if (!snapshot || !reminderConsent) return;
+    setReminderStatus('Guardando…');
+    try {
+      const response = await fetch('/api/recordatorios/carrito/', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ consent: true, email: reminderEmail, eventId: snapshot.event.id, items: snapshot.items }) });
+      const result = await response.json() as { ok?: boolean; token?: string; error?: string };
+      if (!response.ok || !result.token) throw new Error(result.error || 'No se pudo guardar.');
+      window.sessionStorage.setItem('ticketera-cart-reminder-token', result.token);
+      setReminderStatus('Listo. Si no completás la compra, te enviaremos un recordatorio único mañana.');
+    } catch (error) { setReminderStatus(error instanceof Error ? error.message : 'No se pudo guardar el recordatorio.'); }
+  }
 
   function updateQuantity(ticketTypeId: string, quantity: number) {
     if (!snapshot) {
       return;
     }
+    void cancelReminder();
+    setReminderStatus('');
 
     const otherItems = snapshot.items.filter((item) => item.ticketTypeId !== ticketTypeId);
     setLocalOverride({
@@ -286,6 +312,14 @@ export function CartPage({ initialEvent, initialItems, initialState }: CartPageP
               Continuar al checkout
               <Icon name="chevronRight" />
             </Link>
+            <div className="flex flex-col gap-3 rounded-lg bg-superficie p-4 shadow-sm">
+              <label htmlFor="cart-reminder-email" className="font-titulo text-sm font-semibold">Recordatorio por correo (DEMO)</label>
+              <input id="cart-reminder-email" type="email" autoComplete="email" required value={reminderEmail} onChange={e=>setReminderEmail(e.target.value)} placeholder="tu@correo.com" className="min-h-11 rounded-md border border-borde-fuerte px-3 font-texto" />
+              <label className="flex items-start gap-2 font-texto text-sm leading-6"><input type="checkbox" checked={reminderConsent} onChange={e=>setReminderConsent(e.target.checked)} className="mt-1 size-4" />Acepto recibir un recordatorio único si dejo esta selección sin comprar.</label>
+              <button type="button" disabled={!reminderConsent || !reminderEmail.trim()} onClick={saveReminder} className={cn(buttonVariants({variant:'secundario'}))}>Guardar recordatorio</button>
+              {reminderStatus ? <p role="status" className="font-texto text-sm">{reminderStatus}</p> : null}
+              <p className="font-texto text-xs text-texto-suave">La disponibilidad y los precios se confirmarán nuevamente al volver.</p>
+            </div>
             <p className="font-texto text-center text-xs leading-5 text-texto-suave">
               Tus datos y los importes se verificarán en el siguiente paso.
             </p>
