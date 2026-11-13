@@ -8,7 +8,7 @@ export function FeaturedBlock({ events, heading }: { events: CatalogEvent[]; hea
     <section aria-labelledby="destacados-categoria" className="flex flex-col gap-6">
       <h2 id="destacados-categoria" className="font-titulo text-2xl font-bold">{heading}</h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {events.map((event) => <EventCard key={event.id} event={event} featured />)}
+        {events.map((event) => <EventCard key={event.id} event={event} featured showOrganizer />)}
       </div>
     </section>
   );

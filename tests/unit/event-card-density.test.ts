@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { EventCard } from '../../src/components/catalog/event-card';
+import { Icon } from '../../src/components/ui/icon';
 import type { CatalogEvent } from '../../src/features/catalog/types';
 
 const event: CatalogEvent = {
@@ -36,6 +37,17 @@ function classesOf(node: unknown): string[] {
   return [element.props.className ?? '', ...classesOf(element.props.children)];
 }
 
+function iconNamesOf(node: unknown): string[] {
+  if (Array.isArray(node)) return node.flatMap(iconNamesOf);
+  if (!node || typeof node !== 'object' || !('props' in node)) return [];
+
+  const element = node as ReactElement<{ children?: unknown; name?: string }>;
+  return [
+    ...(element.type === Icon && element.props.name ? [element.props.name] : []),
+    ...iconNamesOf(element.props.children),
+  ];
+}
+
 describe('densidad de EventCard', () => {
   it('prioriza título, fecha, modalidad y precio sin repetir el organizador', () => {
     const card = EventCard({ event });
@@ -45,6 +57,13 @@ describe('densidad de EventCard', () => {
     expect(text).toContain('Presencial');
     expect(text).toContain('Desde $18.50');
     expect(text).not.toContain('Nube Clara Studio');
+  });
+
+  it('muestra organizador e icono de edificio cuando se solicita', () => {
+    const card = EventCard({ event, showOrganizer: true });
+
+    expect(textOf(card)).toContain('Nube Clara Studio');
+    expect(iconNamesOf(card)).toContain('building');
   });
 
   it('refuerza visualmente el destacado con una elevación propia', () => {

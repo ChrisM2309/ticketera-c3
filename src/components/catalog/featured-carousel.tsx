@@ -37,7 +37,7 @@ export function FeaturedCarousel({ events }: FeaturedCarouselProps) {
             aria-label={`${index + 1} de ${total}`}
             className="w-full shrink-0 snap-start"
           >
-            <EventCard event={event} featured />
+            <EventCard event={event} featured showOrganizer />
           </div>
         ))}
       </div>

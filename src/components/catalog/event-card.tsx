@@ -19,13 +19,14 @@ const lineStripe: Record<CatalogLine, string> = {
 type EventCardProps = Readonly<{
   event: CatalogEvent;
   featured?: boolean;
+  showOrganizer?: boolean;
 }>;
 
 /**
  * Tarjeta de evento: foto arriba, fecha en una «entrada» recortada como boleto.
  * Todo el recuadro enlaza a la ficha; el título es el enlace accesible.
  */
-export function EventCard({ event, featured = false }: EventCardProps) {
+export function EventCard({ event, featured = false, showOrganizer = false }: EventCardProps) {
   const date = eventDateParts(event.startsAt);
   const line = lineForEventType(event.eventType.slug);
   const href = eventPath({
@@ -81,6 +82,12 @@ export function EventCard({ event, featured = false }: EventCardProps) {
               <Icon name={event.mode === 'virtual' ? 'monitor' : 'mapPin'} size={16} />
               <span>{modeLabel(event.mode)}{event.location ? `, ${event.location.name}` : ''}</span>
             </p>
+            {showOrganizer && event.organizer ? (
+              <p className="flex items-center gap-2">
+                <Icon name="building" size={16} />
+                <span>{event.organizer.name}</span>
+              </p>
+            ) : null}
           </div>
           <p className="mt-auto flex items-center gap-2 rounded-sm bg-superficie-sutil px-3 py-2 pt-2 font-titulo text-xl font-extrabold text-accion">
             <Icon name="tag" size={20} />
