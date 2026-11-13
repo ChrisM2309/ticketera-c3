@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { CartPage } from '@/components/checkout/cart-page';
 import { getCartEvent } from '@/features/catalog/queries';
 import { normalizeCartItems, parseCartQuery } from '@/features/checkout/cart';
+import { readOptionalSession } from '@/lib/auth/optional-session';
 
 export const metadata: Metadata = {
   title: 'Carrito',
@@ -18,6 +19,7 @@ function firstParam(value: string | string[] | undefined): string | undefined {
 }
 
 export default async function CartRoute({ searchParams }: CartRouteProps) {
+  const session = await readOptionalSession();
   const params = await searchParams;
   const eventId = firstParam(params.evento);
   const encodedItems = firstParam(params.entradas);
@@ -25,13 +27,13 @@ export default async function CartRoute({ searchParams }: CartRouteProps) {
   const hasQuery = eventId !== undefined || encodedItems !== undefined;
 
   if (!selection) {
-    return <CartPage initialEvent={null} initialItems={[]} initialState={hasQuery ? 'invalid_query' : 'empty'} />;
+    return <CartPage initialEvent={null} initialItems={[]} initialState={hasQuery ? 'invalid_query' : 'empty'} initialEmail={session?.email ?? ''} />;
   }
 
   const result = await getCartEvent(selection.eventId);
 
   if (result.status !== 'ok') {
-    return <CartPage initialEvent={null} initialItems={[]} initialState={result.status} />;
+    return <CartPage initialEvent={null} initialItems={[]} initialState={result.status} initialEmail={session?.email ?? ''} />;
   }
 
   const initialItems = normalizeCartItems(result.event, selection.items);
@@ -41,6 +43,7 @@ export default async function CartRoute({ searchParams }: CartRouteProps) {
       initialEvent={result.event}
       initialItems={initialItems}
       initialState={initialItems.length > 0 ? 'ready' : 'empty_selection'}
+      initialEmail={session?.email ?? ''}
     />
   );
 }
